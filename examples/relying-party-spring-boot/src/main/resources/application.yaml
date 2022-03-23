@@ -56,25 +56,6 @@ oidcfed:
       client-id: "http://127.0.0.1:8080/oidc/rp/"
       redirect-uris:
       - "http://127.0.0.1:8080/oidc/rp/callback"
-      jwk: |-
-         {
-           "p": "5oLC7spXbep6Ven40FLkuXNQGQHnq5xkOrTCA-gCntWG1hp1Fd2BZD5VxY2Hy1fK6kEJcbYI7Mo2paIVKqxPuSpFUpVlzXdDGpTF-Aa0io3rX0-0m75HQJBYMW9kbpdvYeNdbSYquwVSdh5vRWIU1OstC5Yz5xZNZYhd6oE-g20",
-           "kty": "RSA",
-           "q": "kBimpcf6tulZJF35SblYc5GVckSjIBJY0wsv0JXm6XlRPf4IWDzi0zHdKCzHpfCS9r8f6vImC_rkfaYOmhASGdhtagkcQSnlf3ZfMVakk-QKAwx9bVzz0C934Vt-o56EtoGf4fYHlPxTGlAD5WdwGFf7qaPGVsqsIjQJc6OCIHs",
-           "d": "Bjr58dM9HJW5p0GXVaykUk6VzSUt1LiIBh-3Ep3Z_gx0iHhDpGkPiqLMSI8O4IfIpRL0MalA4H7QMCvxJ3J4Lv5J6E7COttKF7Sg9tQQB96yZjFgSc-tnp-Q1odEelSLwfM1uaX613IQSDei8MX8vNhed8iH0qMM2pVj_7r-oUU4IoF1kdvRCKuU2tBxrmwxFRFfiykwXMqgnSTjqo-5KXROwuq-NDLecsJFsOZ2XkqZOgqlJJ_X7QPubolFP01i-6G0OQcZtac650tUMYQLnbIFmeqzaZhW9clwOdruru40S-26UMNwRLrrpsRVFzVh_p34_SdtjILfNA2hmyJuKQ",
-           "e": "AQAB",
-           "kid": "UeA-EtNqo00UPPOjWZWMa0Rv7aDRmXr2oeHUTGX_b4s",
-           "qi": "XKM7ojV-qCWW-FJc1z6qKN1NjJ09-AtLgkqQmMdv_5mXmy8MdbwKFz4qwSQjGX317IFB78Va8W9NACTMG-pm0Chb53i-5ClSXGP7SOTvePAAGHhbBqqCKrhmASoyPLVQugsmIkIfFuHOUx4MSObxCrCm1K6lP4wh1HCU4P6aNRk",
-           "dp": "M2QFt50O3ud-vLa8DR3d9mZ5_glJsB3ezqPL-Xj5VJYASK1_Ww-WMFYhYzjJhJEfIRi81UgjNz9h7Y10MJ5X6807xUyfdK5ZHIz8ke5Uw-seBZLMjkhetEs6DlNqTamfYHCDPLlcn3NxTfo9DnfucwW3djTXf3aebLt5TLXhzQU",
-           "alg": "RS256",
-           "dq": "PIse-ejcXp4M5krVwzQtBeHVeP19zKvoxkOdA3b4XoCqsfFacDik1TfORGMMP5ylIyeKsZysf7wa5PAwkmrOMC3PSw4o4PhJhRSnSoOtArZ9vmoxCRJVHtPS-s0GmJiyCjzMgJRu-xpJkHSuLmUXpCLTiqNVYoIlcPmMPxokQqE",
-           "n": "gb-_9qj0BxBexKLnx7SsC6AE2-FUgv-nYn2I7zx9l5YiFBOIT8cNj3FkP7kE7cAoF7iEe8QCa4QVEVZq1zbhICus6Vu43wPmibLGR9T0r-6dEpw52moxe9NgusgyPWtN48UT__nbgnkvcsZBmWpH-o7z5EKsOdPeStwCsb5M-eR0jQ_xFt34nTXzW6f0DDqIT9rGS7oFB-TyZgP0f31RaboUMf4hocJjVeapVCaL8c97Xlnw-ZxtvGPmELfNkWalnsc5dymHp3-wS0QIKYyfXAvxCdCwixAowcwrdvMPG8AiARjTA5wRDq18ZQMj6qqGmh3bTqxzEzNDer44DdDFXw"
-         }
-      trust-marks: |-
-         [
-            {
-               'id': 'https://www.spid.gov.it/openid-federation/agreement/sp-public/', 
-               'trust_mark': 'eyJhbGciOiJSUzI1NiIsImtpZCI6IkZpZll4MDNibm9zRDhtNmdZUUlmTkhOUDljTV9TYW05VGM1bkxsb0lJcmMiLCJ0eXAiOiJ0cnVzdC1tYXJrK2p3dCJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvIiwic3ViIjoiaHR0cDovLzEyNy4wLjAuMTo4MDgwL29pZGMvcnAiLCJpYXQiOjE2NDc2MzI0MjYsImlkIjoiaHR0cHM6Ly93d3cuc3BpZC5nb3YuaXQvY2VydGlmaWNhdGlvbi9ycCIsIm1hcmsiOiJodHRwczovL3d3dy5hZ2lkLmdvdi5pdC90aGVtZXMvY3VzdG9tL2FnaWQvbG9nby5zdmciLCJyZWYiOiJodHRwczovL2RvY3MuaXRhbGlhLml0L2l0YWxpYS9zcGlkL3NwaWQtcmVnb2xlLXRlY25pY2hlLW9pZGMvaXQvc3RhYmlsZS9pbmRleC5odG1sIn0.bBl24BqBjLV5YZ-vjSZvOrEzzUqyl1TCHCUWTD2Xk_nyweo-RjBqv0YLRBNqCidJPY0VhXae8hf_JYXT85MMHLWWPGC-BTIbSWI9X7jVgemJd9n63IcbsCe5ZtYnBONra9gl02k6htO3NZ27VsELtARZG4yE7rbmGDCCLesQl0IpcI_0Auuvtx4ySt5ljAa-Vq6QVPIVf-Cf0610lnxVD4xK8mUd90ZEu11mJUVmO5OJUB210scScHMg7bIbOkJu3KfMWbEmJmhGsktBygqV668e-28ntYVlPTbzLx9KmB0J5vsyLLXzC-uhXz1M2K93uvoMVJmo2ZDUKDC7vCzLeg'
-            }
-         ]
+      jwk: ""
+      trust-marks: ""
       

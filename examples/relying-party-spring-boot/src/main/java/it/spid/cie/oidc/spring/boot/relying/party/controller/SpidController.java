@@ -6,6 +6,7 @@ import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 
@@ -15,8 +16,13 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,17 +36,23 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 import it.spid.cie.oidc.relying.party.helper.EntityHelper;
 import it.spid.cie.oidc.relying.party.helper.JWTHelper;
+import it.spid.cie.oidc.relying.party.helper.OAuth2Helper;
+import it.spid.cie.oidc.relying.party.helper.OidcHelper;
 import it.spid.cie.oidc.relying.party.helper.PKCEHelper;
 import it.spid.cie.oidc.relying.party.model.EntityConfiguration;
 import it.spid.cie.oidc.relying.party.model.OidcConstants;
 import it.spid.cie.oidc.relying.party.model.TrustChainBuilder;
 import it.spid.cie.oidc.relying.party.schemas.AcrValuesSpid;
+import it.spid.cie.oidc.relying.party.schemas.TokenResponse;
 import it.spid.cie.oidc.relying.party.util.ArrayUtil;
 import it.spid.cie.oidc.relying.party.util.GetterUtil;
 import it.spid.cie.oidc.relying.party.util.JSONUtil;
+import it.spid.cie.oidc.relying.party.util.ListUtil;
 import it.spid.cie.oidc.relying.party.util.Validator;
 import it.spid.cie.oidc.spring.boot.relying.party.config.OidcConfig;
 import it.spid.cie.oidc.spring.boot.relying.party.exception.TrustChainException;
@@ -48,6 +60,8 @@ import it.spid.cie.oidc.spring.boot.relying.party.storage.EntityInfo;
 import it.spid.cie.oidc.spring.boot.relying.party.storage.EntityInfoRepository;
 import it.spid.cie.oidc.spring.boot.relying.party.storage.FederationEntityConfiguration;
 import it.spid.cie.oidc.spring.boot.relying.party.storage.FederationEntityConfigurationRepository;
+import it.spid.cie.oidc.spring.boot.relying.party.storage.OidcAuthentication;
+import it.spid.cie.oidc.spring.boot.relying.party.storage.OidcAuthenticationRepository;
 import it.spid.cie.oidc.spring.boot.relying.party.storage.TrustChain;
 import it.spid.cie.oidc.spring.boot.relying.party.storage.TrustChainRepository;
 
@@ -67,7 +81,10 @@ public class SpidController {
 	private EntityInfoRepository entityInfoRepository;
 
 	@Autowired
-	private FederationEntityConfigurationRepository _federationEntityRepository;
+	private OidcAuthenticationRepository oidcAuthenticationRepository;
+
+	@Autowired
+	private FederationEntityConfigurationRepository federationEntityRepository;
 
 	@GetMapping("/authorize")
 	public ResponseEntity<Void> authorize(
@@ -99,7 +116,7 @@ public class SpidController {
 		}
 
 		FederationEntityConfiguration entityConf =
-			_federationEntityRepository.fetchByEntityType(
+			federationEntityRepository.fetchByEntityType(
 				OidcConstants.OPENID_RELYING_PARTY);
 
 		if (entityConf == null || !entityConf.isActive()) {
@@ -164,8 +181,6 @@ public class SpidController {
 		prompt = GetterUtil.getString(prompt, "consent login");
 		JSONObject pkce = PKCEHelper.getPKCE();
 
-		// TODO: Store OidcAuthentication
-
 		JSONObject authzData = new JSONObject()
 			.put("scope", scope)
 			.put("redirect_uri", redirectUri)
@@ -179,10 +194,27 @@ public class SpidController {
 			.put("aud", JSONUtil.asJSONArray(aud))
 			.put("claims", claims)
 			.put("prompt", prompt)
+			.put("code_verifier", pkce.getString("code_verifier"))
 			.put("code_challenge", pkce.getString("code_challenge"))
-			.put("code_challenge_method", pkce.getString("code_challenge_method"))
-			.put("iss", entityMetadata.getString("client_id"))
-			.put("sub", entityMetadata.getString("client_id"));
+			.put("code_challenge_method", pkce.getString("code_challenge_method"));
+
+		// TODO: do better via service
+		OidcAuthentication authzEntry = new OidcAuthentication();
+
+		authzEntry.setClientId(clientId);
+		authzEntry.setState(state);
+		authzEntry.setEndpoint(authzEndpoint);
+		authzEntry.setProvider(tc.getSub());
+		authzEntry.setProviderId(tc.getSub());
+		authzEntry.setData(authzData.toString());
+		authzEntry.setProviderJwks(providerJWKSet.toString());
+		authzEntry.setProviderConfiguration(providerMetadata.toString());
+
+		oidcAuthenticationRepository.save(authzEntry);
+
+		authzData.remove("code_verifier");
+		authzData.put("iss", entityMetadata.getString("client_id"));
+		authzData.put("sub", entityMetadata.getString("client_id"));
 
 		String requestObj = createJWS(authzData, entityJWKSet);
 
@@ -197,6 +229,102 @@ public class SpidController {
 			.location(URI.create(url))
 			.build();
 	}
+
+	@GetMapping("/callback")
+	public RedirectView callback(
+			@RequestParam Map<String,String> params,
+			HttpServletRequest request, HttpServletResponse response)
+		throws Exception {
+
+		if (params.containsKey("error")) {
+			logger.error(new JSONObject(params).toString(2));
+
+			throw new Exception("TODO: Manage Error callback");
+		}
+
+		validateAuthnResponse(params);
+
+		String state = params.get("state");
+		String code = params.get("code");
+
+		List<OidcAuthentication> authzList = oidcAuthenticationRepository.findByState(
+			state);
+
+		if (authzList.isEmpty()) {
+			throw new Exception("oidcAuthenticationRepository");
+		}
+
+		OidcAuthentication authz = ListUtil.getLast(authzList);
+
+		// TODO create OidcAuthenticationToken
+
+		FederationEntityConfiguration entityConf =
+			federationEntityRepository.fetchBySubActive(authz.getClientId(), true);
+
+		if (entityConf == null) {
+			throw new Exception("Relay party not found");
+		}
+
+		JSONObject authzData = new JSONObject(authz.getData());
+
+		JSONObject providerConfiguration = new JSONObject(
+			authz.getProviderConfiguration());
+
+		JSONObject jsonTokenResponse = OAuth2Helper.performAccessTokenRequest(
+			authzData.optString("redirect_uri"), state, code, authz.getProviderId(),
+			entityConf, providerConfiguration.optString("token_endpoint"),
+			authzData.optString("code_verifier"));
+
+		TokenResponse tokenResponse = TokenResponse.of(jsonTokenResponse);
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("TokenResponse=" + tokenResponse.toString());
+		}
+
+		JWKSet providerJwks = JWTHelper.getJWKSetFromJSON(
+			providerConfiguration.optJSONObject("jwks"));
+
+		/*
+		JWK accessTokenJwk = JWTHelper.getJWKFromJWT(
+			tokenResponse.getAccessToken(), providerJwks);
+		JWK idTokenJwk = JWTHelper.getJWKFromJWT(
+			tokenResponse.getIdToken(), providerJwks);
+
+		if (accessTokenJwk == null || idTokenJwk == null) {
+			throw new Exception("Authentication token seems not to be valid.");
+			// Error 403
+		}
+		*/
+
+		try {
+			JWTHelper.verifyJWS(tokenResponse.getAccessToken(), providerJwks);
+		}
+		catch (Exception e) {
+			throw new Exception("Authentication token validation error.");
+			// Error 403
+		}
+
+		try {
+			JWTHelper.verifyJWS(tokenResponse.getIdToken(), providerJwks);
+		}
+		catch (Exception e) {
+			throw new Exception("ID token validation error.");
+		}
+
+		// TODO Update OidcAuthenticationToken
+
+		JWKSet entityJwks = JWTHelper.getJWKSetFromJSON(entityConf.getJwks());
+
+		JSONObject userInfo = OidcHelper.getUserInfo(
+			state, tokenResponse.getAccessToken(), providerConfiguration, true,
+			entityJwks);
+
+
+		request.getSession().setAttribute("USER_INFO", userInfo.toMap());
+
+		return new RedirectView("echo_attributes");
+	}
+
 
 	protected TrustChain getOidcOP(String provider, String trustAnchor)
 		throws Exception {
@@ -327,7 +455,7 @@ public class SpidController {
 
 			if (!tcb.isValid()) {
 				String msg = String.format(
-					"Trsut Chain for subject %s od trust_anchor %s is not valid",
+					"Trust Chain for subject %s or trust_anchor %s is not valid",
 					subject, trustAnchor);
 
 				//throw new InvalidTrustchainException(msg);
@@ -360,6 +488,19 @@ public class SpidController {
 
 		return trustChain;
 	}
+
+	// TODO: move to JWTHelper or XXXHelper?
+	protected void validateAuthnResponse(Map<String, String> params) throws Exception {
+		String code = params.get("code");
+
+		if (Validator.isNullOrEmpty(params.get("code")) ||
+			Validator.isNullOrEmpty(params.get("state"))) {
+
+			//KK throw new ValidationException("Authn response object validation failed");
+			throw new Exception("Authn response object validation failed");
+		}
+	}
+
 
 	// TODO: move to JWTHelper?
 	private String getAuthorizeURL(String endpoint, JSONObject params) {

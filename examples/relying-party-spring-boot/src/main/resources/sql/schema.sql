@@ -48,4 +48,21 @@ CREATE TABLE IF NOT EXISTS federation_entity_configuration (
 	UNIQUE(sub)
 );
 
+CREATE TABLE IF NOT EXISTS  oidc_authentication (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	created TIMESTAMP(0) NOT NULL,
+	modified TIMESTAMP(0) NOT NULL,
+	client_id VARCHAR NOT NULL,
+	state VARCHAR NOT NULL,
+	endpoint VARCHAR NULL,
+	data VARCHAR NULL,
+	successful BOOLEAN NOT NULL,
+	provider_configuration VARCHAR NULL,
+	provider VARCHAR NULL,
+	provider_id VARCHAR NULL,
+	provider_jwks VARCHAR NULL,
+	UNIQUE(state)
+);
+
+
 

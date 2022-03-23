@@ -1,62 +1,139 @@
 package it.spid.cie.oidc.relying.party.helper;
 
+import com.nimbusds.jose.EncryptionMethod;
+import com.nimbusds.jose.JOSEObject;
 import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWEAlgorithm;
+import com.nimbusds.jose.JWEDecrypter;
+import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jose.crypto.RSADecrypter;
+import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.crypto.factories.DefaultJWEDecrypterFactory;
 import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
+import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyType;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.gen.JWKGenerator;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
+import com.nimbusds.jose.proc.JWEDecrypterFactory;
 import com.nimbusds.jose.proc.JWSKeySelector;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.JWSVerifierFactory;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jose.util.Base64;
+import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
-import java.net.URI;
 import java.net.URL;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
+import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.UUID;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.spid.cie.oidc.exception.JWTException;
+import it.spid.cie.oidc.exception.SPIDException;
 import it.spid.cie.oidc.relying.party.util.ArrayUtil;
 import it.spid.cie.oidc.relying.party.util.GetterUtil;
 
 public class JWTHelper {
 
+	public static final String[] ALLOWED_ENCRYPTION_ALGS = new String[] {
+		"RSA-OAEP", "RSA-OAEP-256", "ECDH-ES", "ECDH-ES+A128KW", "ECDH-ES+A192KW",
+		"ECDH-ES+A256KW"};
+
 	public static final String[] ALLOWED_SIGNING_ALGS = new String[] {
 		"RS256", "RS384", "RS512", "ES256", "ES384", "ES512"};
+
+	public static final int DEFAULT_EXPIRES_ON_MINUTES = 30;
+
+	public static final JWEAlgorithm DEFAULT_JWE_ALG = JWEAlgorithm.RSA_OAEP;
+	public static final EncryptionMethod DEFAULT_JWE_ENC = EncryptionMethod.A256CBC_HS512;
 
 	public static String decodeBase64(String encoded) {
 		Base64 b = new Base64(encoded);
 
 		return b.decodeToString();
+	}
+
+	public static String decryptJWE(String jwe, JWKSet jwkSet) throws SPIDException {
+		JWEObject jweObject;
+
+		try {
+			jweObject = JWEObject.parse(jwe);
+		}
+		catch (ParseException e) {
+			throw new JWTException.Parse(e);
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("jwe.header=" + jweObject.getHeader().toString());
+		}
+
+		JWEAlgorithm alg = jweObject.getHeader().getAlgorithm();
+		EncryptionMethod enc = jweObject.getHeader().getEncryptionMethod();
+		String kid = jweObject.getHeader().getKeyID();
+
+		if (alg == null) {
+			alg = DEFAULT_JWE_ALG;
+		}
+
+		if (enc == null) {
+			enc = DEFAULT_JWE_ENC;
+		}
+
+		if (!isValidAlgorithm(alg)) {
+			throw new JWTException.UnsupportedAlgorithm(alg.toString());
+		}
+
+		try {
+			JWK jwk = jwkSet.getKeyByKeyId(kid);
+
+			if (jwk == null) {
+				throw new Exception(kid + " not in jwks");
+			}
+
+			JWEDecrypter decrypter = getJWEDecrypter(alg, enc, jwk);
+
+			jweObject.decrypt(decrypter);
+		}
+		catch (Exception e) {
+			throw new JWTException.Decryption(e);
+		}
+
+		String jws = jweObject.getPayload().toString();
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Decrypted JWE as: " + jws);
+		}
+		logger.info("KK Decrypted JWE as: " + jws);
+
+		return jws;
 	}
 
 	public static JSONObject fastParse(String jwt) {
@@ -67,7 +144,17 @@ public class JWTHelper {
 		result.put("header", new JSONObject(decodeBase64(parts[0])));
 		result.put("payload", new JSONObject(decodeBase64(parts[1])));
 
+		//if (parts.length == 3) {
+		//	result.put("signature", new JSONObject(decodeBase64(parts[1])));
+		//}
+
 		return result;
+	}
+
+	public static JSONObject fastParseHeader(String jwt) {
+		String[] parts = jwt.split("\\.");
+
+		return new JSONObject(decodeBase64(parts[1]));
 	}
 
 	public static JSONObject fastParsePayload(String jwt) {
@@ -76,20 +163,10 @@ public class JWTHelper {
 		return new JSONObject(decodeBase64(parts[1]));
 	}
 
-	/**
-	 * Get the JSON Web Key (JWK) set from the provided JWT Token, or null if
-	 * not present
-	 *
-	 * @param jwt the encoded JWT Token
-	 * @return
-	 * @throws ParseException
-	 */
-	public static JWKSet getJWKSetFromJWT(String jwt) throws ParseException {
-		JSONObject token = fastParse(jwt);
+	public static JWK getJWKFromJWT(String jwt, JWKSet jwkSet) {
+		JSONObject header = fastParseHeader(jwt);
 
-		JSONObject payload = token.getJSONObject("payload");
-
-		return getJWKSet(payload);
+		return jwkSet.getKeyByKeyId(header.optString("kid"));
 	}
 
 	/**
@@ -114,6 +191,197 @@ public class JWTHelper {
 		}
 
 		return JWKSet.parse(jwks.toMap());
+	}
+
+	/**
+	 * Get the JSON Web Key (JWK) set from the provided JSON Object that is supposed to
+	 * be something like:
+	 * <pre>
+	 *  {
+	 *     "keys": [
+	 *        { .... },
+	 *        { .... }
+	 *      }
+	 *  }
+	 * </pre>
+	 *
+	 * @param json
+	 * @return
+	 * @throws Exception
+	 */
+	public static JWKSet getJWKSetFromJSON(JSONObject json) throws Exception {
+		return JWKSet.parse(json.toMap());
+	}
+
+	/**
+	 * Get the JSON Web Key (JWK) set from the provided JWT Token, or null if
+	 * not present
+	 *
+	 * @param jwt the encoded JWT Token
+	 * @return
+	 * @throws ParseException
+	 */
+	public static JWKSet getJWKSetFromJWT(String jwt) throws ParseException {
+		JSONObject token = fastParse(jwt);
+
+		JSONObject payload = token.getJSONObject("payload");
+
+		return getJWKSet(payload);
+	}
+
+	/**
+	 * Given a JSON Web Key (JWK) set returns contained JWKs, only the public attributes,
+	 * as JSONArray.
+	 *
+	 * @param jwkSet
+	 * @param removeUse if true the "use" attribute, even if present in the JWK, will not
+	 * be exposed
+	 * @return
+	 */
+	public static JSONArray getJWKSetAsJSONArray(JWKSet jwkSet, boolean removeUse) {
+		return getJWKSetAsJSONArray(jwkSet, false, removeUse);
+	}
+
+	/**
+	 * Given a JSON Web Key (JWK) set returns contained JWKs as JSONArray.
+	 *
+	 * @param jwkSet
+	 * @param privateAttrs if false only the public attributes of the JWK will be included
+	 * @param removeUse if true the "use" attribute, even if present in the JWK, will not
+	 * be exposed
+	 * @return
+	 */
+	public static JSONArray getJWKSetAsJSONArray(
+		JWKSet jwkSet, boolean privateAttrs, boolean removeUse) {
+
+		JSONArray keys = new JSONArray();
+
+		for (JWK jwk : jwkSet.getKeys()) {
+			JSONObject json;
+
+			if (KeyType.RSA.equals(jwk.getKeyType())) {
+				RSAKey rsaKey = (RSAKey)jwk;
+
+				if (privateAttrs) {
+					json = new JSONObject(rsaKey.toJSONObject());
+				}
+				else {
+					json = new JSONObject(rsaKey.toPublicJWK().toJSONObject());
+				}
+			}
+			else if (KeyType.EC.equals(jwk.getKeyType())) {
+				ECKey ecKey = (ECKey)jwk;
+
+				if (privateAttrs) {
+					json = new JSONObject(ecKey.toJSONObject());
+				}
+				else {
+					json = new JSONObject(ecKey.toPublicJWK().toJSONObject());
+				}
+			}
+			else {
+				logger.error("Unsupported KeyType " + jwk.getKeyType());
+
+				continue;
+			}
+
+			if (removeUse) {
+				json.remove("use");
+			}
+
+			keys.put(json);
+		}
+
+		return keys;
+	}
+
+	/**
+	 * Given a JSON Web Key (JWK) set returns it, only the public attributes, as
+	 * JSONObject.
+	 *
+	 * @param jwkSet
+	 * @param removeUse if true the "use" attribute, even if present in the JWK, will not
+	 * be exposed
+	 * @return
+	 */
+	public static JSONObject getJWKSetAsJSONObject(JWKSet jwkSet, boolean removeUse) {
+		return getJWKSetAsJSONObject(jwkSet, false, removeUse);
+	}
+
+	/**
+	 * Given a JSON Web Key (JWK) set returns it as JSONObject.
+	 *
+	 * @param jwkSet
+	 * @param privateAttrs if false only the public attributes of the JWK will be included
+	 * @param removeUse if true the "use" attribute, even if present in the JWK, will not
+	 * be exposed
+	 * @return
+	 */
+	public static JSONObject getJWKSetAsJSONObject(
+		JWKSet jwkSet, boolean privateAttrs, boolean removeUse) {
+
+		JSONArray keys = getJWKSetAsJSONArray(jwkSet, privateAttrs, removeUse);
+
+		return new JSONObject()
+			.put("keys", keys);
+	}
+
+	public static JSONObject getJWTFromJWE(
+			String jwe, JWKSet mineJWKSet, JWKSet otherJWKSet)
+		throws SPIDException {
+
+		String jws = decryptJWE(jwe, mineJWKSet);
+
+		try {
+			Base64URL[] parts = JOSEObject.split(jws);
+
+			if (parts.length == 3) {
+				SignedJWT signedJWT = new SignedJWT(parts[0], parts[1], parts[2]);
+
+				if (!verifyJWS(signedJWT, otherJWKSet)) {
+					logger.error(
+						"Verification failed for {} with jwks {}", jws,
+						otherJWKSet.toString());
+
+					//TODO: Understand why verify always fails
+					//throw new JWTException.Verifier(
+					//	"Verification failed for " + jws);
+				}
+			}
+			else {
+				logger.warn("jwe {} contains unsigned jws {} ", jwe, jws);
+			}
+
+			return fastParse(jws);
+		}
+		catch (ParseException e) {
+			throw new JWTException.Parse(e);
+		}
+		catch (Exception e) {
+			throw new JWTException.Generic(e);
+		}
+	}
+
+	/**
+	 * @return current UTC date time as epoch seconds
+	 */
+	public static long getIssuedAt() {
+		return LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+	}
+
+	/**
+	 * @return current UTC date time, plus default espire minutes, as epoch seconds
+	 */
+	public static long getExpiresOn() {
+		return getExpiresOn(DEFAULT_EXPIRES_ON_MINUTES);
+	}
+
+	/**
+	 * @param minutes
+	 * @return current UTC date time, plus provided minutes, as epoch seconds
+	 */
+	public static long getExpiresOn(int minutes) {
+		return getIssuedAt() + (minutes * 60);
 	}
 
 	public static JWKSet getMetadataJWKSet(JSONObject metadata) throws Exception {
@@ -168,6 +436,43 @@ public class JWTHelper {
 			.generate();
 	}
 
+	public static String createJWS(JSONObject payload, JWKSet jwks) throws Exception {
+		JWK jwk = getFirstJWK(jwks);
+
+		// Signer depends on JWK key type
+
+		JWSAlgorithm alg;
+		JWSSigner signer;
+
+		if (KeyType.RSA.equals(jwk.getKeyType())) {
+			RSAKey rsaKey = (RSAKey)jwk;
+
+			signer = new RSASSASigner(rsaKey);
+			alg = JWSAlgorithm.RS256;
+		}
+		else if (KeyType.EC.equals(jwk.getKeyType())) {
+			ECKey ecKey = (ECKey)jwk;
+
+			signer = new ECDSASigner(ecKey);
+			alg = JWSAlgorithm.ES256;
+		}
+		else {
+			throw new Exception("Unknown key type");
+		}
+
+		// Prepare JWS object with the payload
+
+		JWSObject jwsObject = new JWSObject(
+			new JWSHeader.Builder(alg).keyID(jwk.getKeyID()).build(),
+			new Payload(payload.toString()));
+
+		// Compute the signature
+		jwsObject.sign(signer);
+
+		// Serialize to compact form
+		return jwsObject.serialize();
+	}
+
 	public static RSAKey parseRSAKey(String s) throws ParseException {
 		return RSAKey.parse(s);
 	}
@@ -198,41 +503,54 @@ public class JWTHelper {
 	}
 	*/
 
-	public static boolean isValidAlgorithm(JWSAlgorithm alg)
-		throws Exception {
-
+	public static boolean isValidAlgorithm(JWSAlgorithm alg) {
 		return ArrayUtil.contains(ALLOWED_SIGNING_ALGS, alg.toString(), true);
 	}
 
-	public static boolean verifyJWS(String jws, JWKSet jwkSet)
-		throws Exception {
+	public static boolean isValidAlgorithm(JWEAlgorithm alg) {
+		return ArrayUtil.contains(ALLOWED_ENCRYPTION_ALGS, alg.toString(), true);
+	}
 
-		SignedJWT jwtToken = SignedJWT.parse(jws);
+	public static boolean verifyJWS(SignedJWT jws, JWKSet jwkSet)
+		throws SPIDException {
 
-		String kid = jwtToken.getHeader().getKeyID();
+		String kid = jws.getHeader().getKeyID();
 
 		JWK jwk = jwkSet.getKeyByKeyId(kid);
 
 		if (jwk == null) {
-			// TODO UnknownKidException
-			throw new Exception(
-				String.format(
-					"kid %s not found in jwks %s", kid, jwkSet.toString()));
+			throw new JWTException.UnknownKid(kid, jwkSet.toString());
 		}
 
-		JWSAlgorithm alg = jwtToken.getHeader().getAlgorithm();
+		JWSAlgorithm alg = jws.getHeader().getAlgorithm();
 
 		if (!isValidAlgorithm(alg)) {
-			String msg = String.format(
-				"%s has beed disabled for security reason", alg);
-
-//			throw new UnsupportedAlgorithmException(msg);
-			throw new Exception(msg);
+			throw new JWTException.UnsupportedAlgorithm(alg.toString());
 		}
 
-		JWSVerifier verifier = getJWSVerifier(alg, jwk);
+		try {
+			JWSVerifier verifier = getJWSVerifier(alg, jwk);
 
-		return jwtToken.verify(verifier);
+			return jws.verify(verifier);
+		}
+		catch (Exception e) {
+			throw new JWTException.Verifier(e);
+		}
+	}
+
+	public static boolean verifyJWS(String jws, JWKSet jwkSet)
+		throws SPIDException {
+
+		SignedJWT jwsObject;
+
+		try {
+			jwsObject = SignedJWT.parse(jws);
+		}
+		catch (Exception e) {
+			throw new JWTException.Parse(e);
+		}
+
+		return verifyJWS(jwsObject, jwkSet);
 	}
 
 	public static void selfCheck2(String jwt, String[] supportedAlgs)
@@ -317,6 +635,35 @@ public class JWTHelper {
 		}
 	}
 
+	public static JWK getFirstJWK(JWKSet jwkSet) throws Exception {
+		if (jwkSet != null && !jwkSet.getKeys().isEmpty()) {
+			return jwkSet.getKeys().get(0);
+		}
+
+		throw new Exception("JWKSet null or empty");
+	}
+
+	private static JWEDecrypter getJWEDecrypter(
+			JWEAlgorithm alg, EncryptionMethod enc, JWK jwk)
+		throws Exception {
+
+		if (RSADecrypter.SUPPORTED_ALGORITHMS.contains(alg) &&
+			RSADecrypter.SUPPORTED_ENCRYPTION_METHODS.contains(enc)) {
+
+			if (!KeyType.RSA.equals(jwk.getKeyType())) {
+				throw new Exception("Not RSA key " + jwk.toString());
+			}
+
+			RSAKey rsaKey = (RSAKey)jwk;
+
+			PrivateKey privateKey = rsaKey.toPrivateKey();
+
+			return new RSADecrypter(privateKey);
+		}
+
+		throw new Exception("Unsupported or unimplemented alg " + alg + " enc " + enc);
+	}
+
 	private static JWSVerifier getJWSVerifier(JWSAlgorithm alg, JWK jwk)
 		throws Exception {
 
@@ -327,12 +674,14 @@ public class JWTHelper {
 
 			RSAKey rsaKey = (RSAKey)jwk;
 
-			PublicKey publicKey = rsaKey.toPublicKey();
+			RSAPublicKey publicKey = rsaKey.toRSAPublicKey();
 
-			return new RSASSAVerifier((RSAPublicKey)publicKey);
+			logger.info("RSA Publickey=" + publicKey.toString());
+
+			return new RSASSAVerifier(publicKey);
 		}
 
-		throw new Exception("Unsupported alg " + alg);
+		throw new Exception("Unsupported or unimplemented alg " + alg);
 	}
 
 	private static void doSelfCheck(
@@ -401,5 +750,8 @@ public class JWTHelper {
 
 	private static JWSVerifierFactory jwsVerifierFactory =
 		new DefaultJWSVerifierFactory();
+
+	private static JWEDecrypterFactory jweDecrypterFactory =
+		new DefaultJWEDecrypterFactory();
 
 }

@@ -6,14 +6,12 @@ import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.RSASSASigner;
-import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
@@ -93,7 +91,9 @@ public class WellKnownController {
 		}
 	}
 
-	private void addFederationEntityConfiguration(JSONObject json) throws Exception {
+	private void addFederationEntityConfiguration(JSONObject json, JWKSet jwkSet)
+		throws Exception {
+
 		FederationEntityConfiguration entry = new FederationEntityConfiguration();
 
 		System.out.println(json.toString(2));
@@ -102,7 +102,7 @@ public class WellKnownController {
 		entry.setDefaultExpireMinutes(OidcConstants.FEDERATION_DEFAULT_EXP);
 		entry.setDefaultSignatureAlg(JWSAlgorithm.RS256.toString());
 		entry.setAuthorityHints(json.getJSONArray("authority_hints").toString());
-		entry.setJwks(json.getJSONObject("jwks").getJSONArray("keys").toString());
+		entry.setJwks(JWTHelper.getJWKSetAsJSONArray(jwkSet, true, false).toString());
 		entry.setTrustMarks(json.getJSONArray("trust_marks").toString());
 		entry.setTrustMarksIssuers("{}");
 		entry.setMetadata(json.getJSONObject("metadata").toString());
@@ -128,7 +128,7 @@ public class WellKnownController {
 		json.put("iat", iat);
 		json.put("iss", entry.getSub());
 		json.put("sub", entry.getSub());
-		json.put("jwks", jwkSet.toJSONObject());
+		json.put("jwks", JWTHelper.getJWKSetAsJSONObject(jwkSet, true));
 		json.put("metadata", metadataJson);
 		json.put("authority_hints", new JSONArray(entry.getAuthorityHints()));
 		json.put("trust_marks", new JSONArray(entry.getTrustMarks()));
@@ -137,6 +137,7 @@ public class WellKnownController {
 			return json.toString();
 		}
 
+		// TODO: Use entry jwkSet
 		RSAKey jwk = JWTHelper.parseRSAKey(oidcConfig.getRelyingParty().getJwk());
 
 		// Create RSA-signer with the private key
@@ -161,7 +162,7 @@ public class WellKnownController {
 			// Create a new one to be added to conf
 
 			// TODO: Type has to be defined by configuration
-			RSAKey jwk = JWTHelper.createRSAKey(JWSAlgorithm.RS256, null);
+			RSAKey jwk = JWTHelper.createRSAKey(JWSAlgorithm.RS256, KeyUse.SIGNATURE);
 
 			JSONObject json = new JSONObject(jwk.toString());
 
@@ -169,13 +170,19 @@ public class WellKnownController {
 				"Generated jwk. Please add it into 'application.yaml'.\n" +
 				json.toString(2));
 
-			return "Do OnBoarding configuration";
+			return new JSONObject()
+				.put("ERROR", "Do OnBoarding configuration")
+				.toString();
 		}
 
 		RSAKey jwk = JWTHelper.parseRSAKey(confJwk);
 
 		logger.info("Configured jwk\n" + jwk.toJSONString());
-		logger.info("Configured public jwk\n" + jwk.toPublicJWK().toJSONString());
+
+		JSONArray jsonArray = new JSONArray()
+			.put(new JSONObject(jwk.toPublicJWK().toJSONObject()));
+
+		logger.info("Configured public jwk\n" + jsonArray.toString(2));
 
 		JWKSet jwkSet = new JWKSet(jwk);
 
@@ -183,14 +190,14 @@ public class WellKnownController {
 
 		RelyingParty rpConf = oidcConfig.getRelyingParty();
 
-		rpJson.put("jwks", jwkSet.toJSONObject());
+		rpJson.put("jwks", JWTHelper.getJWKSetAsJSONObject(jwkSet, false));
 		rpJson.put("application_type", rpConf.getApplicationType());
 		rpJson.put("client_name", rpConf.getApplicationName());
 		rpJson.put("client_id", sub);
 		rpJson.put("client_registration_types", JSONUtil.asJSONArray("automatic"));
 		rpJson.put("contacts", rpConf.getContacts());
 		rpJson.put("grant_types", OidcConstants.RP_GRANT_TYPES);
-		rpJson.put("response_types", OidcConstants.RP_GRANT_TYPES);
+		rpJson.put("response_types", OidcConstants.RP_RESPONSE_TYPES);
 		rpJson.put("redirect_uris", rpConf.getRedirectUris());
 
 		JSONObject metadataJson = new JSONObject();
@@ -205,7 +212,7 @@ public class WellKnownController {
 		json.put("iat", iat);
 		json.put("iss", sub);
 		json.put("sub", sub);
-		json.put("jwks", jwkSet.toJSONObject());
+		json.put("jwks", JWTHelper.getJWKSetAsJSONObject(jwkSet, true));
 		json.put("metadata", metadataJson);
 		json.put(
 			"authority_hints", JSONUtil.asJSONArray(
@@ -219,7 +226,7 @@ public class WellKnownController {
 			// With the trust marks I've all the elements to store this RelyingParty into
 			// FederationEntryConfiguration table
 
-			addFederationEntityConfiguration(json);
+			addFederationEntityConfiguration(json, jwkSet);
 		}
 
 		//logger.info("\n" + json.toString(2));

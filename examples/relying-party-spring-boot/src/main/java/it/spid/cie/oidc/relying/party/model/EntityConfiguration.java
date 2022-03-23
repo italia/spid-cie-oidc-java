@@ -144,7 +144,7 @@ public class EntityConfiguration {
 		return payload.optJSONObject("metadata", new JSONObject());
 	}
 
-	public String getFederationApiEndpoint() {
+	public String getFederationFetchEndpoint() {
 		JSONObject metadata = payload.optJSONObject("metadata");
 
 		if (metadata != null) {
@@ -152,7 +152,7 @@ public class EntityConfiguration {
 				"federation_entity");
 
 			if (federationEntity != null) {
-				return federationEntity.optString("federation_api_endpoint");
+				return federationEntity.optString("federation_fetch_endpoint");
 			}
 		}
 
@@ -384,11 +384,11 @@ public class EntityConfiguration {
 				continue;
 			}
 
-			String federationApiEndpoint = ec.getFederationApiEndpoint();
+			String federationApiEndpoint = ec.getFederationFetchEndpoint();
 
 			if (Validator.isNullOrEmpty(federationApiEndpoint)) {
 				logger.warn(
-					"Missing federation_api_endpoint in federation_entity " +
+					"Missing federation_fetch_endpoint in federation_entity " +
 					"metadata for {} by {}", getSub(), ec.getSub());
 
 				this.failedBySuperiors.put(ec.getSub(), null);

@@ -32,7 +32,7 @@ public class RelyingPartySampleApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		System.out.println(oidcConfig.toJSONString(2));
+		System.out.println("Configuration:\n" + oidcConfig.toJSONString(2));
 		//test1();
 	}
 

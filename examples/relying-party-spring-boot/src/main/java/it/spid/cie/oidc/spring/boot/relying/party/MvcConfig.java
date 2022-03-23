@@ -15,7 +15,9 @@ public class MvcConfig implements WebMvcConfigurer {
 			.addViewController("/oidc/rp/.well-known/openid-federation")
 			.setViewName("well-known");
 		registry.addViewController("/hello").setViewName("hello");
-		registry.addViewController("/login").setViewName("login");
+		registry
+			.addViewController("/oidc/rp/echo_attributes")
+			.setViewName("echo_attributes");
 	}
 
 }
