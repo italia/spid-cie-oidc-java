@@ -1,6 +1,7 @@
 package it.spid.cie.oidc.spring.boot.relying.party.storage;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -8,6 +9,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import org.json.JSONObject;
 
 @Entity
 @Table(name = "oidc_authentication")
@@ -150,6 +153,5 @@ public class OidcAuthentication {
 	public void setProviderJwks(String providerJwks) {
 		this.providerJwks = providerJwks;
 	}
-
 
 }

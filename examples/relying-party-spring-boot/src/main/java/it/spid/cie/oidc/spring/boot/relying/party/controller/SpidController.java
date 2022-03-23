@@ -18,6 +18,7 @@ import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -62,6 +63,8 @@ import it.spid.cie.oidc.spring.boot.relying.party.storage.FederationEntityConfig
 import it.spid.cie.oidc.spring.boot.relying.party.storage.FederationEntityConfigurationRepository;
 import it.spid.cie.oidc.spring.boot.relying.party.storage.OidcAuthentication;
 import it.spid.cie.oidc.spring.boot.relying.party.storage.OidcAuthenticationRepository;
+import it.spid.cie.oidc.spring.boot.relying.party.storage.OidcAuthenticationToken;
+import it.spid.cie.oidc.spring.boot.relying.party.storage.OidcAuthenticationTokenRepository;
 import it.spid.cie.oidc.spring.boot.relying.party.storage.TrustChain;
 import it.spid.cie.oidc.spring.boot.relying.party.storage.TrustChainRepository;
 
@@ -82,6 +85,9 @@ public class SpidController {
 
 	@Autowired
 	private OidcAuthenticationRepository oidcAuthenticationRepository;
+
+	@Autowired
+	private OidcAuthenticationTokenRepository oidcAuthenticationTokenRepository;
 
 	@Autowired
 	private FederationEntityConfigurationRepository federationEntityRepository;
@@ -256,7 +262,12 @@ public class SpidController {
 
 		OidcAuthentication authz = ListUtil.getLast(authzList);
 
-		// TODO create OidcAuthenticationToken
+		OidcAuthenticationToken authzToken = new OidcAuthenticationToken();
+
+		authzToken.setAuthzRequestId(authz.getId());
+		authzToken.setCode(code);
+
+		authzToken = oidcAuthenticationTokenRepository.save(authzToken);
 
 		FederationEntityConfiguration entityConf =
 			federationEntityRepository.fetchBySubActive(authz.getClientId(), true);
@@ -311,7 +322,15 @@ public class SpidController {
 			throw new Exception("ID token validation error.");
 		}
 
-		// TODO Update OidcAuthenticationToken
+		// Update OidcAuthenticationToken
+
+		authzToken.setAccessToken(tokenResponse.getAccessToken());
+		authzToken.setIdToken(tokenResponse.getIdToken());
+		authzToken.setTokenType(tokenResponse.getTokenType());
+		authzToken.setScope(jsonTokenResponse.optString("scope"));
+		authzToken.setExpiresIn(tokenResponse.getExpiresIn());
+
+		authzToken = oidcAuthenticationTokenRepository.save(authzToken);
 
 		JWKSet entityJwks = JWTHelper.getJWKSetFromJSON(entityConf.getJwks());
 
@@ -319,12 +338,90 @@ public class SpidController {
 			state, tokenResponse.getAccessToken(), providerConfiguration, true,
 			entityJwks);
 
+		authzToken.setUserKey(userInfo.optString("https://attributes.spid.gov.it/email"));
+		authzToken = oidcAuthenticationTokenRepository.save(authzToken);
 
+		request.getSession().setAttribute("USER", authzToken.getUserKey());
 		request.getSession().setAttribute("USER_INFO", userInfo.toMap());
 
 		return new RedirectView("echo_attributes");
 	}
 
+	@GetMapping("/logout")
+	public RedirectView logout(
+			@RequestParam Map<String,String> params,
+			HttpServletRequest request, HttpServletResponse response)
+		throws Exception {
+
+		String userKey = GetterUtil.getString(request.getSession().getAttribute("USER"));
+
+		if (Validator.isNullOrEmpty(userKey)) {
+			throw new Exception("No USER found in Session");
+		}
+
+		List<OidcAuthenticationToken> authzTokens =
+			oidcAuthenticationTokenRepository.findUserTokens(userKey);
+
+		if (authzTokens.isEmpty()) {
+			return new RedirectView("landing");
+		}
+
+		OidcAuthenticationToken authzToken = ListUtil.getLast(authzTokens);
+
+		Optional<OidcAuthentication> authz = oidcAuthenticationRepository.findById(
+			authzToken.getAuthzRequestId());
+
+		if (authz.isEmpty()) {
+			throw new Exception(
+				"No OidcAuthentication with id " + authzToken.getAuthzRequestId());
+		}
+
+		JSONObject providerConfiguration = new JSONObject(
+			authz.get().getProviderConfiguration());
+
+		String revocationUrl = providerConfiguration.optString("revocation_endpoint");
+
+		request.getSession().removeAttribute("USER");
+		request.getSession().removeAttribute("USER_INFO");
+
+		if (Validator.isNullOrEmpty(revocationUrl)) {
+			logger.warn(
+				"{} doesn't expose the token revocation endpoint.",
+				authz.get().getProviderId());
+
+			return new RedirectView("landing");
+		}
+
+		FederationEntityConfiguration entityConf =
+			federationEntityRepository.fetchBySubActive(authz.get().getClientId(), true);
+
+		JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(entityConf.getJwks());
+
+		authzToken.setRevoked(LocalDateTime.now());
+
+		authzToken = oidcAuthenticationTokenRepository.save(authzToken);
+
+		try {
+			OAuth2Helper.sendRevocationRequest(
+				authzToken.getAccessToken(), authz.get().getClientId(), revocationUrl,
+				entityConf);
+		}
+		catch (Exception e) {
+			logger.error("Token revocation failed: {}", e.getMessage());
+		}
+
+		// Revoke older user's authzToken. Only good for this testing environment
+
+		authzTokens = oidcAuthenticationTokenRepository.findUserTokens(userKey);
+
+		for (OidcAuthenticationToken oldToken : authzTokens) {
+			oldToken.setRevoked(authzToken.getRevoked());
+
+			oidcAuthenticationTokenRepository.save(oldToken);
+		}
+
+		return new RedirectView("landing");
+	}
 
 	protected TrustChain getOidcOP(String provider, String trustAnchor)
 		throws Exception {

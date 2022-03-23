@@ -61,6 +61,8 @@ public class OAuth2Helper {
 
 		String clientAssertion = JWTHelper.createJWS(payload, jwkSet);
 
+		// Body Parameters
+
 		Map<String, Object> params = new HashMap<>();
 
 		params.put("grant_type", "authorization_code");
@@ -75,6 +77,8 @@ public class OAuth2Helper {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Access Token Request for {}: {}", state, buildPostBody(params));
 		}
+
+		// POST
 
 		HttpRequest request = HttpRequest.newBuilder()
 			.uri(new URI(tokenEndpointUrl))
@@ -104,6 +108,59 @@ public class OAuth2Helper {
 
 		return new JSONObject();
 	}
+
+	public static void sendRevocationRequest(
+			String token, String clientId, String revocationUrl,
+			FederationEntityConfiguration clientConf)
+		throws Exception {
+
+		// create client assertion (JWS Token)
+
+		JSONObject payload = new JSONObject()
+			.put("iss", clientId)
+			.put("sub", clientId)
+			.put("aud", JSONUtil.asJSONArray(revocationUrl))
+			.put("iat", JWTHelper.getIssuedAt())
+			.put("exp", JWTHelper.getExpiresOn())
+			.put("jti", UUID.randomUUID().toString());
+
+		JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(clientConf.getJwks());
+
+		String clientAssertion = JWTHelper.createJWS(payload, jwkSet);
+
+		// Body Parameters
+
+		Map<String, Object> params = new HashMap<>();
+
+		params.put("token", token);
+		params.put("client_id", clientId);
+		params.put("client_assertion", clientAssertion);
+		params.put("client_assertion_type", JWT_BARRIER);
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Send Token Revocation: {}", buildPostBody(params));
+		}
+
+		// POST
+
+		HttpRequest request = HttpRequest.newBuilder()
+			.uri(new URI(revocationUrl))
+			.POST(HttpRequest.BodyPublishers.ofString(buildPostBody(params)))
+			.header("Content-Type", "application/x-www-form-urlencoded")
+			.build();
+
+		//TODO timeout from options
+		//TODO ssl test?
+		HttpResponse<String> response = HttpClient.newBuilder()
+			.build()
+			.send(request, BodyHandlers.ofString());
+
+		if (response.statusCode() != 200) {
+			logger.error(
+				"Token revocation failed: {}", response.statusCode());
+		}
+	}
+
 
 	private static String buildPostBody(Map<String, Object> params) {
 		if (params == null || params.isEmpty()) {

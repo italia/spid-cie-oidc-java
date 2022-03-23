@@ -676,7 +676,7 @@ public class JWTHelper {
 
 			RSAPublicKey publicKey = rsaKey.toRSAPublicKey();
 
-			logger.info("RSA Publickey=" + publicKey.toString());
+			//logger.info("RSA Publickey=" + publicKey.toString());
 
 			return new RSASSAVerifier(publicKey);
 		}

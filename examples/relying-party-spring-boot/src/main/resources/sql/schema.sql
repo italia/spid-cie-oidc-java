@@ -64,5 +64,21 @@ CREATE TABLE IF NOT EXISTS  oidc_authentication (
 	UNIQUE(state)
 );
 
+CREATE TABLE IF NOT EXISTS  oidc_authentication_token (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	created TIMESTAMP(0) NOT NULL,
+	modified TIMESTAMP(0) NOT NULL,
+	code VARCHAR NULL,
+	scope VARCHAR NULL,
+	access_token VARCHAR NULL,
+	id_token VARCHAR NULL,
+	token_type VARCHAR NULL,
+	expires_in INTEGER NULL,
+	authz_request_id INTEGER NOT NULL,
+	user_key VARCHAR NULL,
+	revoked TIMESTAMP(0) NULL,
+	refresh_token VARCHAR NULL,
+	UNIQUE(authz_request_id)
+);
 
 
