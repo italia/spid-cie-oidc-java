@@ -2,6 +2,7 @@ package it.spid.cie.oidc.exception;
 
 public class EntityException extends OIDCException {
 
+	@SuppressWarnings("serial")
 	public static class Generic extends EntityException {
 
 		public Generic(String message) {
@@ -14,6 +15,7 @@ public class EntityException extends OIDCException {
 
 	}
 
+	@SuppressWarnings("serial")
 	public static class MissingJwksClaim extends EntityException {
 
 		public MissingJwksClaim(String message) {

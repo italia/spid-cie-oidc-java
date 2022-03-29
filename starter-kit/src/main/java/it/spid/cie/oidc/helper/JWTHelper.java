@@ -14,7 +14,9 @@ import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyType;
+import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jwt.SignedJWT;
 
@@ -33,6 +35,23 @@ import it.spid.cie.oidc.exception.OIDCException;
 import it.spid.cie.oidc.util.GetterUtil;
 
 public class JWTHelper {
+
+	public static RSAKey createRSAKey(JWSAlgorithm alg, KeyUse use) throws OIDCException {
+		if (alg == null) {
+			alg = JWSAlgorithm.RS256;
+		}
+
+		try {
+			return new RSAKeyGenerator(2048)
+				.algorithm(JWSAlgorithm.RS256)
+				.keyUse(use)
+				.keyIDFromThumbprint(true)
+				.generate();
+		}
+		catch (Exception e) {
+			throw new JWTException.Generic(e);
+		}
+	}
 
 	/**
 	 * Decode a Base64 string and return it
@@ -323,6 +342,15 @@ public class JWTHelper {
 		}
 
 		throw new JWTException.Generic("No jwks in metadata");
+	}
+
+	public static RSAKey parseRSAKey(String s) throws OIDCException {
+		try {
+			return RSAKey.parse(s);
+		}
+		catch (Exception e) {
+			throw new JWTException.Parse(e);
+		}
 	}
 
 	public JWTHelper(GlobalOptions<?> options) {

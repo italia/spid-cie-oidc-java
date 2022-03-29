@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import it.spid.cie.oidc.config.GlobalOptions;
 import it.spid.cie.oidc.exception.EntityException;
 import it.spid.cie.oidc.exception.OIDCException;
+import it.spid.cie.oidc.model.OIDCConstants;
 import it.spid.cie.oidc.util.StringUtil;
 
 public class EntityHelper {
@@ -29,7 +30,7 @@ public class EntityHelper {
 		String url = StringUtil.ensureTrailingSlash(
 				subject
 			).concat(
-				GlobalOptions.OIDC_FEDERATION_WELLKNOWN_URL
+				OIDCConstants.OIDC_FEDERATION_WELLKNOWN_URL
 			);
 
 		if (logger.isInfoEnabled()) {

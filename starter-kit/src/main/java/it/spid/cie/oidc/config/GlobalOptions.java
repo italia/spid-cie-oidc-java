@@ -1,7 +1,5 @@
 package it.spid.cie.oidc.config;
 
-import com.nimbusds.jose.JWSAlgorithm;
-
 import java.util.Collections;
 import java.util.Set;
 
@@ -12,10 +10,9 @@ import it.spid.cie.oidc.util.Validator;
 
 public class GlobalOptions<T extends GlobalOptions<T>> {
 
-	public static final String DEFAULT_SIGNING_ALG = "RS256";
+	public static final int DEFAULT_EXPIRING_MINUTES = 30;
 
-	public static final String OIDC_FEDERATION_WELLKNOWN_URL =
-		".well-known/openid-federation";
+	public static final String DEFAULT_SIGNING_ALG = "RS256";
 
 	public static final String[] SUPPORTED_ENCRYPTION_ENCODINGS = new String[] {
 		"A128CBC-HS256", "A192CBC-HS384", "A256CBC-HS512", "A128GCM", "A192GCM",
@@ -27,6 +24,10 @@ public class GlobalOptions<T extends GlobalOptions<T>> {
 
 	public static final String[] SUPPORTED_SIGNING_ALGS = new String[] {
 		"RS256", "RS384", "RS512", "ES256", "ES384", "ES512"};
+
+	public int getDefaultExpiringMinutes() {
+		return DEFAULT_EXPIRING_MINUTES;
+	}
 
 	public String getDefaultJWEAlgorithm() {
 		return jweDefaultAlgorithm;

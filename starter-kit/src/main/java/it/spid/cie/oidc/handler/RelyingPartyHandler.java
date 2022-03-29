@@ -1,11 +1,15 @@
 package it.spid.cie.oidc.handler;
 
+import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.jwk.RSAKey;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.json.JSONArray;
@@ -13,6 +17,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.spid.cie.oidc.config.GlobalOptions;
 import it.spid.cie.oidc.config.RelyingPartyOptions;
 import it.spid.cie.oidc.exception.OIDCException;
 import it.spid.cie.oidc.exception.TrustChainException;
@@ -21,13 +26,14 @@ import it.spid.cie.oidc.helper.JWTHelper;
 import it.spid.cie.oidc.helper.PKCEHelper;
 import it.spid.cie.oidc.model.CachedEntityInfo;
 import it.spid.cie.oidc.model.EntityConfiguration;
-import it.spid.cie.oidc.model.FederationEntityConfiguration;
+import it.spid.cie.oidc.model.FederationEntity;
 import it.spid.cie.oidc.model.OIDCAuthRequest;
 import it.spid.cie.oidc.model.OIDCConstants;
 import it.spid.cie.oidc.model.TrustChain;
 import it.spid.cie.oidc.model.TrustChainBuilder;
 import it.spid.cie.oidc.persistence.PersistenceAdapter;
 import it.spid.cie.oidc.schemas.OIDCProfile;
+import it.spid.cie.oidc.schemas.WellKnownData;
 import it.spid.cie.oidc.util.JSONUtil;
 import it.spid.cie.oidc.util.Validator;
 
@@ -85,7 +91,7 @@ public class RelyingPartyHandler {
 			throw e;
 		}
 
-		FederationEntityConfiguration entityConf = persistence.fetchFederationEntity(
+		FederationEntity entityConf = persistence.fetchFederationEntity(
 			OIDCConstants.OPENID_RELYING_PARTY);
 
 		if (entityConf == null || !entityConf.isActive()) {
@@ -202,6 +208,27 @@ public class RelyingPartyHandler {
 		logger.info("Starting Authz request to {}", url);
 
 		return url;
+	}
+
+	public WellKnownData getWellKnownData(String requestURL, boolean jsonMode)
+		throws OIDCException {
+
+		String sub = getSubjectFromURL(requestURL);
+
+		if (!Objects.equals(sub, options.getClientId())) {
+			throw new OIDCException(
+				String.format(
+					"Sub doesn't match %s : %s", sub, options.getClientId()));
+		}
+
+		FederationEntity conf = persistence.fetchFederationEntity(sub, true);
+
+		if (conf == null) {
+			return prepareOnboardingData(sub, jsonMode);
+		}
+		else {
+			return getWellKnownData(conf, jsonMode);
+		}
 	}
 
 	protected TrustChain getSPIDProvider(String spidProvider, String trustAnchor)
@@ -350,34 +377,6 @@ public class RelyingPartyHandler {
 		return trustChain;
 	}
 
-	// TODO: have to be configurable
-	private JSONObject getRequestedClaims(String profile) {
-		if (OIDCProfile.SPID.equalValue(profile)) {
-			JSONObject result = new JSONObject();
-
-			JSONObject idToken = new JSONObject()
-				.put(
-					"https://attributes.spid.gov.it/familyName",
-					new JSONObject().put("essential", true))
-				.put(
-					"https://attributes.spid.gov.it/email",
-					new JSONObject().put("essential", true));
-
-			JSONObject userInfo = new JSONObject()
-				.put("https://attributes.spid.gov.it/name", new JSONObject())
-				.put("https://attributes.spid.gov.it/familyName", new JSONObject())
-				.put("https://attributes.spid.gov.it/email", new JSONObject())
-				.put("https://attributes.spid.gov.it/fiscalNumber", new JSONObject());
-
-			result.put("id_token", idToken);
-			result.put("userinfo", userInfo);
-
-			return result;
-		}
-
-		return new JSONObject();
-	}
-
 	// TODO: move to an helper?
 	private String buildURL(String endpoint, JSONObject params) {
 		StringBuilder sb = new StringBuilder();
@@ -406,6 +405,167 @@ public class RelyingPartyHandler {
 		}
 
 		return sb.toString();
+	}
+
+	private String getSubjectFromURL(String url) {
+		int x = url.indexOf(OIDCConstants.OIDC_FEDERATION_WELLKNOWN_URL);
+
+		return url.substring(0, x);
+	}
+
+	private WellKnownData getWellKnownData(FederationEntity entity, boolean jsonMode)
+		throws OIDCException {
+
+		JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(entity.getJwks());
+
+		JSONObject metadataJson = new JSONObject(entity.getMetadata());
+
+		long iat = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+
+		JSONObject json = new JSONObject();
+
+		json.put("exp", iat + (entity.getDefaultExpireMinutes() * 60));
+		json.put("iat", iat);
+		json.put("iss", entity.getSubject());
+		json.put("sub", entity.getSubject());
+		json.put("jwks", JWTHelper.getJWKSetAsJSONObject(jwkSet, true));
+		json.put("metadata", metadataJson);
+		json.put("authority_hints", new JSONArray(entity.getAuthorityHints()));
+		json.put("trust_marks", new JSONArray(entity.getTrustMarks()));
+
+		if (jsonMode) {
+			return WellKnownData.of(WellKnownData.STEP_COMPLETE, json.toString());
+		}
+
+		String jws = jwtHelper.createJWS(json, jwkSet);
+
+		return WellKnownData.of(WellKnownData.STEP_COMPLETE, jws);
+	}
+
+	// TODO: have to be configurable
+	private JSONObject getRequestedClaims(String profile) {
+		if (OIDCProfile.SPID.equalValue(profile)) {
+			JSONObject result = new JSONObject();
+
+			JSONObject idToken = new JSONObject()
+				.put(
+					"https://attributes.spid.gov.it/familyName",
+					new JSONObject().put("essential", true))
+				.put(
+					"https://attributes.spid.gov.it/email",
+					new JSONObject().put("essential", true));
+
+			JSONObject userInfo = new JSONObject()
+				.put("https://attributes.spid.gov.it/name", new JSONObject())
+				.put("https://attributes.spid.gov.it/familyName", new JSONObject())
+				.put("https://attributes.spid.gov.it/email", new JSONObject())
+				.put("https://attributes.spid.gov.it/fiscalNumber", new JSONObject());
+
+			result.put("id_token", idToken);
+			result.put("userinfo", userInfo);
+
+			return result;
+		}
+
+		return new JSONObject();
+	}
+
+	private WellKnownData prepareOnboardingData(String sub, boolean jsonMode)
+		throws OIDCException {
+
+		// TODO: JWSAlgorithm via defualt?
+
+		String confJwk = options.getJwk();
+
+		// If not JSON Web Key is configured I have to create a new one
+
+		if (Validator.isNullOrEmpty(confJwk)) {
+
+			// TODO: Type has to be defined by configuration?
+			RSAKey jwk = JWTHelper.createRSAKey(JWSAlgorithm.RS256, KeyUse.SIGNATURE);
+
+			JSONObject json = new JSONObject(jwk.toString());
+
+			return WellKnownData.of(WellKnownData.STEP_ONLY_JWKS, json.toString());
+		}
+
+		RSAKey jwk = JWTHelper.parseRSAKey(confJwk);
+
+		logger.info("Configured jwk\n" + jwk.toJSONString());
+
+		JSONArray jsonArray = new JSONArray()
+			.put(new JSONObject(jwk.toPublicJWK().toJSONObject()));
+
+		logger.info("Configured public jwk\n" + jsonArray.toString(2));
+
+		JWKSet jwkSet = new JWKSet(jwk);
+
+		JSONObject rpJson = new JSONObject();
+
+		rpJson.put("jwks", JWTHelper.getJWKSetAsJSONObject(jwkSet, false));
+		rpJson.put("application_type", options.getApplicationType());
+		rpJson.put("client_name", options.getApplicationName());
+		rpJson.put("client_id", sub);
+		rpJson.put("client_registration_types", JSONUtil.asJSONArray("automatic"));
+		rpJson.put("contacts", options.getContacts());
+		rpJson.put("grant_types", RelyingPartyOptions.SUPPORTED_GRANT_TYPES);
+		rpJson.put("response_types", RelyingPartyOptions.SUPPORTED_RESPONSE_TYPES);
+		rpJson.put("redirect_uris", options.getRedirectUris());
+
+		JSONObject metadataJson = new JSONObject();
+
+		metadataJson.put(OIDCConstants.OPENID_RELYING_PARTY, rpJson);
+
+		long iat = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+
+		JSONObject json = new JSONObject();
+
+		json.put("exp", iat + (GlobalOptions.DEFAULT_EXPIRING_MINUTES * 60));
+		json.put("iat", iat);
+		json.put("iss", sub);
+		json.put("sub", sub);
+		json.put("jwks", JWTHelper.getJWKSetAsJSONObject(jwkSet, true));
+		json.put("metadata", metadataJson);
+		json.put(
+			"authority_hints", JSONUtil.asJSONArray(options.getDefaultTrustAnchor()));
+
+		int step = WellKnownData.STEP_INTERMEDIATE;
+
+		if (!Validator.isNullOrEmpty(options.getTrustMarks())) {
+			JSONArray tm = new JSONArray(options.getTrustMarks());
+
+			json.put("trust_marks", tm);
+
+			// With the trust marks I've all the elements to store this RelyingParty into
+			// FederationEntity table
+
+			step = WellKnownData.STEP_COMPLETE;
+
+			FederationEntity entity = new FederationEntity();
+
+			entity.setSubject(json.getString("sub"));
+			entity.setDefaultExpireMinutes(options.getDefaultExpiringMinutes());
+			entity.setDefaultSignatureAlg(JWSAlgorithm.RS256.toString());
+			entity.setAuthorityHints(json.getJSONArray("authority_hints").toString());
+			entity.setJwks(
+				JWTHelper.getJWKSetAsJSONArray(jwkSet, true, false).toString());
+			entity.setTrustMarks(json.getJSONArray("trust_marks").toString());
+			entity.setTrustMarksIssuers("{}");
+			entity.setMetadata(json.getJSONObject("metadata").toString());
+			entity.setActive(true);
+			entity.setConstraints("{}");
+			entity.setEntityType(OIDCConstants.OPENID_RELYING_PARTY);
+
+			persistence.storeFederationEntity(entity);
+		}
+
+		if (jsonMode) {
+			return WellKnownData.of(step, json.toString());
+		}
+
+		String jws = jwtHelper.createJWS(json, jwkSet);
+
+		return WellKnownData.of(step, jws);
 	}
 
 	private static final Logger logger = LoggerFactory.getLogger(

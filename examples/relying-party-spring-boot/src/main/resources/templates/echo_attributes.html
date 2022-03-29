@@ -1,0 +1,331 @@
+<!-- Extends default Bootstrap Unical Italia template -->
+<!DOCTYPE html>
+<html lang="it">
+	<head>
+		<!-- Required meta tags -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<!-- Page details -->
+		<title>OIDC Relying Party</title>
+		<meta name="description" content="Bootstrap Italia">
+		<meta name="keywords" content="Bootstrap Italia">
+		<meta name="robots" content="all" />
+		<!-- CSS -->
+		<link rel="stylesheet" href="/static/css/bootstrap-italia.min.css">
+		<!-- Fonts -->
+		<script>window.__PUBLIC_PATH__ = "/static/fonts"</script>
+		<!-- Javascript -->
+		<script src="/static/js/bootstrap-italia.bundle.min.js"></script>
+		<!-- Extra CSS/Javascript -->
+
+
+		<link rel="icon" href="/static/images/favicon.ico">
+		<link rel="icon" href="/static/images/favicon-32x32.png" sizes="32x32" type="image/png">
+		<link rel="icon" href="/static/images/favicon-16x16.png" sizes="16x16" type="image/png">
+		<link type="text/css" rel="stylesheet" href="/static/css/access-button.css">
+	</head>
+	<body>
+
+		<div class="it-header-wrapper">
+
+			<!-- Top row in header -->
+
+			<div class="it-header-slim-wrapper">
+				<div class="container">
+					<div class="row">
+						<div class="col-12">
+							<div class="it-header-slim-wrapper-content">
+
+								<a class="d-none d-lg-block navbar-brand" href="https://www.spid.gov.it/">
+									OIDC Relying Party
+								</a>
+
+								<div class="nav-mobile">
+									<nav>
+										<a class="it-opener d-lg-none" data-toggle="collapse" href="#menu-principale" role="button" aria-expanded="false" aria-controls="menu-principale">
+											<span>OIDC Relying Party</span>
+										</a>
+									</nav>
+								</div>
+
+								<div class="header-slim-right-zone">
+									<div class="nav-item dropdown">
+										<a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
+											<span>ITA</span>
+											<svg class="icon d-none d-lg-block">
+												<use xlink:href="/static/svg/sprite.svg#it-expand"></use>
+											</svg>
+										</a>
+										<div class="dropdown-menu">
+											<div class="row">
+												<div class="col-12">
+													<div class="link-list-wrapper">
+														<ul class="link-list">
+															<li><a class="list-item" href="#"><span>ITA</span></a></li>
+															<li><a class="list-item" href="#"><span>ENG</span></a></li>
+														</ul>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+
+
+									<div class="it-access-top-wrapper">
+										<button class="btn btn-primary btn-sm" href="#" type="button">Accedi</button>
+									</div>
+
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+			<div class="it-nav-wrapper">
+				<div class="it-header-center-wrapper">
+					<div class="container">
+						<div class="row">
+							<div class="col-12">
+								<div class="it-header-center-content-wrapper">
+									<!-- Logo -->
+
+									<div class="it-brand-wrapper">
+										<a href="#">
+											<div class="it-brand-text">
+												<h2 class="no_toc">
+													<a href="/oidc/rp/landing">OIDC Relying Party</a>
+												</h2>
+												<h3 class="no_toc d-none d-md-block">
+												</h3>
+											</div>
+										</a>
+									</div>
+
+
+									<!-- Social and Search -->
+
+									<div class="it-right-zone">
+
+										<div class="it-socials d-none d-md-flex">
+											<span>Seguici su</span>
+											<ul>
+												<li>
+													<a href="#" aria-label="Facebook" target="_blank">
+														<svg class="icon">
+															<use xlink:href="/static/svg/sprite.svg#it-facebook"></use>
+														</svg>
+													</a>
+												</li>
+												<li>
+													<a href="#" aria-label="Github" target="_blank">
+														<svg class="icon">
+														<use xlink:href="/static/svg/sprite.svg#it-github"></use>
+														</svg>
+													</a>
+												</li>
+												<li>
+													<a href="#" target="_blank" aria-label="Twitter">
+														<svg class="icon">
+														<use xlink:href="/static/svg/sprite.svg#it-twitter"></use>
+														</svg>
+													</a>
+												</li>
+											</ul>
+										</div>
+
+										<div class="it-search-wrapper">
+											<span class="d-none d-md-block">
+												Cerca
+											</span>
+											<a class="search-link rounded-icon" href="#" aria-label="Cerca">
+												<svg class="icon">
+													<use xlink:href="/static/svg/sprite.svg#it-search"></use>
+												</svg>
+											</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Main menu -->
+
+			</div>
+		</div>
+
+
+
+
+		<!-- Container - Body of page-->
+		<div class="main-body">
+
+<div>
+	<div class="container pt-2 p-3">
+		<div class="row d-lg-flex">
+			<div class="col-12">
+				<div class="card-wrapper card-space">
+					<div class="card card-bg no-after">
+						<div class="card-body">
+							<div class="row h-100">
+
+
+<div class="col-12 p-4">
+	<h4 class="text-left">User attributes</h4>
+
+	<dl class="mt-4 mb-4" th:each="item : ${#session.getAttribute('USER_INFO')}">
+		<dt th:text="${item.key}"></dt>
+		<dd th:text="${item.value}"></dd>
+	</dl>
+
+	<a href="/oidc/rp/logout" class="btn btn-secondary" role="button">Log out</a>
+
+</div>
+
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+		</div>
+
+		<!-- Footer -->
+
+		<footer class="it-footer">
+			<div class="it-footer-main">
+				<div class="container">
+					<section>
+						<div class="row clearfix">
+							<div class="col-sm-12">
+								<div class="it-brand-wrapper">
+									<a href="#">
+										<div class="it-brand-text">
+											<h2 class="no_toc">OIDC Relying Party</h2>
+											<h3 class="no_toc d-none d-md-block">OIDC Relying Party</h3>
+										</div>
+									</a>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<!-- Footer middle section with menu blocks -->
+
+					<!-- Footer bottom section with contacts -->
+
+					<section class="py-4 border-white border-top">
+						<div class="row">
+							<div class="col-lg-4 col-md-4 pb-2">
+								<h4><a href="#" title="Vai alla pagina: Contatti">Contatti</a></h4>
+								<p>
+									<strong>Comune di Lorem Ipsum</strong><br> Via Roma 0 - 00000 Lorem Ipsum Codice fiscale / P. IVA: 000000000
+								</p>
+								<div class="link-list-wrapper">
+									<ul class="footer-list link-list clearfix">
+										<li><a class="list-item" href="#" title="Vai alla pagina: Posta Elettronica Certificata">Posta Elettronica Certificata</a></li>
+										<li><a class="list-item" href="#" title="Vai alla pagina: URP - Ufficio Relazioni con il Pubblico">URP - Ufficio Relazioni con il Pubblico</a></li>
+									</ul>
+								</div>
+							</div>
+							<div class="col-lg-4 col-md-4 pb-2">
+								<h4><a href="#" title="Vai alla pagina: Lorem Ipsum">Lorem Ipsum</a></h4>
+							</div>
+							<div class="col-lg-4 col-md-4 pb-2">
+								<div class="pb-2">
+									<h4><a href="#" title="Vai alla pagina: Seguici su">Seguici su</a></h4>
+									<ul class="list-inline text-left social">
+										<li class="list-inline-item">
+											<a class="p-2 text-white" href="#" target="_blank">
+												<svg class="icon icon-sm icon-white align-top">
+													<use xlink:href="/static/svg/sprite.svg#it-designers-italia"></use>
+												</svg><span class="sr-only">Designers Italia</span>
+											</a>
+										</li>
+										<li class="list-inline-item">
+											<a class="p-2 text-white" href="#" target="_blank">
+												<svg class="icon icon-sm icon-white align-top">
+													<use xlink:href="/static/svg/sprite.svg#it-twitter"></use>
+												</svg><span class="sr-only">Twitter</span>
+											</a>
+										</li>
+										<li class="list-inline-item">
+											<a class="p-2 text-white" href="#" target="_blank">
+												<svg class="icon icon-sm icon-white align-top">
+													<use xlink:href="/static/svg/sprite.svg#it-medium"></use>
+												</svg><span class="sr-only">Medium</span>
+											</a>
+										</li>
+										<li class="list-inline-item">
+											<a class="p-2 text-white" href="#" target="_blank">
+												<svg class="icon icon-sm icon-white align-top">
+													<use xlink:href="/static/svg/sprite.svg#it-behance"></use>
+												</svg><span class="sr-only">Behance</span>
+											</a>
+										</li>
+									</ul>
+								</div>
+								<div class="pb-2">
+									<h4><a href="#" title="Vai alla pagina: Newsletter">Newsletter</a></h4>
+									<p>Form Newsletter</p>
+									<!--<form action="#" method="post">
+										<label for="input-newsletter" class="active">Iscriviti per riceverla</label>
+										<div class="input-group">
+										<div class="input-group-prepend">
+											<div class="input-group-text">@</div>
+										</div>
+										<input type="text" class="form-control" id="input-newsletter" name="input-newsletter" placeholder="Scrivi il tuo indirizzo email" >
+										<div class="input-group-append">
+											<button class="btn btn-outline-secondary" type="button" id="button-addon2">Button</button>
+										</div>
+										</div>
+										<button class="btn btn-default pull-right" type="submit">Iscriviti</button>
+									</form>-->
+								</div>
+							</div>
+						</div>
+					</section>
+
+				</div>
+			</div>
+
+
+			<div class="it-footer-small-prints clearfix">
+				<div class="container">
+
+					<h3 class="sr-only">Sezione Link Utili</h3>
+					<ul class="it-footer-small-prints-list list-inline mb-0 d-flex flex-column flex-md-row">
+						<li class="list-inline-item"><a href="#" title="Note Legali">Media policy</a></li>
+						<li class="list-inline-item"><a href="#" title="Note Legali">Note legali</a></li>
+						<li class="list-inline-item"><a href="#" title="Privacy-Cookies">Privacy policy</a></li>
+						<li class="list-inline-item"><a href="#" title="Mappa del sito">Mappa del sito</a> </li>
+					</ul>
+
+				</div>
+			</div>
+
+		</footer>
+
+
+
+		<script>
+		$(document).ready(function() {
+			$('.it-date-datepicker').datepicker({
+				inputFormat: ["dd/MM/yyyy"],
+				outputFormat: "dd/MM/yyyy",
+			});
+		});
+		</script>
+
+	</body>
+</html>

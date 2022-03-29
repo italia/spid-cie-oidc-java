@@ -19,6 +19,11 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 
 	public static final String[] SUPPORTED_APPLICATION_TYPES = new String[] { "web" };
 
+	public static final String[] SUPPORTED_GRANT_TYPES = new String[] {
+		"refresh_token", "authorization_code" };
+
+	public static final String[] SUPPORTED_RESPONSE_TYPES = new String[] { "code" };
+
 	public static final String[] SUPPORTED_SCOPES = new String[] {
 		OIDCConstants.SCOPE_OPENID, "offline_access" };
 

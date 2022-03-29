@@ -46,6 +46,13 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- SPID/CIE OIDC StarterKit -->
+		<dependency>
+			<groupId>it.spid.cie.oidc</groupId>
+			<artifactId>it.spid.cie.oidc.starter.kit</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
