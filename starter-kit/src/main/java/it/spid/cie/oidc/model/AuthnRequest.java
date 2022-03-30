@@ -96,8 +96,6 @@ public class AuthnRequest extends BaseModel {
 		return this;
 	}
 
-
-
 	private String clientId;
 	private String state;
 	private String endpoint;

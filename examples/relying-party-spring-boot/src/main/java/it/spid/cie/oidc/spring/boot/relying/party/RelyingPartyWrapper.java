@@ -2,6 +2,7 @@ package it.spid.cie.oidc.spring.boot.relying.party;
 
 import javax.annotation.PostConstruct;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,12 @@ public class RelyingPartyWrapper {
 
 		return relyingPartyHandler.getAuthorizeURL(
 			spidProvider, trustAnchor, redirectUri, scope, profile, prompt);
+	}
+
+	public JSONObject getUserInfo(String state, String code)
+		throws OIDCException {
+
+		return relyingPartyHandler.getUserInfo(state, code);
 	}
 
 	public WellKnownData getWellKnownData(String requestURL, boolean jsonMode)

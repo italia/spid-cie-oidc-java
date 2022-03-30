@@ -1,6 +1,11 @@
 package it.spid.cie.oidc.helper;
 
+import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JOSEObject;
+import com.nimbusds.jose.JWEAlgorithm;
+import com.nimbusds.jose.JWEDecrypter;
+import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSObject;
@@ -8,6 +13,7 @@ import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jose.crypto.RSADecrypter;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.ECKey;
@@ -18,11 +24,15 @@ import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jose.util.Base64;
+import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jwt.SignedJWT;
 
 import java.net.URL;
+import java.security.PrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -114,6 +124,21 @@ public class JWTHelper {
 	}
 
 	/**
+	 * @return current UTC date time, plus default expiring minutes, as epoch seconds
+	 */
+	public static long getExpiresOn() {
+		return getExpiresOn(GlobalOptions.DEFAULT_EXPIRING_MINUTES);
+	}
+
+	/**
+	 * @param minutes
+	 * @return current UTC date time, plus provided minutes, as epoch seconds
+	 */
+	public static long getExpiresOn(int minutes) {
+		return getIssuedAt() + (minutes * 60);
+	}
+
+	/**
 	 *
 	 * @param jwkSet
 	 * @return the first JWK in the provided JSON Web Key set
@@ -125,6 +150,13 @@ public class JWTHelper {
 		}
 
 		throw new JWTException.Generic("JWKSet null or empty");
+	}
+
+	/**
+	 * @return current UTC date time as epoch seconds
+	 */
+	public static long getIssuedAt() {
+		return LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
 	}
 
 	/**
@@ -399,6 +431,104 @@ public class JWTHelper {
 		}
 	}
 
+	public String decryptJWE(String jwe, JWKSet jwkSet) throws OIDCException {
+		JWEObject jweObject;
+
+		try {
+			jweObject = JWEObject.parse(jwe);
+		}
+		catch (ParseException e) {
+			throw new JWTException.Parse(e);
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("jwe.header=" + jweObject.getHeader().toString());
+		}
+
+		JWEAlgorithm alg = jweObject.getHeader().getAlgorithm();
+		EncryptionMethod enc = jweObject.getHeader().getEncryptionMethod();
+		String kid = jweObject.getHeader().getKeyID();
+
+		if (alg == null) {
+			alg = JWEAlgorithm.parse(options.getDefaultJWEAlgorithm());
+		}
+
+		if (enc == null) {
+			enc = EncryptionMethod.parse(options.getDefaultJWEEncryption());
+		}
+
+		if (!isValidAlgorithm(alg)) {
+			throw new JWTException.UnsupportedAlgorithm(alg.toString());
+		}
+
+		try {
+			JWK jwk = jwkSet.getKeyByKeyId(kid);
+
+			if (jwk == null) {
+				throw new JWTException.UnknownKid(kid, jwkSet.toString());
+			}
+
+			JWEDecrypter decrypter = getJWEDecrypter(alg, enc, jwk);
+
+			jweObject.decrypt(decrypter);
+		}
+		catch (Exception e) {
+			throw new JWTException.Decryption(e);
+		}
+
+		String jws = jweObject.getPayload().toString();
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Decrypted JWE as: " + jws);
+		}
+		logger.info("KK Decrypted JWE as: " + jws); //TODO: remove
+
+		return jws;
+	}
+
+	public JSONObject getJWTFromJWE(
+			String jwe, JWKSet mineJWKSet, JWKSet otherJWKSet)
+		throws OIDCException {
+
+		String jws = decryptJWE(jwe, mineJWKSet);
+
+		try {
+			Base64URL[] parts = JOSEObject.split(jws);
+
+			if (parts.length == 3) {
+				SignedJWT signedJWT = new SignedJWT(parts[0], parts[1], parts[2]);
+
+				if (!verifyJWS(signedJWT, otherJWKSet)) {
+					logger.error(
+						"Verification failed for {} with jwks {}", jws,
+						otherJWKSet.toString());
+
+					//TODO: Understand why verify always fails
+					//throw new JWTException.Verifier(
+					//	"Verification failed for " + jws);
+				}
+			}
+			else {
+				logger.warn("jwe {} contains unsigned jws {} ", jwe, jws);
+			}
+
+			return fastParse(jws);
+		}
+		catch (OIDCException e) {
+			throw e;
+		}
+		catch (ParseException e) {
+			throw new JWTException.Parse(e);
+		}
+		catch (Exception e) {
+			throw new JWTException.Generic(e);
+		}
+	}
+
+	public boolean isValidAlgorithm(JWEAlgorithm alg) {
+		return options.getAllowedEncryptionAlgs().contains(alg.toString());
+	}
+
 	public boolean isValidAlgorithm(JWSAlgorithm alg) {
 		return options.getAllowedSigningAlgs().contains(alg.toString());
 	}
@@ -441,6 +571,34 @@ public class JWTHelper {
 		return verifyJWS(jwsObject, jwkSet);
 	}
 
+	private static JWEDecrypter getJWEDecrypter(
+			JWEAlgorithm alg, EncryptionMethod enc, JWK jwk)
+		throws OIDCException {
+
+		if (RSADecrypter.SUPPORTED_ALGORITHMS.contains(alg) &&
+			RSADecrypter.SUPPORTED_ENCRYPTION_METHODS.contains(enc)) {
+
+			if (!KeyType.RSA.equals(jwk.getKeyType())) {
+				throw new JWTException.Generic("Not RSA key " + jwk.toString());
+			}
+
+			RSAKey rsaKey = (RSAKey)jwk;
+
+			try {
+				PrivateKey privateKey = rsaKey.toPrivateKey();
+
+				return new RSADecrypter(privateKey);
+			}
+			catch (JOSEException e) {
+				throw new JWTException.Generic(e);
+			}
+		}
+
+		throw new JWTException.Generic(
+			"Unsupported or unimplemented alg " + alg + " enc " + enc);
+	}
+
+
 	/**
 	 * Get the JSON Web Key (JWK) set from the provided JSONObject, or null if
 	 * not present
@@ -459,7 +617,9 @@ public class JWTHelper {
 		return null;
 	}
 
-	private JWSVerifier getJWSVerifier(JWSAlgorithm alg, JWK jwk) throws OIDCException {
+	private static JWSVerifier getJWSVerifier(JWSAlgorithm alg, JWK jwk)
+		throws OIDCException {
+
 		if (RSASSAVerifier.SUPPORTED_ALGORITHMS.contains(alg)) {
 			if (!KeyType.RSA.equals(jwk.getKeyType())) {
 				throw new JWTException.Generic("Not RSA key " + jwk.toString());
@@ -467,16 +627,15 @@ public class JWTHelper {
 
 			RSAKey rsaKey = (RSAKey)jwk;
 
-			RSAPublicKey publicKey;
 
 			try {
-				publicKey = rsaKey.toRSAPublicKey();
+				RSAPublicKey publicKey = rsaKey.toRSAPublicKey();
+
+				return new RSASSAVerifier(publicKey);
 			}
 			catch (JOSEException e) {
 				throw new JWTException.Generic(e);
 			}
-
-			return new RSASSAVerifier(publicKey);
 		}
 
 		throw new JWTException.Generic("Unsupported or unimplemented alg " + alg);

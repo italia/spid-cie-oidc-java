@@ -1,7 +1,12 @@
 package it.spid.cie.oidc.spring.boot.relying.party.controller;
 
 import java.net.URI;
+import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.view.RedirectView;
 
 import it.spid.cie.oidc.spring.boot.relying.party.RelyingPartyWrapper;
 
@@ -37,6 +43,30 @@ public class SpidController {
 			.status(HttpStatus.FOUND)
 			.location(URI.create(url))
 			.build();
+	}
+
+	@GetMapping("/callback")
+	public RedirectView callback(
+			@RequestParam Map<String,String> params,
+			HttpServletRequest request, HttpServletResponse response)
+		throws Exception {
+
+		if (params.containsKey("error")) {
+			logger.error(new JSONObject(params).toString(2));
+
+			throw new Exception("TODO: Manage Error callback");
+		}
+
+		String state = params.get("state");
+		String code = params.get("code");
+
+		JSONObject userInfo = relyingPartyWrapper.getUserInfo(state, code);
+
+		request.getSession().setAttribute(
+			"USER", userInfo.optString("https://attributes.spid.gov.it/email"));
+		request.getSession().setAttribute("USER_INFO", userInfo.toMap());
+
+		return new RedirectView("echo_attributes");
 	}
 
 	private static Logger logger = LoggerFactory.getLogger(SpidController.class);

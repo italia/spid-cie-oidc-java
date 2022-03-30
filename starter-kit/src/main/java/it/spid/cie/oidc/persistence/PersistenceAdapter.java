@@ -1,7 +1,10 @@
 package it.spid.cie.oidc.persistence;
 
+import java.util.List;
+
 import it.spid.cie.oidc.exception.PersistenceException;
 import it.spid.cie.oidc.model.AuthnRequest;
+import it.spid.cie.oidc.model.AuthnToken;
 import it.spid.cie.oidc.model.CachedEntityInfo;
 import it.spid.cie.oidc.model.FederationEntity;
 import it.spid.cie.oidc.model.TrustChain;
@@ -27,6 +30,9 @@ public interface PersistenceAdapter {
 			String subject, String trustAnchor, String metadataType)
 		throws PersistenceException;
 
+	public List<AuthnRequest> findAuthnRequests(String state)
+		throws PersistenceException;
+
 	public CachedEntityInfo storeEntityInfo(CachedEntityInfo entityInfo)
 		throws PersistenceException;
 
@@ -34,6 +40,9 @@ public interface PersistenceAdapter {
 		throws PersistenceException;
 
 	public AuthnRequest storeOIDCAuthnRequest(AuthnRequest authnRequest)
+		throws PersistenceException;
+
+	public AuthnToken storeOIDCAuthnToken(AuthnToken authnToken)
 		throws PersistenceException;
 
 	public TrustChain storeTrustChain(TrustChain trustChain)

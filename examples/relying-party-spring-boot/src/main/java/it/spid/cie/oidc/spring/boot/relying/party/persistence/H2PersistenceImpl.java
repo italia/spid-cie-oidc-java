@@ -1,6 +1,8 @@
 package it.spid.cie.oidc.spring.boot.relying.party.persistence;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,12 +11,15 @@ import org.springframework.stereotype.Component;
 
 import it.spid.cie.oidc.exception.PersistenceException;
 import it.spid.cie.oidc.model.AuthnRequest;
+import it.spid.cie.oidc.model.AuthnToken;
 import it.spid.cie.oidc.model.CachedEntityInfo;
 import it.spid.cie.oidc.model.FederationEntity;
 import it.spid.cie.oidc.model.TrustChain;
 import it.spid.cie.oidc.persistence.PersistenceAdapter;
 import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.AuthnRequestModel;
 import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.AuthnRequestRepository;
+import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.AuthnTokenModel;
+import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.AuthnTokenRepository;
 import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.EntityInfoModel;
 import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.EntityInfoRepository;
 import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.FederationEntityModel;
@@ -138,6 +143,26 @@ public class H2PersistenceImpl implements PersistenceAdapter {
 	}
 
 	@Override
+	public List<AuthnRequest> findAuthnRequests(String state)
+		throws PersistenceException {
+
+		List<AuthnRequest> result = new ArrayList<>();
+
+		try {
+			List<AuthnRequestModel> models = authnRequestRepository.findByState(state);
+
+			for (AuthnRequestModel model : models) {
+				result.add(model.toAuthnRequest());
+			}
+
+			return result;
+		}
+		catch (Exception e) {
+			throw new PersistenceException(e);
+		}
+	}
+
+	@Override
 	public CachedEntityInfo storeEntityInfo(CachedEntityInfo entityInfo)
 		throws PersistenceException {
 
@@ -198,6 +223,26 @@ public class H2PersistenceImpl implements PersistenceAdapter {
 	}
 
 	@Override
+	public AuthnToken storeOIDCAuthnToken(AuthnToken authnToken)
+		throws PersistenceException {
+
+		try {
+			AuthnTokenModel model = AuthnTokenModel.of(authnToken);
+
+			if (model.getId() != null && model.getId() > 0) {
+				model.setModified(LocalDateTime.now());
+			}
+
+			model = authnTokenRepository.save(model);
+
+			return model.toAuthnToken();
+		}
+		catch (Exception e) {
+			throw new PersistenceException(e);
+		}
+	}
+
+	@Override
 	public TrustChain storeTrustChain(TrustChain trustChain) throws PersistenceException {
 		try {
 			EntityInfoModel trustAnchorModel = entityInfoRepository.fetchEntity(
@@ -223,6 +268,9 @@ public class H2PersistenceImpl implements PersistenceAdapter {
 
 	@Autowired
 	private AuthnRequestRepository authnRequestRepository;
+
+	@Autowired
+	private AuthnTokenRepository authnTokenRepository;
 
 	@Autowired
 	private EntityInfoRepository entityInfoRepository;

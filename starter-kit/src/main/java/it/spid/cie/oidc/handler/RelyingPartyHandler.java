@@ -9,6 +9,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -21,20 +22,27 @@ import it.spid.cie.oidc.config.GlobalOptions;
 import it.spid.cie.oidc.config.OIDCConstants;
 import it.spid.cie.oidc.config.RelyingPartyOptions;
 import it.spid.cie.oidc.exception.OIDCException;
+import it.spid.cie.oidc.exception.RelyingPartyException;
+import it.spid.cie.oidc.exception.SchemaException;
 import it.spid.cie.oidc.exception.TrustChainException;
 import it.spid.cie.oidc.helper.EntityHelper;
 import it.spid.cie.oidc.helper.JWTHelper;
+import it.spid.cie.oidc.helper.OAuth2Helper;
+import it.spid.cie.oidc.helper.OIDCHelper;
 import it.spid.cie.oidc.helper.PKCEHelper;
 import it.spid.cie.oidc.model.CachedEntityInfo;
 import it.spid.cie.oidc.model.EntityConfiguration;
 import it.spid.cie.oidc.model.FederationEntity;
 import it.spid.cie.oidc.model.AuthnRequest;
+import it.spid.cie.oidc.model.AuthnToken;
 import it.spid.cie.oidc.model.TrustChain;
 import it.spid.cie.oidc.model.TrustChainBuilder;
 import it.spid.cie.oidc.persistence.PersistenceAdapter;
 import it.spid.cie.oidc.schemas.OIDCProfile;
+import it.spid.cie.oidc.schemas.TokenResponse;
 import it.spid.cie.oidc.schemas.WellKnownData;
 import it.spid.cie.oidc.util.JSONUtil;
+import it.spid.cie.oidc.util.ListUtil;
 import it.spid.cie.oidc.util.Validator;
 
 public class RelyingPartyHandler {
@@ -52,6 +60,8 @@ public class RelyingPartyHandler {
 		this.options = options;
 		this.persistence = persistence;
 		this.jwtHelper = new JWTHelper(options);
+		this.oauth2Helper = new OAuth2Helper(this.jwtHelper);
+		this.oidcHelper = new OIDCHelper(this.jwtHelper);
 	}
 
 	/**
@@ -71,6 +81,11 @@ public class RelyingPartyHandler {
 			String spidProvider, String trustAnchor, String redirectUri, String scope,
 			String profile, String prompt)
 		throws OIDCException {
+
+		// TODO: CIE could reuse this flow?
+		if (Validator.isNullOrEmpty(profile)) {
+			profile = OIDCProfile.SPID.getValue();
+		}
 
 		TrustChain tc = getSPIDProvider(spidProvider, trustAnchor);
 
@@ -210,6 +225,29 @@ public class RelyingPartyHandler {
 		return url;
 	}
 
+	public JSONObject getUserInfo(String state, String code)
+		throws OIDCException {
+
+		try {
+			return doGetUserInfo(state, code);
+		}
+		catch (OIDCException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new RelyingPartyException.Generic(e);
+		}
+	}
+
+	/**
+	 * Return the "Well Known" information of the current Relying Party. The completeness
+	 * of these informations depends of the federation on-boarding status of the entity.
+	 *
+	 * @param requestURL
+	 * @param jsonMode
+	 * @return
+	 * @throws OIDCException
+	 */
 	public WellKnownData getWellKnownData(String requestURL, boolean jsonMode)
 		throws OIDCException {
 
@@ -229,6 +267,201 @@ public class RelyingPartyHandler {
 		else {
 			return getWellKnownData(conf, jsonMode);
 		}
+	}
+
+	protected JSONObject doGetUserInfo(String state, String code)
+		throws OIDCException {
+	
+		if (Validator.isNullOrEmpty(code) || Validator.isNullOrEmpty(state)) {
+			throw new SchemaException.Validation(
+				"Authn response object validation failed");
+		}
+	
+		List<AuthnRequest> authnRequests = persistence.findAuthnRequests(state);
+	
+		if (authnRequests.isEmpty()) {
+			throw new RelyingPartyException.Generic("No AuthnRequest");
+		}
+	
+		AuthnRequest authnRequest = ListUtil.getLast(authnRequests);
+	
+		AuthnToken authnToken = new AuthnToken()
+			.setAuthnRequestId(authnRequest.getStorageId())
+			.setCode(code);
+	
+		authnToken = persistence.storeOIDCAuthnToken(authnToken);
+	
+		// Get clientId configuration. In this situation "clientId" refers this
+		// RelyingParty
+	
+		FederationEntity entityConf = persistence.fetchFederationEntity(
+			authnRequest.getClientId(), true);
+	
+		if (entityConf == null) {
+			throw new RelyingPartyException.Generic(
+				"RelyingParty %s not found", authnRequest.getClientId());
+		}
+		else if (!Objects.equals(options.getClientId(), authnRequest.getClientId())) {
+			throw new RelyingPartyException.Generic(
+				"Invalid RelyingParty %s", authnRequest.getClientId());
+		}
+	
+		JSONObject authnData = new JSONObject(authnRequest.getData());
+	
+		JSONObject providerConfiguration = new JSONObject(
+			authnRequest.getProviderConfiguration());
+	
+		JSONObject jsonTokenResponse = oauth2Helper.performAccessTokenRequest(
+			authnData.optString("redirect_uri"), state, code,
+			authnRequest.getProviderId(), entityConf,
+			providerConfiguration.optString("token_endpoint"),
+			authnData.optString("code_verifier"));
+	
+		TokenResponse tokenResponse = TokenResponse.of(jsonTokenResponse);
+	
+		if (logger.isDebugEnabled()) {
+			logger.debug("TokenResponse=" + tokenResponse.toString());
+		}
+	
+		JWKSet providerJwks = JWTHelper.getJWKSetFromJSON(
+			providerConfiguration.optJSONObject("jwks"));
+	
+		try {
+			jwtHelper.verifyJWS(tokenResponse.getAccessToken(), providerJwks);
+		}
+		catch (Exception e) {
+			throw new RelyingPartyException.Authentication(
+				"Authentication token validation error.");
+		}
+	
+		try {
+			jwtHelper.verifyJWS(tokenResponse.getIdToken(), providerJwks);
+		}
+		catch (Exception e) {
+			throw new RelyingPartyException.Authentication("ID token validation error.");
+		}
+	
+		// Update AuthenticationToken
+	
+		authnToken.setAccessToken(tokenResponse.getAccessToken());
+		authnToken.setIdToken(tokenResponse.getIdToken());
+		authnToken.setTokenType(tokenResponse.getTokenType());
+		authnToken.setScope(jsonTokenResponse.optString("scope"));
+		authnToken.setExpiresIn(tokenResponse.getExpiresIn());
+	
+		authnToken = persistence.storeOIDCAuthnToken(authnToken);
+	
+		JWKSet entityJwks = JWTHelper.getJWKSetFromJSON(entityConf.getJwks());
+	
+		JSONObject userInfo = oidcHelper.getUserInfo(
+			state, tokenResponse.getAccessToken(), providerConfiguration, true,
+			entityJwks);
+	
+		// TODO: userKey from options
+		authnToken.setUserKey(userInfo.optString("https://attributes.spid.gov.it/email"));
+	
+		authnToken = persistence.storeOIDCAuthnToken(authnToken);
+	
+		return userInfo;
+	}
+
+	protected TrustChain getOrCreateTrustChain(
+			String subject, String trustAnchor, String metadataType, boolean force)
+		throws OIDCException {
+	
+		CachedEntityInfo trustAnchorEntity = persistence.fetchEntityInfo(
+			trustAnchor, trustAnchor);
+	
+		EntityConfiguration taConf;
+	
+		if (trustAnchorEntity == null || trustAnchorEntity.isExpired() || force) {
+			String jwt = EntityHelper.getEntityConfiguration(trustAnchor);
+	
+			taConf = new EntityConfiguration(jwt, jwtHelper);
+	
+			if (trustAnchorEntity == null) {
+				trustAnchorEntity = CachedEntityInfo.of(
+					trustAnchor, subject, taConf.getExpiresOn(), taConf.getIssuedAt(),
+					taConf.getPayload(), taConf.getJwt());
+	
+				trustAnchorEntity = persistence.storeEntityInfo(trustAnchorEntity);
+			}
+			else {
+				trustAnchorEntity.setModifiedDate(LocalDateTime.now());
+				trustAnchorEntity.setExpiresOn(taConf.getExpiresOn());
+				trustAnchorEntity.setIssuedAt(taConf.getIssuedAt());
+				trustAnchorEntity.setStatement(taConf.getPayload());
+				trustAnchorEntity.setJwt(taConf.getJwt());
+	
+				trustAnchorEntity = persistence.storeEntityInfo(trustAnchorEntity);
+			}
+		}
+		else {
+			taConf = EntityConfiguration.of(trustAnchorEntity, jwtHelper);
+		}
+	
+		TrustChain trustChain = persistence.fetchTrustChain(subject, trustAnchor);
+	
+		if (trustChain != null && !trustChain.isActive()) {
+			return null;
+		}
+		else {
+			TrustChainBuilder tcb =
+				new TrustChainBuilder(subject, metadataType, jwtHelper)
+					.setTrustAnchor(taConf)
+					.start();
+	
+			if (!tcb.isValid()) {
+				String msg = String.format(
+					"Trust Chain for subject %s or trust_anchor %s is not valid",
+					subject, trustAnchor);
+	
+				throw new TrustChainException.InvalidTrustChain(msg);
+			}
+			else if (Validator.isNullOrEmpty(tcb.getFinalMetadata())) {
+				String msg = String.format(
+					"Trust chain for subject %s and trust_anchor %s doesn't have any " +
+					"metadata of type '%s'", subject, trustAnchor, metadataType);
+	
+				throw new TrustChainException.MissingMetadata(msg);
+			}
+			else {
+				logger.info("KK TCB is valid");
+			}
+	
+			trustChain = persistence.fetchTrustChain(subject, trustAnchor, metadataType);
+	
+			if (trustChain == null) {
+				trustChain = new TrustChain()
+					.setSubject(subject)
+					.setType(metadataType)
+					.setExpiresOn(tcb.getExpiresOn())
+					.setChain(tcb.getChainAsString())
+					.setPartiesInvolved(tcb.getPartiesInvolvedAsString())
+					.setProcessingStart(LocalDateTime.now())
+					.setActive(true)
+					.setMetadata(tcb.getFinalMetadata())
+					.setTrustAnchor(trustAnchor)
+					.setTrustMarks(tcb.getVerifiedTrustMarksAsString())
+					.setStatus("valid");
+			}
+			else {
+				trustChain = trustChain
+					.setExpiresOn(tcb.getExpiresOn())
+					.setChain(tcb.getChainAsString())
+					.setPartiesInvolved(tcb.getPartiesInvolvedAsString())
+					.setProcessingStart(LocalDateTime.now())
+					.setActive(true)
+					.setMetadata(tcb.getFinalMetadata())
+					.setTrustAnchor(trustAnchor)
+					.setTrustMarks(tcb.getVerifiedTrustMarksAsString())
+					.setStatus("valid");
+			}
+	
+			trustChain = persistence.storeTrustChain(trustChain);
+		}
+	
+		return trustChain;
 	}
 
 	protected TrustChain getSPIDProvider(String spidProvider, String trustAnchor)
@@ -294,105 +527,6 @@ public class RelyingPartyHandler {
 		return trustChain;
 	}
 
-	protected TrustChain getOrCreateTrustChain(
-			String subject, String trustAnchor, String metadataType, boolean force)
-		throws OIDCException {
-
-		CachedEntityInfo trustAnchorEntity = persistence.fetchEntityInfo(
-			trustAnchor, trustAnchor);
-
-		EntityConfiguration taConf;
-
-		if (trustAnchorEntity == null || trustAnchorEntity.isExpired() || force) {
-			String jwt = EntityHelper.getEntityConfiguration(trustAnchor);
-
-			taConf = new EntityConfiguration(jwt, jwtHelper);
-
-			if (trustAnchorEntity == null) {
-				trustAnchorEntity = CachedEntityInfo.of(
-					trustAnchor, subject, taConf.getExpiresOn(), taConf.getIssuedAt(),
-					taConf.getPayload(), taConf.getJwt());
-
-				trustAnchorEntity = persistence.storeEntityInfo(trustAnchorEntity);
-			}
-			else {
-				trustAnchorEntity.setModifiedDate(LocalDateTime.now());
-				trustAnchorEntity.setExpiresOn(taConf.getExpiresOn());
-				trustAnchorEntity.setIssuedAt(taConf.getIssuedAt());
-				trustAnchorEntity.setStatement(taConf.getPayload());
-				trustAnchorEntity.setJwt(taConf.getJwt());
-
-				trustAnchorEntity = persistence.storeEntityInfo(trustAnchorEntity);
-			}
-		}
-		else {
-			taConf = EntityConfiguration.of(trustAnchorEntity, jwtHelper);
-		}
-
-		TrustChain trustChain = persistence.fetchTrustChain(subject, trustAnchor);
-
-		if (trustChain != null && !trustChain.isActive()) {
-			return null;
-		}
-		else {
-			TrustChainBuilder tcb =
-				new TrustChainBuilder(subject, metadataType, jwtHelper)
-					.setTrustAnchor(taConf)
-					.start();
-
-			if (!tcb.isValid()) {
-				String msg = String.format(
-					"Trust Chain for subject %s or trust_anchor %s is not valid",
-					subject, trustAnchor);
-
-				throw new TrustChainException.InvalidTrustChain(msg);
-			}
-			else if (Validator.isNullOrEmpty(tcb.getFinalMetadata())) {
-				String msg = String.format(
-					"Trust chain for subject %s and trust_anchor %s doesn't have any " +
-					"metadata of type '%s'", subject, trustAnchor, metadataType);
-
-				throw new TrustChainException.MissingMetadata(msg);
-			}
-			else {
-				logger.info("KK TCB is valid");
-			}
-
-			trustChain = persistence.fetchTrustChain(subject, trustAnchor, metadataType);
-
-			if (trustChain == null) {
-				trustChain = new TrustChain()
-					.setSubject(subject)
-					.setType(metadataType)
-					.setExpiresOn(tcb.getExpiresOn())
-					.setChain(tcb.getChainAsString())
-					.setPartiesInvolved(tcb.getPartiesInvolvedAsString())
-					.setProcessingStart(LocalDateTime.now())
-					.setActive(true)
-					.setMetadata(tcb.getFinalMetadata())
-					.setTrustAnchor(trustAnchor)
-					.setTrustMarks(tcb.getVerifiedTrustMarksAsString())
-					.setStatus("valid");
-			}
-			else {
-				trustChain = trustChain
-					.setExpiresOn(tcb.getExpiresOn())
-					.setChain(tcb.getChainAsString())
-					.setPartiesInvolved(tcb.getPartiesInvolvedAsString())
-					.setProcessingStart(LocalDateTime.now())
-					.setActive(true)
-					.setMetadata(tcb.getFinalMetadata())
-					.setTrustAnchor(trustAnchor)
-					.setTrustMarks(tcb.getVerifiedTrustMarksAsString())
-					.setStatus("valid");
-			}
-
-			trustChain = persistence.storeTrustChain(trustChain);
-		}
-
-		return trustChain;
-	}
-
 	// TODO: move to an helper?
 	private String buildURL(String endpoint, JSONObject params) {
 		StringBuilder sb = new StringBuilder();
@@ -421,6 +555,34 @@ public class RelyingPartyHandler {
 		}
 
 		return sb.toString();
+	}
+
+	// TODO: have to be configurable
+	private JSONObject getRequestedClaims(String profile) {
+		if (OIDCProfile.SPID.equalValue(profile)) {
+			JSONObject result = new JSONObject();
+	
+			JSONObject idToken = new JSONObject()
+				.put(
+					"https://attributes.spid.gov.it/familyName",
+					new JSONObject().put("essential", true))
+				.put(
+					"https://attributes.spid.gov.it/email",
+					new JSONObject().put("essential", true));
+	
+			JSONObject userInfo = new JSONObject()
+				.put("https://attributes.spid.gov.it/name", new JSONObject())
+				.put("https://attributes.spid.gov.it/familyName", new JSONObject())
+				.put("https://attributes.spid.gov.it/email", new JSONObject())
+				.put("https://attributes.spid.gov.it/fiscalNumber", new JSONObject());
+	
+			result.put("id_token", idToken);
+			result.put("userinfo", userInfo);
+	
+			return result;
+		}
+	
+		return new JSONObject();
 	}
 
 	private String getSubjectFromURL(String url) {
@@ -456,34 +618,6 @@ public class RelyingPartyHandler {
 		String jws = jwtHelper.createJWS(json, jwkSet);
 
 		return WellKnownData.of(WellKnownData.STEP_COMPLETE, jws);
-	}
-
-	// TODO: have to be configurable
-	private JSONObject getRequestedClaims(String profile) {
-		if (OIDCProfile.SPID.equalValue(profile)) {
-			JSONObject result = new JSONObject();
-
-			JSONObject idToken = new JSONObject()
-				.put(
-					"https://attributes.spid.gov.it/familyName",
-					new JSONObject().put("essential", true))
-				.put(
-					"https://attributes.spid.gov.it/email",
-					new JSONObject().put("essential", true));
-
-			JSONObject userInfo = new JSONObject()
-				.put("https://attributes.spid.gov.it/name", new JSONObject())
-				.put("https://attributes.spid.gov.it/familyName", new JSONObject())
-				.put("https://attributes.spid.gov.it/email", new JSONObject())
-				.put("https://attributes.spid.gov.it/fiscalNumber", new JSONObject());
-
-			result.put("id_token", idToken);
-			result.put("userinfo", userInfo);
-
-			return result;
-		}
-
-		return new JSONObject();
 	}
 
 	private WellKnownData prepareOnboardingData(String sub, boolean jsonMode)
@@ -590,5 +724,7 @@ public class RelyingPartyHandler {
 	private final RelyingPartyOptions options;
 	private final PersistenceAdapter persistence;
 	private final JWTHelper jwtHelper;
+	private final OAuth2Helper oauth2Helper;
+	private final OIDCHelper oidcHelper;
 
 }
