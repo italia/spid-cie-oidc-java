@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
-    <head>
-        <title>Spring Security Example</title>
-    </head>
-    <body>
-        <h1>Welcome!</h1>
+	<head>
+		<title>OIDC Relying Party SpringBoot Example</title>
+	</head>
+	<body>
+		<h1>Welcome!</h1>
 
-        <p>Click <a th:href="@{/hello}">here</a> to see a greeting.</p>
-    </body>
+		<p>Choose you way
+			<ul>
+				<li>Relying Party <a th:href="@{/oidc/rp/landing}">login</a> page</li>
+				<li>Federation <a href="http://127.0.0.1:8000/admin">federation</a> admin page</li>
+				<li>Federation <a href="http://127.0.0.1:8000/onboarding/landing">federation</a> on-boarding page</li>
+			</ul>
+		</p>
+	</body>
 </html>
