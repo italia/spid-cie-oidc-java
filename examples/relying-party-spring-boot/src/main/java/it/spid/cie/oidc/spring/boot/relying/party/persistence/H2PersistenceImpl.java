@@ -3,6 +3,7 @@ package it.spid.cie.oidc.spring.boot.relying.party.persistence;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +27,28 @@ import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.FederationEn
 import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.FederationEntityRepository;
 import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.TrustChainModel;
 import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.TrustChainRepository;
+import it.spid.cie.oidc.util.GetterUtil;
 
 @Component
 public class H2PersistenceImpl implements PersistenceAdapter {
+
+	@Override
+	public AuthnRequest fetchAuthnRequest(String storageId) throws PersistenceException {
+		try {
+			long id = GetterUtil.getLong(storageId);
+
+			Optional<AuthnRequestModel> model = authnRequestRepository.findById(id);
+
+			if (model.isPresent()) {
+				return model.get().toAuthnRequest();
+			}
+		}
+		catch (Exception e) {
+			throw new PersistenceException(e);
+		}
+
+		return null;
+	}
 
 	@Override
 	public CachedEntityInfo fetchEntityInfo(String subject, String issuer)
@@ -153,6 +173,24 @@ public class H2PersistenceImpl implements PersistenceAdapter {
 
 			for (AuthnRequestModel model : models) {
 				result.add(model.toAuthnRequest());
+			}
+
+			return result;
+		}
+		catch (Exception e) {
+			throw new PersistenceException(e);
+		}
+	}
+
+	@Override
+	public List<AuthnToken> findAuthnTokens(String userKey) throws PersistenceException {
+		List<AuthnToken> result = new ArrayList<>();
+
+		try {
+			List<AuthnTokenModel> models = authnTokenRepository.findUserTokens(userKey);
+
+			for (AuthnTokenModel model : models) {
+				result.add(model.toAuthnToken());
 			}
 
 			return result;

@@ -11,6 +11,9 @@ import it.spid.cie.oidc.model.TrustChain;
 
 public interface PersistenceAdapter {
 
+	public AuthnRequest fetchAuthnRequest(String storageId)
+		throws PersistenceException;
+
 	public CachedEntityInfo fetchEntityInfo(String subject, String issuer)
 		throws PersistenceException;
 
@@ -31,6 +34,9 @@ public interface PersistenceAdapter {
 		throws PersistenceException;
 
 	public List<AuthnRequest> findAuthnRequests(String state)
+		throws PersistenceException;
+
+	public List<AuthnToken> findAuthnTokens(String userKey)
 		throws PersistenceException;
 
 	public CachedEntityInfo storeEntityInfo(CachedEntityInfo entityInfo)

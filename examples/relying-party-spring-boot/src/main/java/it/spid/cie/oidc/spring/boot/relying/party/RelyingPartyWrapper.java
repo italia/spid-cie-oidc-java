@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import it.spid.cie.oidc.callback.RelyingPartyLogoutCallback;
 import it.spid.cie.oidc.config.RelyingPartyOptions;
 import it.spid.cie.oidc.exception.OIDCException;
 import it.spid.cie.oidc.handler.RelyingPartyHandler;
@@ -37,6 +38,12 @@ public class RelyingPartyWrapper {
 		throws OIDCException {
 
 		return relyingPartyHandler.getWellKnownData(requestURL, jsonMode);
+	}
+
+	public String performLogout(String userKey, RelyingPartyLogoutCallback callback)
+		throws OIDCException {
+
+		return relyingPartyHandler.performLogout(userKey, callback);
 	}
 
 	@PostConstruct

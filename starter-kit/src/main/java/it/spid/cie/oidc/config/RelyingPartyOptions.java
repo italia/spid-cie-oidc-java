@@ -78,6 +78,14 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 		return trustMarks;
 	}
 
+	public String getLoginURL() {
+		return loginRedirectURL;
+	}
+
+	public String getLogoutRedirectURL() {
+		return logoutRedirectURL;
+	}
+
 	public RelyingPartyOptions setProfileAcr(OIDCProfile profile, String acr) {
 		if (acr != null) {
 			if (OIDCProfile.SPID.equals(profile)) {

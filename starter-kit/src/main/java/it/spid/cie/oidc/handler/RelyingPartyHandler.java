@@ -18,6 +18,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.spid.cie.oidc.callback.RelyingPartyLogoutCallback;
 import it.spid.cie.oidc.config.GlobalOptions;
 import it.spid.cie.oidc.config.OIDCConstants;
 import it.spid.cie.oidc.config.RelyingPartyOptions;
@@ -30,11 +31,11 @@ import it.spid.cie.oidc.helper.JWTHelper;
 import it.spid.cie.oidc.helper.OAuth2Helper;
 import it.spid.cie.oidc.helper.OIDCHelper;
 import it.spid.cie.oidc.helper.PKCEHelper;
+import it.spid.cie.oidc.model.AuthnRequest;
+import it.spid.cie.oidc.model.AuthnToken;
 import it.spid.cie.oidc.model.CachedEntityInfo;
 import it.spid.cie.oidc.model.EntityConfiguration;
 import it.spid.cie.oidc.model.FederationEntity;
-import it.spid.cie.oidc.model.AuthnRequest;
-import it.spid.cie.oidc.model.AuthnToken;
 import it.spid.cie.oidc.model.TrustChain;
 import it.spid.cie.oidc.model.TrustChainBuilder;
 import it.spid.cie.oidc.persistence.PersistenceAdapter;
@@ -269,34 +270,49 @@ public class RelyingPartyHandler {
 		}
 	}
 
+	// TODO: userKey is not enough. We need a more unique element
+	public String performLogout(String userKey, RelyingPartyLogoutCallback callback)
+		throws OIDCException {
+
+		try {
+			return doPerformLogout(userKey, callback);
+		}
+		catch (OIDCException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new OIDCException(e);
+		}
+	}
+
 	protected JSONObject doGetUserInfo(String state, String code)
 		throws OIDCException {
-	
+
 		if (Validator.isNullOrEmpty(code) || Validator.isNullOrEmpty(state)) {
 			throw new SchemaException.Validation(
 				"Authn response object validation failed");
 		}
-	
+
 		List<AuthnRequest> authnRequests = persistence.findAuthnRequests(state);
-	
+
 		if (authnRequests.isEmpty()) {
 			throw new RelyingPartyException.Generic("No AuthnRequest");
 		}
-	
+
 		AuthnRequest authnRequest = ListUtil.getLast(authnRequests);
-	
+
 		AuthnToken authnToken = new AuthnToken()
 			.setAuthnRequestId(authnRequest.getStorageId())
 			.setCode(code);
-	
+
 		authnToken = persistence.storeOIDCAuthnToken(authnToken);
-	
+
 		// Get clientId configuration. In this situation "clientId" refers this
 		// RelyingParty
-	
+
 		FederationEntity entityConf = persistence.fetchFederationEntity(
 			authnRequest.getClientId(), true);
-	
+
 		if (entityConf == null) {
 			throw new RelyingPartyException.Generic(
 				"RelyingParty %s not found", authnRequest.getClientId());
@@ -305,27 +321,27 @@ public class RelyingPartyHandler {
 			throw new RelyingPartyException.Generic(
 				"Invalid RelyingParty %s", authnRequest.getClientId());
 		}
-	
+
 		JSONObject authnData = new JSONObject(authnRequest.getData());
-	
+
 		JSONObject providerConfiguration = new JSONObject(
 			authnRequest.getProviderConfiguration());
-	
+
 		JSONObject jsonTokenResponse = oauth2Helper.performAccessTokenRequest(
 			authnData.optString("redirect_uri"), state, code,
 			authnRequest.getProviderId(), entityConf,
 			providerConfiguration.optString("token_endpoint"),
 			authnData.optString("code_verifier"));
-	
+
 		TokenResponse tokenResponse = TokenResponse.of(jsonTokenResponse);
-	
+
 		if (logger.isDebugEnabled()) {
 			logger.debug("TokenResponse=" + tokenResponse.toString());
 		}
-	
+
 		JWKSet providerJwks = JWTHelper.getJWKSetFromJSON(
 			providerConfiguration.optJSONObject("jwks"));
-	
+
 		try {
 			jwtHelper.verifyJWS(tokenResponse.getAccessToken(), providerJwks);
 		}
@@ -333,57 +349,130 @@ public class RelyingPartyHandler {
 			throw new RelyingPartyException.Authentication(
 				"Authentication token validation error.");
 		}
-	
+
 		try {
 			jwtHelper.verifyJWS(tokenResponse.getIdToken(), providerJwks);
 		}
 		catch (Exception e) {
 			throw new RelyingPartyException.Authentication("ID token validation error.");
 		}
-	
+
 		// Update AuthenticationToken
-	
+
 		authnToken.setAccessToken(tokenResponse.getAccessToken());
 		authnToken.setIdToken(tokenResponse.getIdToken());
 		authnToken.setTokenType(tokenResponse.getTokenType());
 		authnToken.setScope(jsonTokenResponse.optString("scope"));
 		authnToken.setExpiresIn(tokenResponse.getExpiresIn());
-	
+
 		authnToken = persistence.storeOIDCAuthnToken(authnToken);
-	
+
 		JWKSet entityJwks = JWTHelper.getJWKSetFromJSON(entityConf.getJwks());
-	
+
 		JSONObject userInfo = oidcHelper.getUserInfo(
 			state, tokenResponse.getAccessToken(), providerConfiguration, true,
 			entityJwks);
-	
+
 		// TODO: userKey from options
 		authnToken.setUserKey(userInfo.optString("https://attributes.spid.gov.it/email"));
-	
+
 		authnToken = persistence.storeOIDCAuthnToken(authnToken);
-	
+
 		return userInfo;
+	}
+
+	protected String doPerformLogout(
+			String userKey, RelyingPartyLogoutCallback callback)
+		throws Exception {
+		if (Validator.isNullOrEmpty(userKey)) {
+			throw new RelyingPartyException.Generic("UserKey null or empty");
+		}
+
+		List<AuthnToken> authnTokens = persistence.findAuthnTokens(userKey);
+
+		if (authnTokens.isEmpty()) {
+			return options.getLogoutRedirectURL();
+		}
+
+		AuthnToken authnToken = ListUtil.getLast(authnTokens);
+
+		AuthnRequest authnRequest = persistence.fetchAuthnRequest(
+			authnToken.getAuthnRequestId());
+
+		if (authnRequest == null) {
+			throw new RelyingPartyException.Generic(
+				"No AuthnRequest with id " + authnToken.getAuthnRequestId());
+		}
+
+		JSONObject providerConfiguration = new JSONObject(
+			authnRequest.getProviderConfiguration());
+
+		String revocationUrl = providerConfiguration.optString("revocation_endpoint");
+
+		// Do local logout
+
+		if (callback != null) {
+			callback.logout(userKey, authnRequest, authnToken);
+		}
+
+		if (Validator.isNullOrEmpty(revocationUrl)) {
+			logger.warn(
+				"{} doesn't expose the token revocation endpoint.",
+				authnRequest.getProviderId());
+
+			return options.getLogoutRedirectURL();
+		}
+
+		FederationEntity entityConf = persistence.fetchFederationEntity(
+			authnRequest.getClientId(), true);
+
+		JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(entityConf.getJwks());
+
+		authnToken.setRevoked(LocalDateTime.now());
+
+		authnToken = persistence.storeOIDCAuthnToken(authnToken);
+
+		try {
+			oauth2Helper.sendRevocationRequest(
+				authnToken.getAccessToken(), authnRequest.getClientId(), revocationUrl,
+				entityConf);
+		}
+		catch (Exception e) {
+			logger.error("Token revocation failed: {}", e.getMessage());
+		}
+
+		// Revoke older user's authnToken. Evaluate better
+
+		authnTokens = persistence.findAuthnTokens(userKey);
+
+		for (AuthnToken oldToken : authnTokens) {
+			oldToken.setRevoked(authnToken.getRevoked());
+
+			persistence.storeOIDCAuthnToken(oldToken);
+		}
+
+		return options.getLogoutRedirectURL();
 	}
 
 	protected TrustChain getOrCreateTrustChain(
 			String subject, String trustAnchor, String metadataType, boolean force)
 		throws OIDCException {
-	
+
 		CachedEntityInfo trustAnchorEntity = persistence.fetchEntityInfo(
 			trustAnchor, trustAnchor);
-	
+
 		EntityConfiguration taConf;
-	
+
 		if (trustAnchorEntity == null || trustAnchorEntity.isExpired() || force) {
 			String jwt = EntityHelper.getEntityConfiguration(trustAnchor);
-	
+
 			taConf = new EntityConfiguration(jwt, jwtHelper);
-	
+
 			if (trustAnchorEntity == null) {
 				trustAnchorEntity = CachedEntityInfo.of(
 					trustAnchor, subject, taConf.getExpiresOn(), taConf.getIssuedAt(),
 					taConf.getPayload(), taConf.getJwt());
-	
+
 				trustAnchorEntity = persistence.storeEntityInfo(trustAnchorEntity);
 			}
 			else {
@@ -392,16 +481,16 @@ public class RelyingPartyHandler {
 				trustAnchorEntity.setIssuedAt(taConf.getIssuedAt());
 				trustAnchorEntity.setStatement(taConf.getPayload());
 				trustAnchorEntity.setJwt(taConf.getJwt());
-	
+
 				trustAnchorEntity = persistence.storeEntityInfo(trustAnchorEntity);
 			}
 		}
 		else {
 			taConf = EntityConfiguration.of(trustAnchorEntity, jwtHelper);
 		}
-	
+
 		TrustChain trustChain = persistence.fetchTrustChain(subject, trustAnchor);
-	
+
 		if (trustChain != null && !trustChain.isActive()) {
 			return null;
 		}
@@ -410,27 +499,27 @@ public class RelyingPartyHandler {
 				new TrustChainBuilder(subject, metadataType, jwtHelper)
 					.setTrustAnchor(taConf)
 					.start();
-	
+
 			if (!tcb.isValid()) {
 				String msg = String.format(
 					"Trust Chain for subject %s or trust_anchor %s is not valid",
 					subject, trustAnchor);
-	
+
 				throw new TrustChainException.InvalidTrustChain(msg);
 			}
 			else if (Validator.isNullOrEmpty(tcb.getFinalMetadata())) {
 				String msg = String.format(
 					"Trust chain for subject %s and trust_anchor %s doesn't have any " +
 					"metadata of type '%s'", subject, trustAnchor, metadataType);
-	
+
 				throw new TrustChainException.MissingMetadata(msg);
 			}
 			else {
 				logger.info("KK TCB is valid");
 			}
-	
+
 			trustChain = persistence.fetchTrustChain(subject, trustAnchor, metadataType);
-	
+
 			if (trustChain == null) {
 				trustChain = new TrustChain()
 					.setSubject(subject)
@@ -457,10 +546,10 @@ public class RelyingPartyHandler {
 					.setTrustMarks(tcb.getVerifiedTrustMarksAsString())
 					.setStatus("valid");
 			}
-	
+
 			trustChain = persistence.storeTrustChain(trustChain);
 		}
-	
+
 		return trustChain;
 	}
 
@@ -561,7 +650,7 @@ public class RelyingPartyHandler {
 	private JSONObject getRequestedClaims(String profile) {
 		if (OIDCProfile.SPID.equalValue(profile)) {
 			JSONObject result = new JSONObject();
-	
+
 			JSONObject idToken = new JSONObject()
 				.put(
 					"https://attributes.spid.gov.it/familyName",
@@ -569,19 +658,19 @@ public class RelyingPartyHandler {
 				.put(
 					"https://attributes.spid.gov.it/email",
 					new JSONObject().put("essential", true));
-	
+
 			JSONObject userInfo = new JSONObject()
 				.put("https://attributes.spid.gov.it/name", new JSONObject())
 				.put("https://attributes.spid.gov.it/familyName", new JSONObject())
 				.put("https://attributes.spid.gov.it/email", new JSONObject())
 				.put("https://attributes.spid.gov.it/fiscalNumber", new JSONObject());
-	
+
 			result.put("id_token", idToken);
 			result.put("userinfo", userInfo);
-	
+
 			return result;
 		}
-	
+
 		return new JSONObject();
 	}
 

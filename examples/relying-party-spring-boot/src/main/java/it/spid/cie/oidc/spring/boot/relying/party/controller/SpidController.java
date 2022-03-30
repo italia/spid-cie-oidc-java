@@ -18,7 +18,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
+import it.spid.cie.oidc.callback.RelyingPartyLogoutCallback;
+import it.spid.cie.oidc.model.AuthnRequest;
+import it.spid.cie.oidc.model.AuthnToken;
 import it.spid.cie.oidc.spring.boot.relying.party.RelyingPartyWrapper;
+import it.spid.cie.oidc.util.GetterUtil;
+import it.spid.cie.oidc.util.Validator;
 
 @RestController
 @RequestMapping("/oidc/rp")
@@ -67,6 +72,34 @@ public class SpidController {
 		request.getSession().setAttribute("USER_INFO", userInfo.toMap());
 
 		return new RedirectView("echo_attributes");
+	}
+
+	@GetMapping("/logout")
+	public RedirectView logout(
+			@RequestParam Map<String,String> params,
+			final HttpServletRequest request, HttpServletResponse response)
+		throws Exception {
+
+		String userKey = GetterUtil.getString(request.getSession().getAttribute("USER"));
+
+		String redirectURL = relyingPartyWrapper.performLogout(
+			userKey, new RelyingPartyLogoutCallback() {
+
+				@Override
+				public void logout(
+					String userKey, AuthnRequest authnRequest, AuthnToken authnToken) {
+
+					request.getSession().removeAttribute("USER");
+					request.getSession().removeAttribute("USER_INFO");
+				}
+
+			});
+
+		if (!Validator.isNullOrEmpty(redirectURL)) {
+			return new RedirectView(redirectURL);
+		}
+
+		return new RedirectView("landing");
 	}
 
 	private static Logger logger = LoggerFactory.getLogger(SpidController.class);
