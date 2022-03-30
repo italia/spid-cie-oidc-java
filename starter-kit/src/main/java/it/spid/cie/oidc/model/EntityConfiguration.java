@@ -10,9 +10,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -114,6 +116,14 @@ public class EntityConfiguration {
 		return LocalDateTime.ofEpochSecond(iat, 0, ZoneOffset.UTC);
 	}
 
+	public JWKSet getJWKSet() {
+		return jwkSet;
+	}
+
+	public String getJwks() {
+		return jwkSet.toString();
+	}
+
 	public String getJwt() {
 		return jwt;
 	}
@@ -199,6 +209,33 @@ public class EntityConfiguration {
 		return this.verifiedSuperiors;
 	}
 
+	public Map<String, Set<String>> getTrustMarksIssuers() {
+		Map<String, Set<String>> result = new HashMap<>();
+
+		JSONObject trustMarksIssuers = payload.optJSONObject(
+			"trust_marks_issuers", new JSONObject());
+
+		for (String key : trustMarksIssuers.keySet()) {
+			JSONArray jsonArray = trustMarksIssuers.optJSONArray(key);
+
+			if (jsonArray == null) {
+				continue;
+			}
+
+			Set<String> issuers = new HashSet<>();
+
+			for (int x = 0; x < jsonArray.length(); x++) {
+				issuers.add(jsonArray.optString(x));
+			}
+
+			issuers.remove(null);
+
+			result.put(key, issuers);
+		}
+
+		return result;
+	}
+
 	public List<EntityConfiguration> getVerifiedBySuperiors() {
 		List<EntityConfiguration> result = new ArrayList<>(
 			this.verifiedBySuperiors.values());
@@ -231,6 +268,10 @@ public class EntityConfiguration {
 		return Collections.unmodifiableList(result);
 	}
 
+	public Set<TrustMark> getVerifiedTrustMarks() {
+		return Collections.unmodifiableSet(verifiedTrustMarks);
+	}
+
 	/**
 	 * @param key
 	 * @return {@code true} if the {@code constraints} section inside {@code payload} has
@@ -244,6 +285,18 @@ public class EntityConfiguration {
 		}
 
 		return false;
+	}
+
+	/**
+	 * @param kid
+	 * @return {@code true} if JWKSet of this entity contains a JWK with the provided kid
+	 */
+	public boolean hasJWK(String kid) {
+		if (Validator.isNullOrEmpty(kid)) {
+			return false;
+		}
+
+		return (jwkSet.getKeyByKeyId(kid) != null);
 	}
 
 	public boolean hasVerifiedBySuperiors() {
@@ -260,6 +313,11 @@ public class EntityConfiguration {
 
 	public void setAllowedTrustMarks(String[] allowedTrustMarks) {
 		this.allowedTrustMarks = Arrays.asList(allowedTrustMarks);
+	}
+
+	@Override
+	public String toString() {
+		return String.format("(%s valid:%b", this.sub, this.valid);
 	}
 
 	/**
@@ -280,9 +338,9 @@ public class EntityConfiguration {
 			return true;
 		}
 
-		JSONArray trustMarks = payload.optJSONArray("trust_marks");
+		JSONArray jsonTrustMarks = payload.optJSONArray("trust_marks");
 
-		if (trustMarks == null) {
+		if (jsonTrustMarks == null) {
 			logger.warn(
 				"{} doesn't have the trust marks claim in its Entity Configuration",
 				this.sub);
@@ -290,10 +348,72 @@ public class EntityConfiguration {
 			return false;
 		}
 
-		// TODO: Implement TrustMark checks
-		logger.error("TODO: Implement TrustMark checks");
+		List<TrustMark> trustMarks = new ArrayList<>();
 
-		return true;
+		for (int x = 0; x < jsonTrustMarks.length(); x++) {
+			JSONObject jsonTrustMark = jsonTrustMarks.optJSONObject(x);
+
+			if (jsonTrustMark == null) {
+				logger.warn(
+					"invalid trust_mark at " + x + " on " + trustMarks.toString());
+
+				continue;
+			}
+			else if (!isTrustMarkAllowed(jsonTrustMark)) {
+				continue;
+			}
+
+			try {
+				trustMarks.add(
+					new TrustMark(jsonTrustMark.optString("trust_mark"), jwtHelper));
+			}
+			catch (Exception e) {
+				logger.error("Trust Mark decoding failed on {}", jsonTrustMark);
+			}
+		}
+
+		if (trustMarks.isEmpty()) {
+			throw new EntityException.MissingTrustMarks(
+				"Required Trust marks are missing.");
+		}
+
+		Map<String, Set<String>> trustAnchorIssuers = trustAnchor.getTrustMarksIssuers();
+
+		boolean valid = false;
+
+		for (TrustMark trustMark : trustMarks) {
+			Set<String> issuers = trustAnchorIssuers.get(trustMark.getId());
+
+			if (issuers != null) {
+				if (!issuers.contains(trustMark.getIssuer())) {
+					valid = false;
+				}
+				else {
+					valid = trustMark.validateByIssuer();
+				}
+			}
+			else {
+				valid = trustMark.validate(trustAnchor);
+			}
+
+			if (!trustMark.isValid()) {
+				valid = false;
+			}
+
+			if (valid) {
+				if (logger.isInfoEnabled()) {
+					logger.info("Trust Mark {} is valid", trustMark);
+				}
+
+				this.verifiedTrustMarks.add(trustMark);
+			}
+			else if (logger.isWarnEnabled()) {
+				logger.warn("Trust Mark {} is not valid", trustMark);
+			}
+
+		}
+
+		return valid;
 	}
 
 	/**
@@ -515,6 +635,14 @@ public class EntityConfiguration {
 		}
 	}
 
+	private boolean isTrustMarkAllowed(JSONObject trustMark) {
+		if (allowedTrustMarks.isEmpty()) {
+			return true;
+		}
+
+		return allowedTrustMarks.contains(trustMark.optString("id"));
+	}
+
 	private static final Logger logger = LoggerFactory.getLogger(
 		EntityConfiguration.class);
 
@@ -537,6 +665,7 @@ public class EntityConfiguration {
 	private Map<String, JSONObject> failedDescendantStatements = new HashMap<>();
 	private Map<String, JSONObject> verifiedDescendantStatements = new HashMap<>();
 	private List<String> allowedTrustMarks = new ArrayList<>();
+	private Set<TrustMark> verifiedTrustMarks = new HashSet<>();
 
 	private boolean valid = false;
 

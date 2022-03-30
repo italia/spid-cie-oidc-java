@@ -20,10 +20,7 @@ public class FederationEntityModel {
 	public static FederationEntityModel of(FederationEntity source) {
 		FederationEntityModel target = new FederationEntityModel();
 
-		if (!Validator.isNullOrEmpty(source.getStorageId())) {
-			target.setId(GetterUtil.getLong(source.getStorageId()));
-		}
-
+		target.setId(source.getStorageId());
 		target.setCreated(source.getCreateDate());
 		target.setModified(source.getModifiedDate());
 		target.setSub(source.getSubject());
@@ -160,10 +157,7 @@ public class FederationEntityModel {
 	public FederationEntity toFederationEntity() {
 		FederationEntity target = new FederationEntity();
 
-		if (this.id != null && this.id > 0) {
-			target.setStorageId(String.valueOf(this.id));
-		}
-
+		target.setStorageId(getStorageId());
 		target.setCreateDate(getCreated());
 		target.setModifiedDate(getModified());
 		target.setSubject(getSub());
@@ -180,6 +174,21 @@ public class FederationEntityModel {
 
 		return target;
 	}
+
+	protected void setId(String storageId) {
+		if (!Validator.isNullOrEmpty(storageId)) {
+			setId(GetterUtil.getLong(storageId));
+		}
+	}
+
+	private String getStorageId() {
+		if (id > 0) {
+			return String.valueOf(id);
+		}
+
+		return null;
+	}
+
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

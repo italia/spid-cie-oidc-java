@@ -1,11 +1,10 @@
 package it.spid.cie.oidc.persistence;
 
 import it.spid.cie.oidc.exception.PersistenceException;
+import it.spid.cie.oidc.model.AuthnRequest;
 import it.spid.cie.oidc.model.CachedEntityInfo;
 import it.spid.cie.oidc.model.FederationEntity;
-import it.spid.cie.oidc.model.OIDCAuthRequest;
 import it.spid.cie.oidc.model.TrustChain;
-import it.spid.cie.oidc.schemas.OIDCProfile;
 
 public interface PersistenceAdapter {
 
@@ -18,8 +17,8 @@ public interface PersistenceAdapter {
 	public FederationEntity fetchFederationEntity(String subject, boolean active)
 		throws PersistenceException;
 
-	public TrustChain fetchOIDCProvider(String subject, OIDCProfile profile)
-		throws PersistenceException;
+//	public TrustChain fetchOIDCProvider(String subject, OIDCProfile profile)
+//		throws PersistenceException;
 
 	public TrustChain fetchTrustChain(String subject, String trustAnchor)
 		throws PersistenceException;
@@ -34,7 +33,7 @@ public interface PersistenceAdapter {
 	public FederationEntity storeFederationEntity(FederationEntity federationEntity)
 		throws PersistenceException;
 
-	public OIDCAuthRequest storeOIDCAuthRequest(OIDCAuthRequest authRequest)
+	public AuthnRequest storeOIDCAuthnRequest(AuthnRequest authnRequest)
 		throws PersistenceException;
 
 	public TrustChain storeTrustChain(TrustChain trustChain)

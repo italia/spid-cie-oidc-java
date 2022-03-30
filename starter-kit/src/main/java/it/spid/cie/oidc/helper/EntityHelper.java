@@ -10,9 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.spid.cie.oidc.config.GlobalOptions;
+import it.spid.cie.oidc.config.OIDCConstants;
 import it.spid.cie.oidc.exception.EntityException;
 import it.spid.cie.oidc.exception.OIDCException;
-import it.spid.cie.oidc.model.OIDCConstants;
 import it.spid.cie.oidc.util.StringUtil;
 
 public class EntityHelper {

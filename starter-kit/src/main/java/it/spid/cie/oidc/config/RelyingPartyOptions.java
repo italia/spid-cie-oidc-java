@@ -9,7 +9,6 @@ import java.util.Set;
 
 import it.spid.cie.oidc.exception.ConfigException;
 import it.spid.cie.oidc.exception.OIDCException;
-import it.spid.cie.oidc.model.OIDCConstants;
 import it.spid.cie.oidc.schemas.AcrValuesSpid;
 import it.spid.cie.oidc.schemas.OIDCProfile;
 import it.spid.cie.oidc.util.ArrayUtil;

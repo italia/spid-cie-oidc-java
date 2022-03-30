@@ -86,7 +86,9 @@ public class TrustChainBuilder {
 	public String getVerifiedTrustMarksAsString() {
 		JSONArray result = new JSONArray();
 
-		// TODO: manage trust mask
+		for (TrustMark trustMark : this.verifiedTrustMasks) {
+			result.put(trustMark.toJSON());
+		}
 
 		return result.toString();
 	}
@@ -272,7 +274,7 @@ public class TrustChainBuilder {
 					metadata.put(key, p.get("default"));
 				}
 				else if (p.has("essential")) {
-					// TODO: undestand essential
+					// TODO: understand essential
 				}
 
 				continue;
@@ -309,7 +311,7 @@ public class TrustChainBuilder {
 					if (!jsonArrayContains(oneOf, o)) {
 						throw new TrustChainBuilderException(
 							String.format(
-								"%s: %s not among %s", key, ar.toString(),
+								"%s: %s not among %s", key, String.valueOf(ar),
 								oneOf.toString()));
 					}
 				}
@@ -456,7 +458,7 @@ public class TrustChainBuilder {
 					"The required Trust Marks are not valid");
 			}
 
-			// TODO: this.verified_trust_marks.extend(sc.verified_trust_marks)
+			this.verifiedTrustMasks.addAll(subjectConfiguration.getVerifiedTrustMarks());
 		}
 	}
 
@@ -618,7 +620,7 @@ public class TrustChainBuilder {
 	private long exp = 0;
 	private boolean valid = false;
 	private JSONObject finalMetadata;
-	private Set<String> verifiedTrustMasks = new HashSet<>();
+	private Set<TrustMark> verifiedTrustMasks = new HashSet<>();
 
 
 }

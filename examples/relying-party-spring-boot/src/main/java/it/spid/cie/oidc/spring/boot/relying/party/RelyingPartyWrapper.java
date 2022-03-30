@@ -17,6 +17,15 @@ import it.spid.cie.oidc.spring.boot.relying.party.persistence.H2PersistenceImpl;
 @Component
 public class RelyingPartyWrapper {
 
+	public String getAuthorizeURL(
+			String spidProvider, String trustAnchor, String redirectUri, String scope,
+			String profile, String prompt)
+		throws OIDCException {
+
+		return relyingPartyHandler.getAuthorizeURL(
+			spidProvider, trustAnchor, redirectUri, scope, profile, prompt);
+	}
+
 	public WellKnownData getWellKnownData(String requestURL, boolean jsonMode)
 		throws OIDCException {
 

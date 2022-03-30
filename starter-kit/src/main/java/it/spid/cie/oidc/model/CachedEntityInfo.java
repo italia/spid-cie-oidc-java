@@ -25,6 +25,10 @@ public class CachedEntityInfo extends BaseModel {
 			.setSubject(sub);
 	}
 
+	public CachedEntityInfo() {
+		super();
+	}
+
 	public LocalDateTime getExpiresOn() {
 		return exp;
 	}
@@ -88,10 +92,6 @@ public class CachedEntityInfo extends BaseModel {
 		this.sub = subject;
 
 		return this;
-	}
-
-	protected CachedEntityInfo() {
-		super();
 	}
 
 	private String iss;

@@ -28,6 +28,19 @@ public class EntityException extends OIDCException {
 
 	}
 
+	@SuppressWarnings("serial")
+	public static class MissingTrustMarks extends EntityException {
+
+		public MissingTrustMarks(String message) {
+			super(message);
+		}
+
+		public MissingTrustMarks(Throwable cause) {
+			super(cause);
+		}
+
+	}
+
 	private EntityException(String message) {
 		super(message);
 	}

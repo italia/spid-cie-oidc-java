@@ -1,24 +1,46 @@
 package it.spid.cie.oidc.spring.boot.relying.party.persistence;
 
+import java.time.LocalDateTime;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import it.spid.cie.oidc.exception.PersistenceException;
+import it.spid.cie.oidc.model.AuthnRequest;
 import it.spid.cie.oidc.model.CachedEntityInfo;
 import it.spid.cie.oidc.model.FederationEntity;
-import it.spid.cie.oidc.model.OIDCAuthRequest;
 import it.spid.cie.oidc.model.TrustChain;
 import it.spid.cie.oidc.persistence.PersistenceAdapter;
-import it.spid.cie.oidc.schemas.OIDCProfile;
+import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.AuthnRequestModel;
+import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.AuthnRequestRepository;
+import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.EntityInfoModel;
+import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.EntityInfoRepository;
 import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.FederationEntityModel;
 import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.FederationEntityRepository;
+import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.TrustChainModel;
+import it.spid.cie.oidc.spring.boot.relying.party.persistence.model.TrustChainRepository;
 
 @Component
 public class H2PersistenceImpl implements PersistenceAdapter {
 
 	@Override
-	public CachedEntityInfo fetchEntityInfo(String subject, String issuer) throws PersistenceException {
-		// TODO Auto-generated method stub
+	public CachedEntityInfo fetchEntityInfo(String subject, String issuer)
+		throws PersistenceException {
+
+		try {
+			EntityInfoModel model = entityInfoRepository.fetchEntity(
+				subject, issuer);
+
+			if (model != null) {
+				return model.toCachedEntityInfo();
+			}
+		}
+		catch (Exception e) {
+			throw new PersistenceException(e);
+		}
+
 		return null;
 	}
 
@@ -60,29 +82,79 @@ public class H2PersistenceImpl implements PersistenceAdapter {
 		return null;
 	}
 
+	/*
 	@Override
-	public TrustChain fetchOIDCProvider(String subject, OIDCProfile profile) throws PersistenceException {
+	public TrustChain fetchOIDCProvider(String subject, OIDCProfile profile)
+		throws PersistenceException {
+		logger.info("TODO fetchOIDCProvider");
 		// TODO Auto-generated method stub
+		return null;
+	}
+	*/
+
+	@Override
+	public TrustChain fetchTrustChain(String subject, String trustAnchor)
+		throws PersistenceException {
+
+		try {
+			TrustChainModel model = trustChainRepository.fetchBySub_TASub(
+				subject, trustAnchor);
+
+			if (model != null) {
+				EntityInfoModel trustAnchorModel = entityInfoRepository.fetchEntity(
+					trustAnchor, trustAnchor);
+
+				return model.toTrustChain(trustAnchorModel);
+			}
+		}
+		catch (Exception e) {
+			throw new PersistenceException(e);
+		}
+
 		return null;
 	}
 
 	@Override
-	public TrustChain fetchTrustChain(String subject, String trustAnchor) throws PersistenceException {
-		// TODO Auto-generated method stub
+	public TrustChain fetchTrustChain(
+			String subject, String trustAnchor, String metadataType)
+		throws PersistenceException {
+
+		try {
+			TrustChainModel model = trustChainRepository.fetchBySub_TASub_T(
+				subject, trustAnchor, metadataType);
+
+			if (model != null) {
+				EntityInfoModel trustAnchorModel = entityInfoRepository.fetchEntity(
+					trustAnchor, trustAnchor);
+
+				return model.toTrustChain(trustAnchorModel);
+			}
+		}
+		catch (Exception e) {
+			throw new PersistenceException(e);
+		}
+
 		return null;
 	}
 
 	@Override
-	public TrustChain fetchTrustChain(String subject, String trustAnchor, String metadataType)
-			throws PersistenceException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public CachedEntityInfo storeEntityInfo(CachedEntityInfo entityInfo)
+		throws PersistenceException {
 
-	@Override
-	public CachedEntityInfo storeEntityInfo(CachedEntityInfo entityInfo) throws PersistenceException {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			EntityInfoModel model = EntityInfoModel.of(entityInfo);
+
+			if (model.getId() != null && model.getId() > 0) {
+				model.setModified(LocalDateTime.now());
+			}
+
+			model = entityInfoRepository.save(model);
+
+			return model.toCachedEntityInfo();
+		}
+		catch (Exception e) {
+			throw new PersistenceException(e);
+		}
 	}
 
 	@Override
@@ -91,6 +163,10 @@ public class H2PersistenceImpl implements PersistenceAdapter {
 
 		try {
 			FederationEntityModel model = FederationEntityModel.of(federationEntity);
+
+			if (model.getId() != null && model.getId() > 0) {
+				model.setModified(LocalDateTime.now());
+			}
 
 			model = federationEntityRepository.save(model);
 
@@ -102,18 +178,59 @@ public class H2PersistenceImpl implements PersistenceAdapter {
 	}
 
 	@Override
-	public OIDCAuthRequest storeOIDCAuthRequest(OIDCAuthRequest authRequest) throws PersistenceException {
-		// TODO Auto-generated method stub
-		return null;
+	public AuthnRequest storeOIDCAuthnRequest(AuthnRequest authnRequest)
+		throws PersistenceException {
+
+		try {
+			AuthnRequestModel model = AuthnRequestModel.of(authnRequest);
+
+			if (model.getId() != null && model.getId() > 0) {
+				model.setModified(LocalDateTime.now());
+			}
+
+			model = authnRequestRepository.save(model);
+
+			return model.toAuthnRequest();
+		}
+		catch (Exception e) {
+			throw new PersistenceException(e);
+		}
 	}
 
 	@Override
 	public TrustChain storeTrustChain(TrustChain trustChain) throws PersistenceException {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			EntityInfoModel trustAnchorModel = entityInfoRepository.fetchEntity(
+				trustChain.getTrustAnchor(), trustChain.getTrustAnchor());
+
+			TrustChainModel model = TrustChainModel.of(trustChain, trustAnchorModel);
+
+			if (model.getId() != null && model.getId() > 0) {
+				model.setModified(LocalDateTime.now());
+			}
+
+			model = trustChainRepository.save(model);
+
+			return model.toTrustChain(trustAnchorModel);
+		}
+		catch (Exception e) {
+			throw new PersistenceException(e);
+		}
 	}
+
+	@SuppressWarnings("unused")
+	private static final Logger logger = LoggerFactory.getLogger(H2PersistenceImpl.class);
+
+	@Autowired
+	private AuthnRequestRepository authnRequestRepository;
+
+	@Autowired
+	private EntityInfoRepository entityInfoRepository;
 
 	@Autowired
 	private FederationEntityRepository federationEntityRepository;
+
+	@Autowired
+	private TrustChainRepository trustChainRepository;
 
 }

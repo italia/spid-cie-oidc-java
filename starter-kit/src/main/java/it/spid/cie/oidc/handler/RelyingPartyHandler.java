@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.spid.cie.oidc.config.GlobalOptions;
+import it.spid.cie.oidc.config.OIDCConstants;
 import it.spid.cie.oidc.config.RelyingPartyOptions;
 import it.spid.cie.oidc.exception.OIDCException;
 import it.spid.cie.oidc.exception.TrustChainException;
@@ -27,8 +28,7 @@ import it.spid.cie.oidc.helper.PKCEHelper;
 import it.spid.cie.oidc.model.CachedEntityInfo;
 import it.spid.cie.oidc.model.EntityConfiguration;
 import it.spid.cie.oidc.model.FederationEntity;
-import it.spid.cie.oidc.model.OIDCAuthRequest;
-import it.spid.cie.oidc.model.OIDCConstants;
+import it.spid.cie.oidc.model.AuthnRequest;
 import it.spid.cie.oidc.model.TrustChain;
 import it.spid.cie.oidc.model.TrustChainBuilder;
 import it.spid.cie.oidc.persistence.PersistenceAdapter;
@@ -56,7 +56,7 @@ public class RelyingPartyHandler {
 
 	/**
 	 * Build the "authorize url": the URL a RelyingParty have to send to an OpenID
-	 * Provider to start an SPID authorization flow
+	 * Provider to start a SPID authorization flow
 	 *
 	 * @param spidProvider
 	 * @param trustAnchor
@@ -183,7 +183,7 @@ public class RelyingPartyHandler {
 			.put("code_challenge", pkce.getString("code_challenge"))
 			.put("code_challenge_method", pkce.getString("code_challenge_method"));
 
-		OIDCAuthRequest authzEntry = new OIDCAuthRequest()
+		AuthnRequest authzEntry = new AuthnRequest()
 			.setClientId(clientId)
 			.setState(state)
 			.setEndpoint(authzEndpoint)
@@ -193,7 +193,7 @@ public class RelyingPartyHandler {
 			.setProviderJwks(providerJWKSet.toString())
 			.setProviderConfiguration(providerMetadata.toString());
 
-		authzEntry = persistence.storeOIDCAuthRequest(authzEntry);
+		authzEntry = persistence.storeOIDCAuthnRequest(authzEntry);
 
 		authzData.remove("code_verifier");
 		authzData.put("iss", entityMetadata.getString("client_id"));
@@ -205,7 +205,7 @@ public class RelyingPartyHandler {
 
 		String url = buildURL(authzEndpoint, authzData);
 
-		logger.info("Starting Authz request to {}", url);
+		logger.info("Starting Authn request to {}", url);
 
 		return url;
 	}
@@ -256,13 +256,13 @@ public class RelyingPartyHandler {
 			throw new TrustChainException.InvalidTrustAnchor();
 		}
 
-		TrustChain trustChain = persistence.fetchOIDCProvider(
-			spidProvider, OIDCProfile.SPID);
+		TrustChain trustChain = persistence.fetchTrustChain(
+			spidProvider, trustAnchor);
 
 		boolean discover = false;
 
 		if (trustChain == null) {
-			logger.info("TrustChain not found for %s", spidProvider);
+			logger.info("TrustChain not found for {}", spidProvider);
 
 			discover = true;
 		}
@@ -280,7 +280,7 @@ public class RelyingPartyHandler {
 			logger.warn(
 				String.format(
 					"TrustChain found but EXPIRED at %s.",
-					trustChain.getExpiredOn().toString()));
+					trustChain.getExpiresOn().toString()));
 			logger.warn("Try to renew the trust chain");
 
 			discover = true;
@@ -288,7 +288,7 @@ public class RelyingPartyHandler {
 
 		if (discover) {
 			trustChain = getOrCreateTrustChain(
-				spidProvider, trustAnchor, "openid_provider", true);
+				spidProvider, trustAnchor, OIDCConstants.OPENID_PROVIDER, true);
 		}
 
 		return trustChain;
@@ -361,14 +361,30 @@ public class RelyingPartyHandler {
 			trustChain = persistence.fetchTrustChain(subject, trustAnchor, metadataType);
 
 			if (trustChain == null) {
-			trustChain = new TrustChain();
-//				subject, metadataType, tcb.getExpiration(), null, tcb.getChainAsString(),
-//				tcb.getPartiesInvolvedAsString(), true, null, tcb.getFinalMetadata(),
-//				null, trustAnchorEntity.getId(), tcb.getVerifiedTrustMarksAsString(),
-//				"valid", trustAnchor);
+				trustChain = new TrustChain()
+					.setSubject(subject)
+					.setType(metadataType)
+					.setExpiresOn(tcb.getExpiresOn())
+					.setChain(tcb.getChainAsString())
+					.setPartiesInvolved(tcb.getPartiesInvolvedAsString())
+					.setProcessingStart(LocalDateTime.now())
+					.setActive(true)
+					.setMetadata(tcb.getFinalMetadata())
+					.setTrustAnchor(trustAnchor)
+					.setTrustMarks(tcb.getVerifiedTrustMarksAsString())
+					.setStatus("valid");
 			}
 			else {
-				// TODO: Update TrustChain
+				trustChain = trustChain
+					.setExpiresOn(tcb.getExpiresOn())
+					.setChain(tcb.getChainAsString())
+					.setPartiesInvolved(tcb.getPartiesInvolvedAsString())
+					.setProcessingStart(LocalDateTime.now())
+					.setActive(true)
+					.setMetadata(tcb.getFinalMetadata())
+					.setTrustAnchor(trustAnchor)
+					.setTrustMarks(tcb.getVerifiedTrustMarksAsString())
+					.setStatus("valid");
 			}
 
 			trustChain = persistence.storeTrustChain(trustChain);

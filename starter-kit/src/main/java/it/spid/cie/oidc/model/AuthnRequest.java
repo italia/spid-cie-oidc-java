@@ -1,8 +1,8 @@
 package it.spid.cie.oidc.model;
 
-public class OIDCAuthRequest extends BaseModel {
+public class AuthnRequest extends BaseModel {
 
-	public OIDCAuthRequest() {
+	public AuthnRequest() {
 		super();
 	}
 
@@ -42,55 +42,55 @@ public class OIDCAuthRequest extends BaseModel {
 		return successful;
 	}
 
-	public OIDCAuthRequest setClientId(String clientId) {
+	public AuthnRequest setClientId(String clientId) {
 		this.clientId = clientId;
 
 		return this;
 	}
 
-	public OIDCAuthRequest setEndpoint(String endpoint) {
+	public AuthnRequest setEndpoint(String endpoint) {
 		this.endpoint = endpoint;
 
 		return this;
 	}
 
-	public OIDCAuthRequest setData(String data) {
+	public AuthnRequest setData(String data) {
 		this.data = data;
 
 		return this;
 	}
 
-	public OIDCAuthRequest setProvider(String provider) {
+	public AuthnRequest setProvider(String provider) {
 		this.provider = provider;
 
 		return this;
 	}
 
-	public OIDCAuthRequest setProviderConfiguration(String providerConfiguration) {
+	public AuthnRequest setProviderConfiguration(String providerConfiguration) {
 		this.providerConfiguration = providerConfiguration;
 
 		return this;
 	}
 
-	public OIDCAuthRequest setProviderId(String providerId) {
+	public AuthnRequest setProviderId(String providerId) {
 		this.providerId = providerId;
 
 		return this;
 	}
 
-	public OIDCAuthRequest setProviderJwks(String providerJwks) {
+	public AuthnRequest setProviderJwks(String providerJwks) {
 		this.providerJwks = providerJwks;
 
 		return this;
 	}
 
-	public OIDCAuthRequest setState(String state) {
+	public AuthnRequest setState(String state) {
 		this.state = state;
 
 		return this;
 	}
 
-	public OIDCAuthRequest setSuccessful(boolean successful) {
+	public AuthnRequest setSuccessful(boolean successful) {
 		this.successful = successful;
 
 		return this;

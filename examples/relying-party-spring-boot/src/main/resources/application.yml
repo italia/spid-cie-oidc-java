@@ -35,12 +35,12 @@ oidc:
 
    # List of trust anchors
    trust-anchors:
-   - ${oidcfed.default-trust-anchor}
+   - ${oidc.default-trust-anchor}
 
    # Map of known OPs and related Trust Anchor. We need "[]" to use an URL as key
    identity-providers:
-      "[http://127.0.0.1:8000/oidc/op/]": ${oidcfed.default-trust-anchor}
-      "[http://127.0.0.1:8002/]": ${oidcfed.default-trust-anchor}
+      "[http://127.0.0.1:8000/oidc/op/]": ${oidc.default-trust-anchor}
+      "[http://127.0.0.1:8002/]": ${oidc.default-trust-anchor}
 
    relying-party:
       application-name: "SpringBoot RP Sample"

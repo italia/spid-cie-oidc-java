@@ -14,10 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import it.spid.cie.oidc.model.OIDCConstants;
+import it.spid.cie.oidc.config.OIDCConstants;
 import it.spid.cie.oidc.schemas.WellKnownData;
 import it.spid.cie.oidc.spring.boot.relying.party.RelyingPartyWrapper;
-import it.spid.cie.oidc.spring.boot.relying.party.config.OidcConfig;
 
 @RestController
 @RequestMapping("/oidc/rp")
@@ -60,10 +59,7 @@ public class WellKnownController {
 		}
 	}
 
-	private static Logger logger = LoggerFactory.getLogger(SpidController.class);
-
-	@Autowired
-	private OidcConfig oidcConfig;
+	private static Logger logger = LoggerFactory.getLogger(WellKnownController.class);
 
 	@Autowired
 	private RelyingPartyWrapper relyingPartyWrapper;
