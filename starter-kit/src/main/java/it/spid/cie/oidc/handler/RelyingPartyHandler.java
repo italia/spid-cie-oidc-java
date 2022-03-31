@@ -725,7 +725,7 @@ public class RelyingPartyHandler {
 
 			JSONObject json = new JSONObject(jwk.toString());
 
-			return WellKnownData.of(WellKnownData.STEP_ONLY_JWKS, json.toString());
+			return WellKnownData.of(WellKnownData.STEP_ONLY_JWKS, json.toString(2));
 		}
 
 		RSAKey jwk = JWTHelper.parseRSAKey(confJwk);

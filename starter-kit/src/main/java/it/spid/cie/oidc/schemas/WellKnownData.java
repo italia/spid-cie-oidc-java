@@ -8,7 +8,7 @@ import net.jcip.annotations.Immutable;
  * These informations required a registration flow to become complete. This object allows
  * to identity the status of this flow
  *
- * @author Mmauro Mariuzzo
+ * @author Mauro Mariuzzo
  */
 @Immutable
 public class WellKnownData {
