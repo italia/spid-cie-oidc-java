@@ -213,6 +213,30 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 		return this;
 	}
 
+	public RelyingPartyOptions setLoginURL(String loginURL) {
+		if (!Validator.isNullOrEmpty(loginURL)) {
+			this.loginURL = loginURL;
+		}
+
+		return this;
+	}
+
+	public RelyingPartyOptions setLoginRedirectURL(String loginRedirectURL) {
+		if (!Validator.isNullOrEmpty(loginRedirectURL)) {
+			this.loginRedirectURL = loginRedirectURL;
+		}
+
+		return this;
+	}
+
+	public RelyingPartyOptions setLogoutRedirectURL(String logoutRedirectURL) {
+		if (!Validator.isNullOrEmpty(logoutRedirectURL)) {
+			this.logoutRedirectURL = logoutRedirectURL;
+		}
+
+		return this;
+	}
+
 	public void validate() throws OIDCException {
 		super.validate();
 
@@ -264,6 +288,9 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 			// TODO: acrMap.put(OIDCProfile.SPID.getValue(), AcrValuesSpid.L2.getValue());
 		}
 
+		if (Validator.isNullOrEmpty(logoutRedirectURL)) {
+			throw new ConfigException("no-logout-redirect-url");
+		}
 	}
 
 	private String defaultTrustAnchor;
