@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import it.spid.cie.oidc.config.OIDCConstants;
 import it.spid.cie.oidc.schemas.WellKnownData;
 import it.spid.cie.oidc.spring.boot.relying.party.RelyingPartyWrapper;
+import it.spid.cie.oidc.spring.boot.relying.party.config.OidcConfig;
 
 @RestController
 @RequestMapping("/oidc/rp")
@@ -35,7 +36,8 @@ public class WellKnownController {
 
 		if (wellKnown.getStep() == WellKnownData.STEP_ONLY_JWKS) {
 			logger.info(
-				"Generated jwk. Please add it into 'application.yaml'.\n" +
+				"Generated jwk. Please add it into 'application.yaml' or save as '" +
+				oidcConfig.getRelyingParty().getJwkFilePath() + "'.\n" +
 				wellKnown.getValue());
 
 			String body = new JSONObject()
@@ -60,6 +62,9 @@ public class WellKnownController {
 	}
 
 	private static Logger logger = LoggerFactory.getLogger(WellKnownController.class);
+
+	@Autowired
+	private OidcConfig oidcConfig;
 
 	@Autowired
 	private RelyingPartyWrapper relyingPartyWrapper;

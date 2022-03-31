@@ -70,15 +70,6 @@ public class OidcConfig {
 
 	public static class RelyingParty {
 
-		private String applicationName;
-		private String applicationType;
-		private Set<String> contacts = new HashSet<>();
-		private Set<String> scope = new HashSet<>();
-		private String clientId;
-		private Set<String> redirectUris = new HashSet<>();
-		private String jwk;
-		private String trustMarks;
-
 		public String getApplicationName() {
 			return applicationName;
 		}
@@ -107,8 +98,16 @@ public class OidcConfig {
 			return jwk;
 		}
 
+		public String getJwkFilePath() {
+			return jwkFilePath;
+		}
+
 		public String getTrustMarks() {
 			return trustMarks;
+		}
+
+		public String getTrustMarksFilePath() {
+			return trustMarksFilePath;
 		}
 
 		public void setApplicationName(String applicationName) {
@@ -127,8 +126,16 @@ public class OidcConfig {
 			this.jwk = jwk;
 		}
 
+		public void setJwkFilePath(String jwkFilePath) {
+			this.jwkFilePath = jwkFilePath;
+		}
+
 		public void setTrustMarks(String trustMarks) {
 			this.trustMarks = trustMarks;
+		}
+
+		public void setTrustMarksFilePath(String trustMarksFilePath) {
+			this.trustMarksFilePath = trustMarksFilePath;
 		}
 
 		public void setContacts(Set<String> contacts) {
@@ -153,7 +160,9 @@ public class OidcConfig {
 			json.put("clientId", clientId);
 			json.put("redirectUris", redirectUris);
 			json.put("jwk", jwk);
+			json.put("jwkFilePath", jwkFilePath);
 			json.put("trustMarks", trustMarks);
+			json.put("trustMarksFilePath", trustMarksFilePath);
 
 			return json;
 		}
@@ -165,6 +174,18 @@ public class OidcConfig {
 		public String toJSONString(int indentFactor) {
 			return toJSON().toString(indentFactor);
 		}
+
+		private String applicationName;
+		private String applicationType;
+		private Set<String> contacts = new HashSet<>();
+		private Set<String> scope = new HashSet<>();
+		private String clientId;
+		private Set<String> redirectUris = new HashSet<>();
+		private String jwk;
+		private String jwkFilePath;
+		private String trustMarks;
+		private String trustMarksFilePath;
+
 	}
 
 }

@@ -1,5 +1,9 @@
 package it.spid.cie.oidc.spring.boot.relying.party;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import javax.annotation.PostConstruct;
 
 import org.json.JSONObject;
@@ -15,6 +19,7 @@ import it.spid.cie.oidc.handler.RelyingPartyHandler;
 import it.spid.cie.oidc.schemas.WellKnownData;
 import it.spid.cie.oidc.spring.boot.relying.party.config.OidcConfig;
 import it.spid.cie.oidc.spring.boot.relying.party.persistence.H2PersistenceImpl;
+import it.spid.cie.oidc.util.Validator;
 
 @Component
 public class RelyingPartyWrapper {
@@ -48,6 +53,18 @@ public class RelyingPartyWrapper {
 
 	@PostConstruct
 	private void postConstruct() throws OIDCException {
+		String jwk = oidcConfig.getRelyingParty().getJwk();
+
+		if (Validator.isNullOrEmpty(jwk)) {
+			jwk = readFile(oidcConfig.getRelyingParty().getJwkFilePath());
+		}
+
+		String trustMarks = oidcConfig.getRelyingParty().getTrustMarks();
+
+		if (Validator.isNullOrEmpty(trustMarks)) {
+			trustMarks = readFile(oidcConfig.getRelyingParty().getTrustMarksFilePath());
+		}
+
 		RelyingPartyOptions options = new RelyingPartyOptions()
 			.setDefaultTrustAnchor(oidcConfig.getDefaultTrustAnchor())
 			.setSPIDProviders(oidcConfig.getIdentityProviders())
@@ -56,10 +73,25 @@ public class RelyingPartyWrapper {
 			.setClientId(oidcConfig.getRelyingParty().getClientId())
 			.setRedirectUris(oidcConfig.getRelyingParty().getRedirectUris())
 			.setContacts(oidcConfig.getRelyingParty().getContacts())
-			.setJWK(oidcConfig.getRelyingParty().getJwk())
-			.setTrustMarks(oidcConfig.getRelyingParty().getTrustMarks());
+			.setJWK(jwk)
+			.setTrustMarks(trustMarks);
 
 		relyingPartyHandler = new RelyingPartyHandler(options, persistenceImpl);
+	}
+
+	private String readFile(String filePath) {
+		try {
+			File file = new File(filePath);
+
+			if (file.isFile() && file.canRead()) {
+				return Files.readString(file.toPath());
+			}
+		}
+		catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+
+		return "";
 	}
 
 	private static Logger logger = LoggerFactory.getLogger(RelyingPartyWrapper.class);
