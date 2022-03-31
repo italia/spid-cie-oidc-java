@@ -1,0 +1,18 @@
+FROM python:latest
+
+RUN apt update && apt -y install git
+
+RUN git clone --depth=1 --branch v0.5.0 https://github.com/peppelinux/spid-cie-oidc-django && \
+  cd spid-cie-oidc-django && \
+  pip install --upgrade pip && \
+  pip install -e . && \
+  pip install design-django-theme && \
+  pip install tzdata
+
+RUN cd spid-cie-oidc-django/examples/federation_authority && \
+  cp federation_authority/settingslocal.py.example federation_authority/settingslocal.py && \
+  python3 ./manage.py migrate && \
+  python3 ./manage.py loaddata dumps/example.json
+
+ENTRYPOINT python3 spid-cie-oidc-django/examples/federation_authority/manage.py runserver 0.0.0.0:8000
+

@@ -1,0 +1,19 @@
+version: "3.5"
+
+services:
+  trust-anchor.org:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.django
+    ports:
+      - "8000:8000"
+
+  relying-party.org:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.java-rp
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./docker-data:/data
+

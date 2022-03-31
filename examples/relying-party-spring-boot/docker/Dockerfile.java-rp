@@ -1,0 +1,14 @@
+FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.14.1_1
+
+RUN apk update && apk add git
+
+RUN git clone --depth=1 https://github.com/italia/spid-cie-oidc-java && \
+  cd spid-cie-oidc-java && \
+  ./mvnw clean install
+
+WORKDIR /spid-cie-oidc-java/examples/relying-party-spring-boot
+
+EXPOSE 8080
+
+ENTRYPOINT ["../../mvnw", "spring-boot:run"]
+
