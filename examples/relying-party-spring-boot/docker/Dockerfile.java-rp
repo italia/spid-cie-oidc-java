@@ -8,6 +8,12 @@ RUN git clone --depth=1 https://github.com/italia/spid-cie-oidc-java && \
 
 WORKDIR /spid-cie-oidc-java/examples/relying-party-spring-boot
 
+VOLUME ["/data"]
+
+ENV OIDC_RELYING_PARTY_JWK_FILE_PATH="/data/oidc-rp-jwk.json"
+ENV OIDC_RELYING_PARTY_TRUST_MARKS_FILE_PATH="/data/oidc-rp-trust-marks.json"
+ENV SPRING_H2_CONSOLE_SETTINGS_WEB_ALLOW_OTHERS="true"
+
 EXPOSE 8080
 
 ENTRYPOINT ["../../mvnw", "spring-boot:run"]
