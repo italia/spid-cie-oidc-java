@@ -57,9 +57,11 @@ public class SpidController {
 		throws Exception {
 
 		if (params.containsKey("error")) {
-			logger.error(new JSONObject(params).toString(2));
+			String msg = new JSONObject(params).toString(2);
 
-			throw new Exception("TODO: Manage Error callback");
+			logger.error(msg);
+
+			throw new Exception(msg);
 		}
 
 		String state = params.get("state");
