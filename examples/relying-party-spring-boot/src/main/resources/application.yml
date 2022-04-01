@@ -31,7 +31,7 @@ spring:
 
 oidc:
    # required for onboarding checks and also for all the leafs
-   default-trust-anchor: "http://127.0.0.1:8000/"
+   default-trust-anchor: "http://trust-anchor.org:8000/"
 
    # List of trust anchors
    trust-anchors:
@@ -39,8 +39,8 @@ oidc:
 
    # Map of known OPs and related Trust Anchor. We need "[]" to use an URL as key
    identity-providers:
-      "[http://127.0.0.1:8000/oidc/op/]": ${oidc.default-trust-anchor}
-      "[http://127.0.0.1:8002/]": ${oidc.default-trust-anchor}
+      "[http://trust-anchor.org:8000/oidc/op/]": ${oidc.default-trust-anchor}
+      "[http://cie-provider.org:8002/]": ${oidc.default-trust-anchor}
 
    relying-party:
       application-name: "SpringBoot RP Sample"
@@ -53,12 +53,11 @@ oidc:
       - offline_access
       token-endpoint-auth-method: 
       - private_key_jwt
-      client-id: "http://127.0.0.1:8080/oidc/rp/"
+      client-id: "http://relying-party.org:8080/oidc/rp/"
       redirect-uris:
-      - "http://127.0.0.1:8080/oidc/rp/callback"
+      - "http://relying-party.org:8080/oidc/rp/callback"
       jwk: ""
       jwk-file-path: ${user.home}/oidc-rp-jwk.json
       trust-marks:
       trust-marks-file-path: ${user.home}/oidc-rp-trust-marks.json
-      
-      
+
