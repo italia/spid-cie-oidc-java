@@ -2,6 +2,7 @@
 
 [![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
 [![Join the #spid openid](https://img.shields.io/badge/Slack%20channel-%23spid%20openid-blue.svg)](https://developersitalia.slack.com/archives/C7E85ED1N/)
+[![CodeQL](https://github.com/italia/spid-cie-oidc-java/actions/workflows/codeql.yml/badge.svg)](https://github.com/italia/spid-cie-oidc-java/actions/workflows/codeql.yml)
 
 > ⚠️ This project is a WiP
 
