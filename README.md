@@ -1,13 +1,42 @@
-# SPID/CIE OIDC Federation Relying Party, SDK for Java
+# SPID/CIE OIDC Federation, for Java
 
 [![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
 [![Join the #spid openid](https://img.shields.io/badge/Slack%20channel-%23spid%20openid-blue.svg)](https://developersitalia.slack.com/archives/C7E85ED1N/)
 [![CodeQL](https://github.com/italia/spid-cie-oidc-java/actions/workflows/codeql.yml/badge.svg)](https://github.com/italia/spid-cie-oidc-java/actions/workflows/codeql.yml)
 
-> ⚠️ This project is a WiP
+**SPID/CIE OIDC Federation** is a **starter kit** and **example projects** designed to ease the creation of an OpenID Connect Federation.
+
+> ⚠️ This project is a work-in-progress. Currently only the **Relying Party** has been completed.
+>
+> 👀 Watch this repository over GitHub to stay informed.
+
+| Starter Kit sections                                   | Status                        |
+| ------------------------------------------------------ | ----------------------------- |
+| **OpenID Connect Federation**                          | ![In roadmap][status-roadmap] |
+| **OpenID Connect Identity Provider**                   | ![In roadmap][status-roadmap] |
+| **OpenID Connect Relying Party**                       | ![Ready][status-ready]        |
+
+![preview](preview.gif)
 
 
-The SPID/CIE OIDC Federation Relying Party, written in Java.
+## Packages
+
+### SPID/CIE OIDC Federation Starter Kit
+
+A java library that exposes utilities, _helpers_ and _handlers_ you could include into your application in order
+to support the SPID/CIE dialect of the OpenID Federation Authentication protocol.
+
+The library is developed using Java 11 with a "Low Level Java" approach to limit dependencies and allowing it to
+be included into projects mades with high-level framework like Spring, SpringBoot, OSGi, Quarkus, ....
+
+
+## Example projects
+
+### [SpringBoot Relying Party example](examples/relying-party-spring-boot)
+
+A simple SpringBoot web application using the starter-kit to implement a Relying Party.
+
+This application is for demo purpose only, please don't use it in production or critical environment.
 
 
 ## Useful links
@@ -22,7 +51,7 @@ Your contribution is welcome, no question is useless and no answer is obvious, w
 
 #### Contribute as end user
 
-Please open an issue if you've discoveerd a bug or if you want to ask some features.
+Please open an issue if you've discoverd a bug or if you want to ask some features.
 
 
 ## License and Authors
@@ -30,3 +59,6 @@ Please open an issue if you've discoveerd a bug or if you want to ask some featu
 This software is released under the Apache 2 License by:
 
 - Mauro Mariuzzo <mauro.mariuzzo@smc.it>.
+
+[status-roadmap]: https://img.shields.io/badge/status-in%20roadmap-inactive
+[status-ready]: https://img.shields.io/badge/status-ready-success
