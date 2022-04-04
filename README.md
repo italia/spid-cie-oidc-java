@@ -23,11 +23,11 @@
 
 ### SPID/CIE OIDC Federation Starter Kit
 
-A java library that exposes utilities, _helpers_ and _handlers_ you could include into your application in order
-to support the SPID/CIE dialect of the OpenID Federation Authentication protocol.
+A java library that exposes utilities, _helpers_ and _handlers_ you can include into your application in order
+to support the SPID/CIE OpenID Connect Authentication profile and OpenID Federation 1.0.
 
 The library is developed using Java 11 with a "Low Level Java" approach to limit dependencies and allowing it to
-be included into projects mades with high-level framework like Spring, SpringBoot, OSGi, Quarkus, ....
+be included into projects mades with high-level framework like Spring, SpringBoot, OSGi, Quarkus and many others java based frameworks.
 
 
 ## Example projects
@@ -52,6 +52,10 @@ Your contribution is welcome, no question is useless and no answer is obvious, w
 #### Contribute as end user
 
 Please open an issue if you've discoverd a bug or if you want to ask some features.
+
+### About this implementation
+
+TODO: few notes about the profiles supported and how they was implemented.
 
 
 ## License and Authors
