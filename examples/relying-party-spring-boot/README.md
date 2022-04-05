@@ -82,3 +82,4 @@ previous chapter instructions replacing `127.0.0.1` with the right hostname
 - docker image mounts the folder `./docker/data-java` as `/data` inside spring-boot container to externalize `jwk` and `trust-marks` configuration
 
 
+![Docker Preview](https://youtu.be/U2Ec0No2EKg)
