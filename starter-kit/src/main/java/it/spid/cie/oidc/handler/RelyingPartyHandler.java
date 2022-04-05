@@ -107,11 +107,10 @@ public class RelyingPartyHandler {
 			throw e;
 		}
 
-		FederationEntity entityConf = persistence.fetchFederationEntity(
-			OIDCConstants.OPENID_RELYING_PARTY);
+		FederationEntity entityConf = getOrCreateFederationEntity();
 
 		if (entityConf == null || !entityConf.isActive()) {
-			throw new OIDCException("Missing configuration");
+			throw new OIDCException("Missing WellKnown configuration");
 		}
 
 		JSONObject entityMetadata;
@@ -243,8 +242,32 @@ public class RelyingPartyHandler {
 	/**
 	 * Return the "Well Known" information of the current Relying Party. The completeness
 	 * of these informations depends of the federation on-boarding status of the entity.
+	 * <br/>
+	 * Use this method only for the OnBoarding phase. For other scenarious use
+	 * {@link #getWellKnownData(String, boolean)}
 	 *
-	 * @param requestURL
+	 * @param jsonMode
+	 * @return
+	 * @throws OIDCException
+	 */
+	public WellKnownData getWellKnownData(boolean jsonMode) throws OIDCException {
+		String sub = options.getClientId();
+
+		FederationEntity conf = persistence.fetchFederationEntity(sub, true);
+
+		if (conf == null) {
+			return prepareOnboardingData(sub, jsonMode);
+		}
+		else {
+			return getWellKnownData(conf, jsonMode);
+		}
+	}
+
+	/**
+	 * Return the "Well Known" information of the current Relying Party. The completeness
+	 * of these informations depends of the federation on-boarding status of the entity.
+	 *
+	 * @param requestURL the requested url with the ".well-known" suffix
 	 * @param jsonMode
 	 * @return
 	 * @throws OIDCException
@@ -252,7 +275,7 @@ public class RelyingPartyHandler {
 	public WellKnownData getWellKnownData(String requestURL, boolean jsonMode)
 		throws OIDCException {
 
-		String sub = getSubjectFromURL(requestURL);
+		String sub = getSubjectFromWellKnownURL(requestURL);
 
 		if (!Objects.equals(sub, options.getClientId())) {
 			throw new OIDCException(
@@ -646,6 +669,25 @@ public class RelyingPartyHandler {
 		return sb.toString();
 	}
 
+	private FederationEntity getOrCreateFederationEntity()
+		throws OIDCException {
+
+		FederationEntity entityConf = persistence.fetchFederationEntity(
+			OIDCConstants.OPENID_RELYING_PARTY);
+
+		if (entityConf != null) {
+			return entityConf;
+		}
+
+		WellKnownData wellKnown = prepareOnboardingData(options.getClientId(), true);
+
+		if (!wellKnown.isComplete()) {
+			return null;
+		}
+
+		return persistence.fetchFederationEntity(OIDCConstants.OPENID_RELYING_PARTY);
+	}
+
 	// TODO: have to be configurable
 	private JSONObject getRequestedClaims(String profile) {
 		if (OIDCProfile.SPID.equalValue(profile)) {
@@ -674,10 +716,14 @@ public class RelyingPartyHandler {
 		return new JSONObject();
 	}
 
-	private String getSubjectFromURL(String url) {
+	private String getSubjectFromWellKnownURL(String url) {
 		int x = url.indexOf(OIDCConstants.OIDC_FEDERATION_WELLKNOWN_URL);
 
-		return url.substring(0, x);
+		if (x > 0) {
+			return url.substring(0, x);
+		}
+
+		return "";
 	}
 
 	private WellKnownData getWellKnownData(FederationEntity entity, boolean jsonMode)
@@ -712,7 +758,7 @@ public class RelyingPartyHandler {
 	private WellKnownData prepareOnboardingData(String sub, boolean jsonMode)
 		throws OIDCException {
 
-		// TODO: JWSAlgorithm via defualt?
+		// TODO: JWSAlgorithm via default?
 
 		String confJwk = options.getJwk();
 
@@ -732,10 +778,10 @@ public class RelyingPartyHandler {
 
 		logger.info("Configured jwk\n" + jwk.toJSONString());
 
-		JSONArray jsonArray = new JSONArray()
+		JSONArray jsonPublicJwk = new JSONArray()
 			.put(new JSONObject(jwk.toPublicJWK().toJSONObject()));
 
-		logger.info("Configured public jwk\n" + jsonArray.toString(2));
+		logger.info("Configured public jwk\n" + jsonPublicJwk.toString(2));
 
 		JWKSet jwkSet = new JWKSet(jwk);
 
@@ -799,12 +845,12 @@ public class RelyingPartyHandler {
 		}
 
 		if (jsonMode) {
-			return WellKnownData.of(step, json.toString());
+			return WellKnownData.of(step, json.toString(), jsonPublicJwk.toString(2));
 		}
 
 		String jws = jwtHelper.createJWS(json, jwkSet);
 
-		return WellKnownData.of(step, jws);
+		return WellKnownData.of(step, jws, jsonPublicJwk.toString(2));
 	}
 
 	private static final Logger logger = LoggerFactory.getLogger(
