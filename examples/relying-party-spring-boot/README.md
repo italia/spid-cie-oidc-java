@@ -38,28 +38,26 @@ this will start the relying party server on [http://127.0.0.1:8080](http://127.0
 
 Do the on-boarding process
 - generate the relying party jwks
-- go [here](http://127.0.0.1:8080/) to auto-generate it
-- jwks are exposed on the page and inside application log
-- create the file `${user.home}/oidc-rp-jwk.json` with the jwks
-- user "reload" link to proceed with next step
+  - go [here](http://127.0.0.1:8080/) to auto-generate it
+  - jwks are exposed on the page and inside application log
+  - create the file `${user.home}/oidc-rp-jwk.json` with the jwks
+  - use "reload" link to proceed with next step
 - show on-boarding datas
-- go [here](http://127.0.0.1:8080/) to see it
+  - go [here](http://127.0.0.1:8080/) to see it
 - register the relying party [here](http://127.0.0.1:8000/admin/spid_cie_oidc_authority/federationdescendant/add)
-- set the name
-- use "http://127.0.0.1:8080/oidc/rp/" as sub
-- paste in the relying party federation public jwks
-- set isActive to true
+  - set "name", "sub" and "jwks" with values shown in previous step
+  - set isActive to true
 - create new profile [here](http://127.0.0.1:8000/admin/spid_cie_oidc_authority/federationentityassignedprofile/add/)
-- set this relying party as Descendant
-- set "SPID Public SP" as Profile
-- set the Federation Entity as Issuer
+  - set this relying party as Descendant
+  - set "SPID Public SP" as Profile
+  - set the Federation Entity as Issuer
 - after creation you review the profiles
-- copy trust_marks and save as `${user.home}/oidc-rp-trust-marks.json`
-- trust_marks are exposed as JSONObject you have to store it as JSONArray (put `[` `]` around it)
+  - copy trust_marks and save as `${user.home}/oidc-rp-trust-marks.json`
+  - trust_marks are exposed as JSONObject you have to store it as JSONArray (put `[` `]` around it)
 - complete relying party on-boarding
-- go [here](http://127.0.0.1:8080/)
-- user "reload" link to acquire trust marks
-- go [here](http://127.0.0.1:8080/oidc/rp/.well-known/openid-federation?format=json) and verify trust_marks are exposed
+  - go [here](http://127.0.0.1:8080/)
+  - user "reload" link to acquire trust marks
+  - go [here](http://127.0.0.1:8080/oidc/rp/.well-known/openid-federation?format=json) and verify trust_marks are exposed
 
 
 Visit [http://127.0.0.1:8080/oidc/rp/landing](http://127.0.0.1:8080/oidc/rp/landing) to try out the application
