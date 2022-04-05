@@ -8,25 +8,44 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import it.spid.cie.oidc.schemas.OIDCProfile;
+
 @Configuration
 @ConfigurationProperties(prefix = "oidc")
-public class OidcConfig {
-
-	private String defaultTrustAnchor;
-	private List<String> trustAnchors = new ArrayList<>();
-	private Map<String, String> identityProviders = new HashMap<>();
-	private RelyingParty relyingParty = new RelyingParty();
+public class OidcConfig extends BaseConfig {
 
 	public String getDefaultTrustAnchor() {
 		return defaultTrustAnchor;
 	}
 
-	public Map<String, String> getIdentityProviders() {
-		return identityProviders;
+	public List<ProviderInfo> getCieProviders() {
+		return cieProviders;
+	}
+
+	public List<ProviderInfo> getSpidProviders() {
+		return spidProviders;
+	}
+
+	public Map<String, String> getIdentityProviders(OIDCProfile profile) {
+		Map<String, String> result = new HashMap<>();
+
+		if (OIDCProfile.CIE.equals(profile)) {
+			for (ProviderInfo provider : cieProviders) {
+				result.put(provider.getSubject(), provider.getTrustAnchor());
+			}
+		}
+		else if (OIDCProfile.SPID.equals(profile)) {
+			for (ProviderInfo provider : spidProviders) {
+				result.put(provider.getSubject(), provider.getTrustAnchor());
+			}
+		}
+
+		return result;
 	}
 
 	public List<String> getTrustAnchors() {
@@ -37,12 +56,12 @@ public class OidcConfig {
 		return relyingParty;
 	}
 
-	public void setDefaultTrustAnchor(String defaultTrustAnchor) {
-		this.defaultTrustAnchor = defaultTrustAnchor;
+	public Hosts getHosts() {
+		return hosts;
 	}
 
-	public void setIdentityProviders(Map<String, String> identityProviders) {
-		this.identityProviders = identityProviders;
+	public void setDefaultTrustAnchor(String defaultTrustAnchor) {
+		this.defaultTrustAnchor = defaultTrustAnchor;
 	}
 
 	public void setTrustAnchors(List<String> trustAnchors) {
@@ -54,18 +73,87 @@ public class OidcConfig {
 
 		json.put("defaultTrustAnchor", defaultTrustAnchor);
 		json.put("trustAnchors", trustAnchors);
-		json.put("identityProviders", identityProviders);
 		json.put("relyingParty", relyingParty.toJSON());
+		json.put("spidProviders", new JSONArray(spidProviders));
+		json.put("cieProviders", new JSONArray(cieProviders));
+		json.put("hosts", hosts.toJSON());
 
 		return json;
 	}
 
-	public String toJSONString() {
-		return toJSON().toString();
+	private String defaultTrustAnchor;
+	private List<String> trustAnchors = new ArrayList<>();
+	private RelyingParty relyingParty = new RelyingParty();
+	private Hosts hosts = new Hosts();
+	private List<ProviderInfo> spidProviders = new ArrayList<>();
+	private List<ProviderInfo> cieProviders = new ArrayList<>();
+
+	public static class Hosts extends BaseConfig {
+
+		public String getTrustAnchor() {
+			return trustAnchor;
+		}
+
+		public String getCieProvider() {
+			return cieProvider;
+		}
+
+		public String getRelyingParty() {
+			return relyingParty;
+		}
+
+		public void setTrustAnchor(String trustAnchor) {
+			this.trustAnchor = trustAnchor;
+		}
+
+		public void setCieProvider(String cieProvider) {
+			this.cieProvider = cieProvider;
+		}
+
+		public void setRelyingParty(String relyingParty) {
+			this.relyingParty = relyingParty;
+		}
+
+		public JSONObject toJSON() {
+			return new JSONObject()
+				.put("trust-anchor", trustAnchor)
+				.put("cie-provider", cieProvider)
+				.put("relying-party", relyingParty);
+		}
+
+		private String trustAnchor = "127.0.0.1";
+		private String cieProvider = "127.0.0.1";
+		private String relyingParty = "127.0.0.1";
+
 	}
 
-	public String toJSONString(int indentFactor) {
-		return toJSON().toString(indentFactor);
+	public static class ProviderInfo extends BaseConfig {
+
+		public String getSubject() {
+			return subject;
+		}
+
+		public String getTrustAnchor() {
+			return trustAnchor;
+		}
+
+		public void setSubject(String subject) {
+			this.subject = subject;
+		}
+
+		public void setTrustAnchor(String trustAnchor) {
+			this.trustAnchor = trustAnchor;
+		}
+
+		public JSONObject toJSON() {
+			return new JSONObject()
+				.put("subject", subject)
+				.put("trust-anchor", trustAnchor);
+		}
+
+		private String subject;
+		private String trustAnchor;
+
 	}
 
 	public static class RelyingParty {
@@ -94,17 +182,17 @@ public class OidcConfig {
 			return Collections.unmodifiableSet(redirectUris);
 		}
 
-		public String getJwk() {
-			return jwk;
-		}
+//		public String getJwk() {
+//			return jwk;
+//		}
 
 		public String getJwkFilePath() {
 			return jwkFilePath;
 		}
 
-		public String getTrustMarks() {
-			return trustMarks;
-		}
+//		public String getTrustMarks() {
+//			return trustMarks;
+//		}
 
 		public String getTrustMarksFilePath() {
 			return trustMarksFilePath;
@@ -122,17 +210,17 @@ public class OidcConfig {
 			this.clientId = clientId;
 		}
 
-		public void setJwk(String jwk) {
-			this.jwk = jwk;
-		}
+//		public void setJwk(String jwk) {
+//			this.jwk = jwk;
+//		}
 
 		public void setJwkFilePath(String jwkFilePath) {
 			this.jwkFilePath = jwkFilePath;
 		}
 
-		public void setTrustMarks(String trustMarks) {
-			this.trustMarks = trustMarks;
-		}
+//		public void setTrustMarks(String trustMarks) {
+//			this.trustMarks = trustMarks;
+//		}
 
 		public void setTrustMarksFilePath(String trustMarksFilePath) {
 			this.trustMarksFilePath = trustMarksFilePath;
@@ -159,20 +247,12 @@ public class OidcConfig {
 			json.put("scope", scope);
 			json.put("clientId", clientId);
 			json.put("redirectUris", redirectUris);
-			json.put("jwk", jwk);
+			//json.put("jwk", jwk);
 			json.put("jwkFilePath", jwkFilePath);
-			json.put("trustMarks", trustMarks);
+			//json.put("trustMarks", trustMarks);
 			json.put("trustMarksFilePath", trustMarksFilePath);
 
 			return json;
-		}
-
-		public String toJSONString() {
-			return toJSON().toString();
-		}
-
-		public String toJSONString(int indentFactor) {
-			return toJSON().toString(indentFactor);
 		}
 
 		private String applicationName;
@@ -181,9 +261,9 @@ public class OidcConfig {
 		private Set<String> scope = new HashSet<>();
 		private String clientId;
 		private Set<String> redirectUris = new HashSet<>();
-		private String jwk;
+		//private String jwk;
 		private String jwkFilePath;
-		private String trustMarks;
+		//private String trustMarks;
 		private String trustMarksFilePath;
 
 	}

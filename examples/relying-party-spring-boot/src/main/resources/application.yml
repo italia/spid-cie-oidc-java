@@ -29,18 +29,27 @@ spring:
             trace: false
             web-allow-others: false
 
+
 oidc:
+   hosts:
+      trust-anchor: 127.0.0.1
+      cie-provider: 127.0.0.1
+      relying-party: 127.0.0.1
+      
    # required for onboarding checks and also for all the leafs
-   default-trust-anchor: "http://127.0.0.1:8000/"
+   default-trust-anchor: "http://${oidc.hosts.trust-anchor}:8000/"
 
    # List of trust anchors
    trust-anchors:
    - ${oidc.default-trust-anchor}
 
-   # Map of known OPs and related Trust Anchor. We need "[]" to use an URL as key
-   identity-providers:
-      "[http://127.0.0.1:8000/oidc/op/]": ${oidc.default-trust-anchor}
-      "[http://127.0.0.1:8002/]": ${oidc.default-trust-anchor}
+   # Map of known OPs and related Trust Anchor.
+   spid-providers:
+     - subject: "http://${oidc.hosts.trust-anchor}:8000/oidc/op/"
+       trust-anchor: ${oidc.default-trust-anchor}
+   cie-providers:
+     - subject: "http://${oidc.hosts.cie-provider}:8002/"
+       trust-anchor: ${oidc.default-trust-anchor}
 
    relying-party:
       application-name: "SpringBoot RP Sample"
@@ -53,12 +62,9 @@ oidc:
       - offline_access
       token-endpoint-auth-method: 
       - private_key_jwt
-      client-id: "http://127.0.0.1:8080/oidc/rp/"
+      client-id: "http://${oidc.hosts.relying-party}:8080/oidc/rp/"
       redirect-uris:
-      - "http://127.0.0.1:8080/oidc/rp/callback"
-      jwk: ""
+      - "http://${oidc.hosts.relying-party}:8080/oidc/rp/callback"
       jwk-file-path: ${user.home}/oidc-rp-jwk.json
-      trust-marks:
       trust-marks-file-path: ${user.home}/oidc-rp-trust-marks.json
-      
-      
+

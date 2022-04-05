@@ -4,14 +4,52 @@
 		<title>OIDC Relying Party SpringBoot Example</title>
 	</head>
 	<body>
-		<h1>Welcome!</h1>
+		<h3>OIDC Relying Party SpringBoot Example</h1>
+
+		<div th:if="${onlyJwks}">
+			<p>Before continue, put generated jwk into '<span th:text="${configFile}" />'</p>
+			<p>
+				<pre th:text="${mineJwks}" />
+			</p>
+			<p>then make the app <a th:href="@{/reload-handler}"> reload </a> it.</p>
+		</div>
+
+		<div th:if="${intermediate}">
+			<style>
+				table, tr, td {
+					border: 1px solid black;
+					border-collapse: collapse;
+				}
+				td {
+					padding: 5px;
+				}
+			</style>
+			<p>You have to complete Federation on-boarding. Use these values:
+			<table>
+				<tr>
+					<td>Name</td>
+					<td><span th:text="${rpName}" /></td>
+				</tr>
+				<tr>
+					<td>Subject</td>
+					<td><span th:text="${rpClientId}" /></td>
+				</tr>
+				<tr>
+					<td>jwks</td>
+					<td><pre th:text="${rpPublicJwks}" /></td>
+				</tr>
+			</table>
+			</p>
+			<p>then put "Federation TrustMarks" into '<span th:text="${configFile}" />' and make the
+			app <a th:href="@{/reload-handler}"> reload </a> it.</p>
+		</div>
 
 		<p>Choose you way
 			<ul>
-				<li>Relying Party <a th:href="@{/oidc/rp/landing}">login</a> page</li>
-				<li>Relying Party <a th:href="@{/oidc/rp/.well-known/openid-federation?format=json}">.well-known</a> endpoint</li>
-				<li>Federation <a href="http://127.0.0.1:8000/admin">federation</a> admin page</li>
-				<li>Federation <a href="http://127.0.0.1:8000/onboarding/landing">federation</a> on-boarding page</li>
+				<li th:if="${showLanding}">Relying Party <a th:href="@{/oidc/rp/landing}">login</a> page</li>
+				<li th:if="${showLanding || intermediate}">Relying Party <a th:href="@{/oidc/rp/.well-known/openid-federation?format=json}" target="_blank">.well-known</a> endpoint</li>
+				<li>Federation <a th:href="@{'http://' + ${trustAnchorHost} +':8000/admin'}" target="_blank">federation</a> admin page</li>
+				<li>Federation <a th:href="@{'http://' + ${trustAnchorHost} + ':8000/onboarding/landing'}" target="_blank">federation</a> on-boarding page</li>
 			</ul>
 		</p>
 	</body>

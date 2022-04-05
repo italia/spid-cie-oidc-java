@@ -1,8 +1,10 @@
 package it.spid.cie.oidc.spring.boot.relying.party;
 
 import java.io.File;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.WatchService;
 
 import javax.annotation.PostConstruct;
 
@@ -16,6 +18,7 @@ import it.spid.cie.oidc.callback.RelyingPartyLogoutCallback;
 import it.spid.cie.oidc.config.RelyingPartyOptions;
 import it.spid.cie.oidc.exception.OIDCException;
 import it.spid.cie.oidc.handler.RelyingPartyHandler;
+import it.spid.cie.oidc.schemas.OIDCProfile;
 import it.spid.cie.oidc.schemas.WellKnownData;
 import it.spid.cie.oidc.spring.boot.relying.party.config.OidcConfig;
 import it.spid.cie.oidc.spring.boot.relying.party.persistence.H2PersistenceImpl;
@@ -45,29 +48,36 @@ public class RelyingPartyWrapper {
 		return relyingPartyHandler.getWellKnownData(requestURL, jsonMode);
 	}
 
+	public WellKnownData getFederationEntityData()
+		throws OIDCException {
+
+		return relyingPartyHandler.getWellKnownData(true);
+	}
+
 	public String performLogout(String userKey, RelyingPartyLogoutCallback callback)
 		throws OIDCException {
 
 		return relyingPartyHandler.performLogout(userKey, callback);
 	}
 
+	public void reloadHandler() throws OIDCException {
+		logger.info("reload handler");
+
+		postConstruct();
+	}
+
 	@PostConstruct
 	private void postConstruct() throws OIDCException {
-		String jwk = oidcConfig.getRelyingParty().getJwk();
+		String jwk = readFile(oidcConfig.getRelyingParty().getJwkFilePath());
+		String trustMarks = readFile(
+			oidcConfig.getRelyingParty().getTrustMarksFilePath());
 
-		if (Validator.isNullOrEmpty(jwk)) {
-			jwk = readFile(oidcConfig.getRelyingParty().getJwkFilePath());
-		}
-
-		String trustMarks = oidcConfig.getRelyingParty().getTrustMarks();
-
-		if (Validator.isNullOrEmpty(trustMarks)) {
-			trustMarks = readFile(oidcConfig.getRelyingParty().getTrustMarksFilePath());
-		}
+		logger.info("final jwk: " + jwk);
+		logger.info("final trust_marks: " + trustMarks);
 
 		RelyingPartyOptions options = new RelyingPartyOptions()
 			.setDefaultTrustAnchor(oidcConfig.getDefaultTrustAnchor())
-			.setSPIDProviders(oidcConfig.getIdentityProviders())
+			.setSPIDProviders(oidcConfig.getIdentityProviders(OIDCProfile.SPID))
 			.setTrustAnchors(oidcConfig.getTrustAnchors())
 			.setApplicationName(oidcConfig.getRelyingParty().getApplicationName())
 			.setClientId(oidcConfig.getRelyingParty().getClientId())
