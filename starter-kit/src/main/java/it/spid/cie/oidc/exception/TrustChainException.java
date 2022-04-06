@@ -70,13 +70,13 @@ public class TrustChainException extends OIDCException {
 	@SuppressWarnings("serial")
 	public static class TrustChainDisabled extends TrustChainException {
 
-		public static String getDefualtMessage(LocalDateTime modifiedDate) {
+		public static String getDefaultMessage(LocalDateTime modifiedDate) {
 			return String.format(
 				"TrustChain DISABLED at %s", String.valueOf(modifiedDate));
 		}
 
 		public TrustChainDisabled(TrustChain trustChain) {
-			super(getDefualtMessage(trustChain.getModifiedDate()));
+			super(getDefaultMessage(trustChain.getModifiedDate()));
 		}
 
 		public TrustChainDisabled(String message) {

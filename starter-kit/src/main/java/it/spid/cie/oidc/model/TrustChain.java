@@ -2,6 +2,10 @@ package it.spid.cie.oidc.model;
 
 import java.time.LocalDateTime;
 
+import org.json.JSONObject;
+
+import it.spid.cie.oidc.exception.OIDCException;
+
 public class TrustChain extends BaseModel {
 
 	public TrustChain() {
@@ -35,6 +39,17 @@ public class TrustChain extends BaseModel {
 	 */
 	public String getMetadata() {
 		return metadata;
+	}
+
+	public JSONObject getMetadataAsJSON() throws OIDCException {
+		try {
+			return new JSONObject(this.metadata);
+		}
+		catch (Exception e) {
+			// Ignore
+		}
+
+		return new JSONObject();
 	}
 
 	public String getPartiesInvolved() {

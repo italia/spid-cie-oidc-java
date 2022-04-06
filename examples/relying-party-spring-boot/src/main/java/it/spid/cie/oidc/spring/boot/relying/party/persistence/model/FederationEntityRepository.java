@@ -17,9 +17,9 @@ public interface FederationEntityRepository
 	public FederationEntityModel fetchBySubActive(String sub, boolean active);
 
 	@Query(
-		value = "select * from federation_entity_configuration f where f.entity_type = ?1 LIMIT 1",
+		value = "select * from federation_entity_configuration f where f.sub = ?1 LIMIT 1",
 		nativeQuery = true
 	)
-	public FederationEntityModel fetchByEntityType(String entityType);
+	public FederationEntityModel fetchBySubject(String subject);
 
 }

@@ -168,9 +168,10 @@
 															<div id="spid-idp-button-medium-get" class="spid-idp-button spid-idp-button-tip spid-idp-button-relative" style="display: none; left: 56.5px; top: 46.05px;">
 																<ul id="spid-idp-list-medium-root-get" class="spid-idp-button-menu" aria-labelledby="spid-idp">
 																	<li class="spid-idp-button-link" th:each="provider : ${spidProviders}">
-																		<a th:href="@{'/oidc/rp/authorize?provider=' + ${provider} + '&profile=spid'}">
-																			<span class="spid-sr-only">SPID OIDC identity provider</span>
-																			<img src="/static/images/logo-it.svg" alt="SPID OIDC identity provider">
+																		<a id="provider-spid" th:href="@{'/oidc/rp/authorize?provider=' + ${provider.subject} + '&profile=spid'}">
+																			<span class="spid-sr-only" th:text="${provider.title}">SPID</span>
+																			<img th:if="${#strings.isEmpty(provider.logoUrl)}" src="/static/images/logo-it.svg" th:alt="${provider.title}">
+																			<img th:unless="${#strings.isEmpty(provider.logoUrl)}" th:src="${provider.logoUrl}" th:alt="${provider.title}">
 																		</a>
 																	</li>
 																</ul>
@@ -189,9 +190,10 @@
 															>
 																<ul id="cie-idp-list-medium-root-get" class="cie-idp-button-menu" aria-labelledby="cie-idp">
 																	<li th:each="provider : ${cieProviders}">
-																		<a th:href="@{'/oidc/rp/authorize?provider=' + ${provider} + '&profile=cie'}">
-																			<span class="spid-sr-only">CIE OID identity provider</span>
-																			<img src="/static/images/logo-it.svg" alt="CIE OIDC identity provider">
+																		<a id="provider-cie" th:href="@{'/oidc/rp/authorize?provider=' + ${provider.subject} + '&profile=cie'}">
+																			<span class="spid-sr-only" th:text="${provider.title}">CIE</span>
+																			<img th:if="${#strings.isEmpty(provider.logoUrl)}" src="/static/images/logo-it.svg" th:alt="${provider.title}">
+																			<img th:unless="${#strings.isEmpty(provider.logoUrl)}" th:src="${provider.logoUrl}" th:alt="${provider.title}">
 																		</a>
 																	</li>
 																</ul>

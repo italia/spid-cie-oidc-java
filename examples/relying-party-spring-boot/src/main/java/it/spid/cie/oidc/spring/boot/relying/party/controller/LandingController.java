@@ -1,6 +1,6 @@
 package it.spid.cie.oidc.spring.boot.relying.party.controller;
 
-import java.util.Map;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import it.spid.cie.oidc.schemas.OIDCProfile;
-import it.spid.cie.oidc.spring.boot.relying.party.config.OidcConfig;
+import it.spid.cie.oidc.schemas.ProviderButtonInfo;
+import it.spid.cie.oidc.spring.boot.relying.party.RelyingPartyWrapper;
 
 @RestController
 @RequestMapping("/oidc/rp")
@@ -23,20 +24,20 @@ public class LandingController {
 
 		ModelAndView mav = new ModelAndView("landing");
 
-		Map<String, String> spidProviders = oidcConfig.getIdentityProviders(
-			OIDCProfile.SPID);
+		List<ProviderButtonInfo> spidProviders =
+			relyingPartyWrapper.getProviderButtonInfos(OIDCProfile.SPID);
 
-		mav.addObject("spidProviders", spidProviders.keySet());
+		mav.addObject("spidProviders", spidProviders);
 
-		Map<String, String> cieProviders = oidcConfig.getIdentityProviders(
-			OIDCProfile.CIE);
+		List<ProviderButtonInfo> cieProviders =
+			relyingPartyWrapper.getProviderButtonInfos(OIDCProfile.CIE);
 
-		mav.addObject("cieProviders", cieProviders.keySet());
+		mav.addObject("cieProviders", cieProviders);
 
 		return mav;
 	}
 
 	@Autowired
-	private OidcConfig oidcConfig;
+	private RelyingPartyWrapper relyingPartyWrapper;
 
 }

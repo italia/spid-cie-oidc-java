@@ -36,7 +36,8 @@ public class TrustChainModel {
 		target.setLog(source.getLog());
 		target.setMetadata(source.getMetadata());
 		target.setProcessingStart(source.getProcessingStart());
-		target.setTrustAnchorId(0); // TODO: Lookup CachedEntityInfo
+		target.setTrustAnchorId(trustAnchorModel.getId());
+		target.setTrustAnchor(trustAnchorModel.getSub());
 		target.setTrustMasks(source.getTrustMarks());
 		target.setStatus(source.getStatus());
 

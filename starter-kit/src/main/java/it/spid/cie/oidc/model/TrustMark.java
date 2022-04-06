@@ -8,7 +8,6 @@ import it.spid.cie.oidc.exception.OIDCException;
 import it.spid.cie.oidc.exception.TrustMarkException;
 import it.spid.cie.oidc.helper.EntityHelper;
 import it.spid.cie.oidc.helper.JWTHelper;
-import it.spid.cie.oidc.util.Validator;
 
 public class TrustMark {
 

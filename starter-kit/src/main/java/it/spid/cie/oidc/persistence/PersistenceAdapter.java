@@ -17,14 +17,12 @@ public interface PersistenceAdapter {
 	public CachedEntityInfo fetchEntityInfo(String subject, String issuer)
 		throws PersistenceException;
 
-	public FederationEntity fetchFederationEntity(String entityType)
+	public FederationEntity fetchFederationEntity(
+			String subject, String entityType, boolean active)
 		throws PersistenceException;
 
 	public FederationEntity fetchFederationEntity(String subject, boolean active)
 		throws PersistenceException;
-
-//	public TrustChain fetchOIDCProvider(String subject, OIDCProfile profile)
-//		throws PersistenceException;
 
 	public TrustChain fetchTrustChain(String subject, String trustAnchor)
 		throws PersistenceException;

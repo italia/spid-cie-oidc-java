@@ -3,6 +3,7 @@ package it.spid.cie.oidc.spring.boot.relying.party.persistence;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -70,14 +71,15 @@ public class H2PersistenceImpl implements PersistenceAdapter {
 	}
 
 	@Override
-	public FederationEntity fetchFederationEntity(String entityType)
+	public FederationEntity fetchFederationEntity(
+			String subject, String entityType, boolean active)
 		throws PersistenceException {
 
 		try {
-			FederationEntityModel model = federationEntityRepository.fetchByEntityType(
-				entityType);
+			FederationEntityModel model = federationEntityRepository.fetchBySubActive(
+				subject, true);
 
-			if (model != null) {
+			if (model != null && Objects.equals(entityType, model.getEntityType())) {
 				return model.toFederationEntity();
 			}
 		}

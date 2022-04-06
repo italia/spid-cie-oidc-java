@@ -9,7 +9,10 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -40,6 +43,8 @@ import it.spid.cie.oidc.model.TrustChain;
 import it.spid.cie.oidc.model.TrustChainBuilder;
 import it.spid.cie.oidc.persistence.PersistenceAdapter;
 import it.spid.cie.oidc.schemas.OIDCProfile;
+import it.spid.cie.oidc.schemas.ProviderButtonInfo;
+import it.spid.cie.oidc.schemas.Scope;
 import it.spid.cie.oidc.schemas.TokenResponse;
 import it.spid.cie.oidc.schemas.WellKnownData;
 import it.spid.cie.oidc.util.JSONUtil;
@@ -66,29 +71,31 @@ public class RelyingPartyHandler {
 	}
 
 	/**
-	 * Build the "authorize url": the URL a RelyingParty have to send to an OpenID
-	 * Provider to start a SPID authorization flow
+	 * Build the "authorize url": the URL a RelyingParty have to send to an OpenID Connect
+	 * Provider to start a SPID/CIE authorization flow
 	 *
-	 * @param spidProvider
+	 * @param oidcProvider
 	 * @param trustAnchor
 	 * @param redirectUri
 	 * @param scope
-	 * @param profile
+	 * @param profile {@code spid} or {@code cie}. If null or empty {@code spid} will be
+	 * used
 	 * @param prompt
 	 * @return
 	 * @throws OIDCException
 	 */
 	public String getAuthorizeURL(
-			String spidProvider, String trustAnchor, String redirectUri, String scope,
+			String oidcProvider, String trustAnchor, String redirectUri, String scope,
 			String profile, String prompt)
 		throws OIDCException {
 
-		// TODO: CIE could reuse this flow?
-		if (Validator.isNullOrEmpty(profile)) {
-			profile = OIDCProfile.SPID.getValue();
+		OIDCProfile oidcProfile = OIDCProfile.parse(profile);
+
+		if (oidcProfile == null) {
+			oidcProfile = OIDCProfile.SPID;
 		}
 
-		TrustChain tc = getSPIDProvider(spidProvider, trustAnchor);
+		TrustChain tc = getOIDCProvider(oidcProvider, trustAnchor, oidcProfile);
 
 		if (tc == null) {
 			throw new OIDCException("TrustChain is unavailable");
@@ -107,7 +114,7 @@ public class RelyingPartyHandler {
 			throw e;
 		}
 
-		FederationEntity entityConf = getOrCreateFederationEntity();
+		FederationEntity entityConf = getOrCreateFederationEntity(options.getClientId());
 
 		if (entityConf == null || !entityConf.isActive()) {
 			throw new OIDCException("Missing WellKnown configuration");
@@ -159,11 +166,7 @@ public class RelyingPartyHandler {
 		}
 
 		if (Validator.isNullOrEmpty(scope)) {
-			scope = OIDCConstants.SCOPE_OPENID;
-		}
-
-		if (Validator.isNullOrEmpty(profile)) {
-			profile = options.getAcrValue(OIDCProfile.SPID);
+			scope = Scope.OPEN_ID.getValue();
 		}
 
 		if (Validator.isNullOrEmpty(prompt)) {
@@ -176,7 +179,7 @@ public class RelyingPartyHandler {
 		String clientId = entityMetadata.getString("client_id");
 		long issuedAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
 		String[] aud = new String[] { tc.getSubject(), authzEndpoint };
-		JSONObject claims = getRequestedClaims(profile);
+		JSONObject claims = getRequestedClaims(oidcProfile);
 		JSONObject pkce = PKCEHelper.getPKCE();
 
 		String acr = options.getAcrValue(OIDCProfile.SPID);
@@ -223,6 +226,47 @@ public class RelyingPartyHandler {
 		logger.info("Starting Authn request to {}", url);
 
 		return url;
+	}
+
+	/**
+	 * Return the information needed to render the SignIn button with the OIDC Providers
+	 * configured into {@link RelyingPartyOptions}.<br/>
+	 * The list is randomized on every call.
+	 *
+	 * @param profile
+	 * @return
+	 * @throws OIDCException
+	 */
+	public List<ProviderButtonInfo> getProviderButtonInfos(OIDCProfile profile)
+		throws OIDCException {
+
+		List<ProviderButtonInfo> result = new ArrayList<>();
+
+		Map<String, String> providers = options.getProviders(profile);
+
+		for (Map.Entry<String, String> entry : providers.entrySet()) {
+			try {
+				TrustChain tc = getOIDCProvider(
+					entry.getKey(), entry.getValue(), profile);
+
+				JSONObject metadata = tc.getMetadataAsJSON();
+
+				String logoUrl = metadata.optString("logo_uri", "");
+				String organizationName = metadata.optString("organization_name", "");
+
+				result.add(
+					new ProviderButtonInfo(tc.getSubject(), organizationName, logoUrl));
+			}
+			catch (Exception e) {
+				logger.warn(
+					"Failed trust chain for {} to {}: {}", entry.getKey(),
+					entry.getValue(), e.getMessage());
+			}
+		}
+
+		Collections.shuffle(result);
+
+		return Collections.unmodifiableList(result);
 	}
 
 	public JSONObject getUserInfo(String state, String code)
@@ -396,8 +440,7 @@ public class RelyingPartyHandler {
 			state, tokenResponse.getAccessToken(), providerConfiguration, true,
 			entityJwks);
 
-		// TODO: userKey from options
-		authnToken.setUserKey(userInfo.optString("https://attributes.spid.gov.it/email"));
+		authnToken.setUserKey(userInfo.optString(options.getUserKeyClaim()));
 
 		authnToken = persistence.storeOIDCAuthnToken(authnToken);
 
@@ -576,10 +619,11 @@ public class RelyingPartyHandler {
 		return trustChain;
 	}
 
-	protected TrustChain getSPIDProvider(String spidProvider, String trustAnchor)
+	protected TrustChain getOIDCProvider(
+			String oidcProvider, String trustAnchor, OIDCProfile profile)
 		throws OIDCException {
 
-		if (Validator.isNullOrEmpty(spidProvider)) {
+		if (Validator.isNullOrEmpty(oidcProvider)) {
 			if (logger.isWarnEnabled()) {
 				logger.warn(TrustChainException.MissingProvider.DEFAULT_MESSAGE);
 			}
@@ -588,7 +632,7 @@ public class RelyingPartyHandler {
 		}
 
 		if (Validator.isNullOrEmpty(trustAnchor)) {
-			trustAnchor = options.getSPIDProviders().get(spidProvider);
+			trustAnchor = options.getProviders(profile).get(oidcProvider);
 
 			if (Validator.isNullOrEmpty(trustAnchor)) {
 				trustAnchor = options.getDefaultTrustAnchor();
@@ -601,18 +645,17 @@ public class RelyingPartyHandler {
 			throw new TrustChainException.InvalidTrustAnchor();
 		}
 
-		TrustChain trustChain = persistence.fetchTrustChain(
-			spidProvider, trustAnchor);
+		TrustChain trustChain = persistence.fetchTrustChain(oidcProvider, trustAnchor);
 
 		boolean discover = false;
 
 		if (trustChain == null) {
-			logger.info("TrustChain not found for {}", spidProvider);
+			logger.info("TrustChain not found for {}", oidcProvider);
 
 			discover = true;
 		}
 		else if (!trustChain.isActive()) {
-			String msg = TrustChainException.TrustChainDisabled.getDefualtMessage(
+			String msg = TrustChainException.TrustChainDisabled.getDefaultMessage(
 				trustChain.getModifiedDate());
 
 			if (logger.isWarnEnabled()) {
@@ -633,7 +676,7 @@ public class RelyingPartyHandler {
 
 		if (discover) {
 			trustChain = getOrCreateTrustChain(
-				spidProvider, trustAnchor, OIDCConstants.OPENID_PROVIDER, true);
+				oidcProvider, trustAnchor, OIDCConstants.OPENID_PROVIDER, true);
 		}
 
 		return trustChain;
@@ -669,11 +712,11 @@ public class RelyingPartyHandler {
 		return sb.toString();
 	}
 
-	private FederationEntity getOrCreateFederationEntity()
+	private FederationEntity getOrCreateFederationEntity(String subject)
 		throws OIDCException {
 
 		FederationEntity entityConf = persistence.fetchFederationEntity(
-			OIDCConstants.OPENID_RELYING_PARTY);
+			subject, OIDCConstants.OPENID_RELYING_PARTY, true);
 
 		if (entityConf != null) {
 			return entityConf;
@@ -685,35 +728,12 @@ public class RelyingPartyHandler {
 			return null;
 		}
 
-		return persistence.fetchFederationEntity(OIDCConstants.OPENID_RELYING_PARTY);
+		return persistence.fetchFederationEntity(
+			subject, OIDCConstants.OPENID_RELYING_PARTY, true);
 	}
 
-	// TODO: have to be configurable
-	private JSONObject getRequestedClaims(String profile) {
-		if (OIDCProfile.SPID.equalValue(profile)) {
-			JSONObject result = new JSONObject();
-
-			JSONObject idToken = new JSONObject()
-				.put(
-					"https://attributes.spid.gov.it/familyName",
-					new JSONObject().put("essential", true))
-				.put(
-					"https://attributes.spid.gov.it/email",
-					new JSONObject().put("essential", true));
-
-			JSONObject userInfo = new JSONObject()
-				.put("https://attributes.spid.gov.it/name", new JSONObject())
-				.put("https://attributes.spid.gov.it/familyName", new JSONObject())
-				.put("https://attributes.spid.gov.it/email", new JSONObject())
-				.put("https://attributes.spid.gov.it/fiscalNumber", new JSONObject());
-
-			result.put("id_token", idToken);
-			result.put("userinfo", userInfo);
-
-			return result;
-		}
-
-		return new JSONObject();
+	private JSONObject getRequestedClaims(OIDCProfile profile) {
+		return options.getRequestedClaimsAsJSON(profile);
 	}
 
 	private String getSubjectFromWellKnownURL(String url) {

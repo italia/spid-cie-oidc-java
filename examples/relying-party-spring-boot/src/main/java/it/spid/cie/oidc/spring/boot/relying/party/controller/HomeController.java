@@ -2,8 +2,6 @@ package it.spid.cie.oidc.spring.boot.relying.party.controller;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

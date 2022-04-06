@@ -70,7 +70,7 @@ public class SpidController {
 		JSONObject userInfo = relyingPartyWrapper.getUserInfo(state, code);
 
 		request.getSession().setAttribute(
-			"USER", userInfo.optString("https://attributes.spid.gov.it/email"));
+			"USER", relyingPartyWrapper.getUserKey(userInfo));
 		request.getSession().setAttribute("USER_INFO", userInfo.toMap());
 
 		return new RedirectView("echo_attributes");

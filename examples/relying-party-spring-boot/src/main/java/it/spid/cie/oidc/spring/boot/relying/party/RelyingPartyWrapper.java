@@ -1,10 +1,8 @@
 package it.spid.cie.oidc.spring.boot.relying.party;
 
 import java.io.File;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.WatchService;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 
@@ -19,6 +17,7 @@ import it.spid.cie.oidc.config.RelyingPartyOptions;
 import it.spid.cie.oidc.exception.OIDCException;
 import it.spid.cie.oidc.handler.RelyingPartyHandler;
 import it.spid.cie.oidc.schemas.OIDCProfile;
+import it.spid.cie.oidc.schemas.ProviderButtonInfo;
 import it.spid.cie.oidc.schemas.WellKnownData;
 import it.spid.cie.oidc.spring.boot.relying.party.config.OidcConfig;
 import it.spid.cie.oidc.spring.boot.relying.party.persistence.H2PersistenceImpl;
@@ -36,10 +35,26 @@ public class RelyingPartyWrapper {
 			spidProvider, trustAnchor, redirectUri, scope, profile, prompt);
 	}
 
+	public List<ProviderButtonInfo> getProviderButtonInfos(OIDCProfile profile)
+		throws OIDCException {
+
+		return relyingPartyHandler.getProviderButtonInfos(profile);
+	}
+
 	public JSONObject getUserInfo(String state, String code)
 		throws OIDCException {
 
 		return relyingPartyHandler.getUserInfo(state, code);
+	}
+
+	public String getUserKey(JSONObject userInfo) {
+		String userKey = userInfo.optString("https://attributes.spid.gov.it/email");
+
+		if (Validator.isNullOrEmpty(userKey)) {
+			userKey = userInfo.optString("email", "");
+		}
+
+		return userKey;
 	}
 
 	public WellKnownData getWellKnownData(String requestURL, boolean jsonMode)
@@ -77,6 +92,7 @@ public class RelyingPartyWrapper {
 
 		RelyingPartyOptions options = new RelyingPartyOptions()
 			.setDefaultTrustAnchor(oidcConfig.getDefaultTrustAnchor())
+			.setCIEProviders(oidcConfig.getIdentityProviders(OIDCProfile.CIE))
 			.setSPIDProviders(oidcConfig.getIdentityProviders(OIDCProfile.SPID))
 			.setTrustAnchors(oidcConfig.getTrustAnchors())
 			.setApplicationName(oidcConfig.getRelyingParty().getApplicationName())
