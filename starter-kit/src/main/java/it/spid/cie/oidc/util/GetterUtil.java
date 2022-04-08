@@ -15,6 +15,34 @@ public class GetterUtil {
 		}
 	}
 
+	public static <T> T getObject(T value, T defaultValue) {
+		if (value != null) {
+			return value;
+		}
+
+		return defaultValue;
+	}
+
+	public static int getRangeEnd(int value, int maxValue) {
+		if (value > maxValue) {
+			return maxValue;
+		}
+
+		return value;
+	}
+
+	public static int getRangeStart(int value) {
+		return getRangeStart(0, value);
+	}
+
+	public static int getRangeStart(int value, int minValue) {
+		if (value < minValue) {
+			return minValue;
+		}
+
+		return value;
+	}
+
 	public static String getString(Object obj) {
 		if (obj instanceof String) {
 			return (String)obj;

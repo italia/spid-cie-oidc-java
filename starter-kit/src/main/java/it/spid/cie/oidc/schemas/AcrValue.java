@@ -1,10 +1,14 @@
 package it.spid.cie.oidc.schemas;
 
+import it.spid.cie.oidc.exception.OIDCException;
+
 public enum AcrValue {
 
 	L1("https://www.spid.gov.it/SpidL1"),
 	L2("https://www.spid.gov.it/SpidL2"),
 	L3("https://www.spid.gov.it/SpidL3");
+
+	private final String value;
 
 	public static AcrValue parse(String value) {
 		try {
@@ -17,7 +21,7 @@ public enum AcrValue {
 		return null;
 	}
 
-	public static AcrValue parse(String value, boolean strict) throws Exception {
+	public static AcrValue parse(String value, boolean strict) throws OIDCException {
 		if (value != null) {
 			for (AcrValue elem : AcrValue.values()) {
 				if (value.equals(elem.getValue())) {
@@ -27,7 +31,7 @@ public enum AcrValue {
 		}
 
 		if (strict) {
-			throw new Exception("Invalid value: " + value);
+			throw new OIDCException("Invalid value: " + value);
 		}
 
 		return null;
@@ -40,7 +44,5 @@ public enum AcrValue {
 	private AcrValue(String value) {
 		this.value =value;
 	}
-
-	private final String value;
 
 }

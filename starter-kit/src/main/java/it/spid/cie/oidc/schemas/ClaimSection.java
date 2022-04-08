@@ -5,6 +5,8 @@ public enum ClaimSection {
 	ID_TOKEN("id_token"),
 	USER_INFO("userinfo");
 
+	private final String value;
+
 	public static ClaimSection parse(String value) {
 		try {
 			return parse(value, false);
@@ -39,7 +41,5 @@ public enum ClaimSection {
 	private ClaimSection(String value) {
 		this.value =value;
 	}
-
-	private final String value;
 
 }

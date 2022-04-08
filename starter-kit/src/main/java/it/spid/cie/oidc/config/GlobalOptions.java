@@ -25,6 +25,15 @@ public class GlobalOptions<T extends GlobalOptions<T>> {
 	public static final String[] SUPPORTED_SIGNING_ALGS = new String[] {
 		"RS256", "RS384", "RS512", "ES256", "ES384", "ES512"};
 
+	private String jweDefaultAlgorithm = "RSA-OAEP";
+	private String jweDefaultEncryption = "A256CBC-HS512";
+	private String jwsDefaultAlgorithm = "RS256";
+	private Set<String> allowedSigningAlgs = ArrayUtil.asSet(
+		"RS256", "RS384", "RS512", "ES256", "ES384", "ES512");
+	private Set<String> allowedEncryptionAlgs = ArrayUtil.asSet(
+		"RSA-OAEP", "RSA-OAEP-256", "ECDH-ES", "ECDH-ES+A128KW", "ECDH-ES+A192KW",
+		"ECDH-ES+A256KW");
+
 	public int getDefaultExpiringMinutes() {
 		return DEFAULT_EXPIRING_MINUTES;
 	}
@@ -121,14 +130,5 @@ public class GlobalOptions<T extends GlobalOptions<T>> {
 		}
 
 	}
-
-	private String jweDefaultAlgorithm = "RSA-OAEP";
-	private String jweDefaultEncryption = "A256CBC-HS512";
-	private String jwsDefaultAlgorithm = "RS256";
-	private Set<String> allowedSigningAlgs = ArrayUtil.asSet(
-		"RS256", "RS384", "RS512", "ES256", "ES384", "ES512");
-	private Set<String> allowedEncryptionAlgs = ArrayUtil.asSet(
-		"RSA-OAEP", "RSA-OAEP-256", "ECDH-ES", "ECDH-ES+A128KW", "ECDH-ES+A192KW",
-		"ECDH-ES+A256KW");
 
 }

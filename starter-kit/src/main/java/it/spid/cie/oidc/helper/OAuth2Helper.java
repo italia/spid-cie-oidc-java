@@ -25,6 +25,10 @@ public class OAuth2Helper {
 
 	public static final String JWT_BARRIER = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
 
+	private static final Logger logger = LoggerFactory.getLogger(OAuth2Helper.class);
+
+	private final JWTHelper jwtHelper;
+
 	public OAuth2Helper(JWTHelper jwtHelper) {
 		this.jwtHelper = jwtHelper;
 	}
@@ -202,9 +206,5 @@ public class OAuth2Helper {
 
 		return sb.toString();
 	}
-
-	private static final Logger logger = LoggerFactory.getLogger(OAuth2Helper.class);
-
-	private final JWTHelper jwtHelper;
 
 }

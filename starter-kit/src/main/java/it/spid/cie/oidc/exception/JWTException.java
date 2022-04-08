@@ -59,7 +59,6 @@ public class JWTException extends OIDCException {
 
 	}
 
-
 	private JWTException(String message) {
 		super(message);
 	}

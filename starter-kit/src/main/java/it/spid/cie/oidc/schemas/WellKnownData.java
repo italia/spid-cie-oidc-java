@@ -17,6 +17,10 @@ public class WellKnownData {
 	public static final int STEP_INTERMEDIATE = 1;
 	public static final int STEP_COMPLETE = 2;
 
+	private final int step;
+	private final String value;
+	private final String publicJwks;
+
 	public static WellKnownData of(int step, String value) {
 		return new WellKnownData(step, value, "[]");
 	}
@@ -54,9 +58,5 @@ public class WellKnownData {
 	public boolean isIntermediate() {
 		return step == STEP_INTERMEDIATE;
 	}
-
-	private final int step;
-	private final String value;
-	private final String publicJwks;
 
 }

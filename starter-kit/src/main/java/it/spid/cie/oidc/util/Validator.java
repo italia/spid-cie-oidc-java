@@ -10,11 +10,9 @@ public class Validator {
 		for (int x = 0; x < value.length(); x++) {
 			char c = value.charAt(x);
 
-			if (c == ' ' || c == '\t') {
-				continue;
+			if (c != ' ' && c != '\t') {
+				return false;
 			}
-
-			return false;
 		}
 
 		return true;

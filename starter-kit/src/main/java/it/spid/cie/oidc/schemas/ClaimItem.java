@@ -11,6 +11,11 @@ public abstract class ClaimItem implements Serializable {
 
 	public static final String ATTRIBUTE_BASE_URI = "https://attributes.spid.gov.it/";
 
+	private static final long serialVersionUID = 7770619618195001323L;
+
+	private final String name;
+	private final String alias;
+
 	public final String getAlias() {
 		return alias;
 	}
@@ -42,10 +47,5 @@ public abstract class ClaimItem implements Serializable {
 
 		claims.put(name, this);
 	}
-
-	private static final long serialVersionUID = 7770619618195001323L;
-
-	private final String name;
-	private final String alias;
 
 }

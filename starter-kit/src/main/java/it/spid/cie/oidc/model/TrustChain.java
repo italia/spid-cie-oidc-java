@@ -8,13 +8,27 @@ import it.spid.cie.oidc.exception.OIDCException;
 
 public class TrustChain extends BaseModel {
 
+	private boolean active;
+	private String chain;
+	private LocalDateTime exp;
+	private LocalDateTime iat;
+	private String log = "";
+	private String metadata;
+	private String partiesInvolved;
+	private LocalDateTime processingStart;
+	private String status = "unreachable";
+	private String sub;
+	private String trustAnchor;
+	private String trustMarks;
+	private String type;
+
 	public TrustChain() {
 		super();
 		this.iat = LocalDateTime.now();
 	}
 
 	/**
-	 * return the string representation of a JSONArray with the list of entity statements
+	 * @return the string representation of a JSONArray with the list of entity statements
 	 * collected during the metadata discovery
 	 */
 	public String getChain() {
@@ -34,7 +48,7 @@ public class TrustChain extends BaseModel {
 	}
 
 	/**
-	 * return the string representation of a JSONObject with the final metadata applied
+	 * @return the string representation of a JSONObject with the final metadata applied
 	 * with the metadata policy built over the chain
 	 */
 	public String getMetadata() {
@@ -165,21 +179,5 @@ public class TrustChain extends BaseModel {
 
 		return this;
 	}
-
-	private boolean active;
-
-	private String chain;
-
-	private LocalDateTime exp;
-	private LocalDateTime iat;
-	private String log = "";
-	private String metadata;
-	private String partiesInvolved;
-	private LocalDateTime processingStart;
-	private String status = "unreachable";
-	private String sub;
-	private String trustAnchor;
-	private String trustMarks;
-	private String type;
 
 }

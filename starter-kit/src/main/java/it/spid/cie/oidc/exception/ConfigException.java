@@ -2,6 +2,8 @@ package it.spid.cie.oidc.exception;
 
 public class ConfigException extends OIDCException {
 
+	private static final long serialVersionUID = -3082538413902538010L;
+
 	public ConfigException(String format, Object... values) {
 		super(String.format(format, values));
 	}
@@ -13,7 +15,5 @@ public class ConfigException extends OIDCException {
 	public ConfigException(Throwable cause) {
 		super(cause);
 	}
-
-	private static final long serialVersionUID = -3082538413902538010L;
 
 }

@@ -12,6 +12,13 @@ import java.time.LocalDateTime;
  */
 public class CachedEntityInfo extends BaseModel {
 
+	private String iss;
+	private String sub;
+	private LocalDateTime exp;
+	private LocalDateTime iat;
+	private String statement;
+	private String jwt;
+
 	public static CachedEntityInfo of(
 		String iss, String sub, LocalDateTime exp, LocalDateTime iat, String statement,
 		String jwt) {
@@ -23,10 +30,6 @@ public class CachedEntityInfo extends BaseModel {
 			.setJwt(jwt)
 			.setStatement(statement)
 			.setSubject(sub);
-	}
-
-	public CachedEntityInfo() {
-		super();
 	}
 
 	public LocalDateTime getExpiresOn() {
@@ -46,11 +49,11 @@ public class CachedEntityInfo extends BaseModel {
 	}
 
 	public String getStatement() {
-		return iss;
+		return statement;
 	}
 
 	public String getSubject() {
-		return iss;
+		return sub;
 	}
 
 	public boolean isExpired() {
@@ -93,12 +96,5 @@ public class CachedEntityInfo extends BaseModel {
 
 		return this;
 	}
-
-	private String iss;
-	private String sub;
-	private LocalDateTime exp;
-	private LocalDateTime iat;
-	private String statement;
-	private String jwt;
 
 }

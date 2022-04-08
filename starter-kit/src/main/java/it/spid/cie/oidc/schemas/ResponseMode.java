@@ -5,6 +5,8 @@ public enum ResponseMode {
 	FORM_POST("form_post"),
 	QUERY("query");
 
+	private final String value;
+
 	public static ResponseMode parse(String value) {
 		try {
 			return parse(value, false);
@@ -39,7 +41,5 @@ public enum ResponseMode {
 	private ResponseMode(String value) {
 		this.value =value;
 	}
-
-	private final String value;
 
 }

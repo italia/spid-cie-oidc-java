@@ -2,6 +2,8 @@ package it.spid.cie.oidc.exception;
 
 public class OIDCException extends Exception {
 
+	private static final long serialVersionUID = -1839651152644089727L;
+
 	public OIDCException() {
 		super();
 	}
@@ -17,7 +19,5 @@ public class OIDCException extends Exception {
 	public OIDCException(Throwable cause) {
 		super(cause);
 	}
-
-	private static final long serialVersionUID = -1839651152644089727L;
 
 }

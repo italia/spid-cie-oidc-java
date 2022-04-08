@@ -54,16 +54,16 @@ public class ArrayUtil {
 	}
 
 	public static String[] subset(String[] array, int start, int end) {
-		start = checkStart(start);
-		end = checkEnd(end, array.length);
+		int goodStart = checkStart(start);
+		int goodEnd = checkEnd(end, array.length);
 
-		if ((start < 0) || (end < 0) || ((end - start) < 0)) {
+		if ((goodStart < 0) || (goodEnd < 0) || ((goodEnd - goodStart) < 0)) {
 			return array;
 		}
 
-		String[] newArray = new String[end - start];
+		String[] newArray = new String[goodEnd - goodStart];
 
-		System.arraycopy(array, start, newArray, 0, end - start);
+		System.arraycopy(array, goodStart, newArray, 0, goodEnd - goodStart);
 
 		return newArray;
 	}

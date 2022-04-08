@@ -7,6 +7,8 @@ public enum OIDCProfile {
 	SPID("spid"),
 	CIE("cie");
 
+	private final String value;
+
 	public static OIDCProfile parse(String value) {
 		try {
 			return parse(value, false);
@@ -47,5 +49,4 @@ public enum OIDCProfile {
 		this.value =value;
 	}
 
-	private final String value;
 }

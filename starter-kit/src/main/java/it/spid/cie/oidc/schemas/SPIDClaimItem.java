@@ -8,8 +8,7 @@ import net.jcip.annotations.Immutable;
 @Immutable
 public final class SPIDClaimItem extends ClaimItem {
 
-	// These private elements have to stay here to be initialized before any other
-	// static element
+	private static final long serialVersionUID = -5057584026789547391L;
 
 	private static final Map<String, ClaimItem> claims = new HashMap<>();
 	private static final Map<String, String> aliasMap = new HashMap<>();
@@ -84,7 +83,5 @@ public final class SPIDClaimItem extends ClaimItem {
 	private static ClaimItem withDefaultURI(String name, String aliasSuffix) {
 		return new SPIDClaimItem(name, ATTRIBUTE_BASE_URI + aliasSuffix);
 	}
-
-	private static final long serialVersionUID = -5057584026789547391L;
 
 }
