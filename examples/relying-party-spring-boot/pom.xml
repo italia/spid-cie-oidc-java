@@ -13,6 +13,10 @@
 	<name>Relying Party SpringBoot Sample</name>
 	<description>Relying Party Sample project for Spring Boot</description>
 
+	<properties>
+		<maven.deploy.skip>true</maven.deploy.skip>
+	</properties>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

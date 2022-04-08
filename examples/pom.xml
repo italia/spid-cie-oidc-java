@@ -13,6 +13,10 @@
 	<artifactId>it.spid.cie.oidc.examples</artifactId>
 	<packaging>pom</packaging>
 
+	<properties>
+		<maven.deploy.skip>true</maven.deploy.skip>
+	</properties>
+
 	<modules>
 		<module>relying-party-spring-boot</module>
 	</modules>

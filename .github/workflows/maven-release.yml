@@ -1,0 +1,69 @@
+# This workflow will build a package using Maven and then prepare and performs a tag suitable for releasing 
+# the product.
+# It is executed on-demand and allows to define next version numbering
+# For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
+
+name: Maven Tag for Release
+
+on:
+  workflow_dispatch:
+    branches: [ main ]
+    inputs:
+      bump-mode:
+        type: choice
+        description: Set rule for next development version
+        required: true
+        options:
+        - patch
+        - minor
+        - major
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+        cache: maven
+        server-id: github-releases # Value of the distributionManagement/repository/id field of the pom.xml
+        settings-path: ${{ github.workspace }} # location for the settings.xml file
+
+    - name: Build with Maven
+      run: ./mvnw -B package --file pom.xml
+
+    - name: Configure Git user
+      run: |
+        git config user.email "actions@github.com"
+        git config user.name "GitHub Actions"
+
+    - name: Release and Publish jar (Patch)
+      if: github.event.inputs.bump-mode == 'patch'
+      run: ./mvnw --no-transfer-progress -B release:prepare release:perform -DskipTest=true -s $GITHUB_WORKSPACE/settings.xml
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Release and Publish jar (Minor)
+      if: github.event.inputs.bump-mode == 'minor'
+      run: |
+        ./mvnw --no-transfer-progress -B build-helper:parse-version \
+          release:prepare -DdevelopmentVersion=\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0-SNAPSHOT \
+          release:perform -DskipTest=true -s $GITHUB_WORKSPACE/settings.xml
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Release and Publish jar (Major)
+      if: github.event.inputs.bump-mode == 'major'
+      run: |
+        ./mvnw --no-transfer-progress -B build-helper:parse-version \
+          release:prepare -DdevelopmentVersion=\${parsedVersion.nextMajorVersion}.0.0-SNAPSHOT \
+          release:perform -DskipTest=true -s $GITHUB_WORKSPACE/settings.xml
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+
