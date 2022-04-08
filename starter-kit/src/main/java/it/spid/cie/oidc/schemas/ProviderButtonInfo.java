@@ -10,6 +10,10 @@ import it.spid.cie.oidc.util.Validator;
  */
 public class ProviderButtonInfo {
 
+	private final String subject;
+	private final String organizationName;
+	private final String logoUrl;
+
 	public ProviderButtonInfo(String subject, String organizationName, String logoUrl) {
 		this.subject = subject;
 		this.organizationName = organizationName;
@@ -35,9 +39,5 @@ public class ProviderButtonInfo {
 
 		return organizationName;
 	}
-
-	private final String subject;
-	private final String organizationName;
-	private final String logoUrl;
 
 }

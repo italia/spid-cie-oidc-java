@@ -7,6 +7,8 @@ public enum Scope {
 	PROFILE("profile"),
 	EMAIL("email");
 
+	private final String value;
+
 	public static Scope parse(String value) {
 		try {
 			return parse(value, false);
@@ -46,7 +48,5 @@ public enum Scope {
 	private Scope(String value) {
 		this.value =value;
 	}
-
-	private final String value;
 
 }

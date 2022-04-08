@@ -9,6 +9,14 @@ import it.spid.cie.oidc.exception.SchemaException;
 
 public class TokenResponse {
 
+	private static Pattern TOKEN_PATTERN = Pattern.compile(
+		"^[a-zA-Z0-9_\\-]+\\.[a-zA-Z0-9_\\-]+\\.[a-zA-Z0-9_\\-]+");
+
+	private final String accessToken;
+	private final String tokenType;
+	private final int expiresIn;
+	private final String idToken;
+
 	public static TokenResponse of(JSONObject json) throws OIDCException {
 		if (json == null || json.isEmpty()) {
 			throw new SchemaException.Validation("Empty source");
@@ -66,13 +74,5 @@ public class TokenResponse {
 		this.expiresIn = expiresIn;
 		this.idToken = idToken;
 	}
-
-	private final String accessToken;
-	private final String tokenType;
-	private final int expiresIn;
-	private final String idToken;
-
-	private static Pattern TOKEN_PATTERN = Pattern.compile(
-		"^[a-zA-Z0-9_\\-]+\\.[a-zA-Z0-9_\\-]+\\.[a-zA-Z0-9_\\-]+");
 
 }

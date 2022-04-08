@@ -8,6 +8,8 @@ import net.jcip.annotations.Immutable;
 @Immutable
 public final class CIEClaimItem extends ClaimItem {
 
+	private static final long serialVersionUID = 4863754291794923639L;
+
 	private static final Map<String, ClaimItem> claims = new HashMap<>();
 	private static final Map<String, String> aliasMap = new HashMap<>();
 
@@ -65,7 +67,5 @@ public final class CIEClaimItem extends ClaimItem {
 	private static CIEClaimItem withDefaults(String name) {
 		return new CIEClaimItem(name, name);
 	}
-
-	private static final long serialVersionUID = 4863754291794923639L;
 
 }

@@ -17,6 +17,8 @@ import it.spid.cie.oidc.schemas.ClaimSection;
 
 public class ClaimOptions {
 
+	private Map<ClaimSection, Set<OptionItem>> itemsMap = new HashMap<>();
+
 	public void addSectionItem(
 			ClaimSection section, ClaimItem claimItem, Boolean essential)
 		throws OIDCException {
@@ -91,9 +93,10 @@ public class ClaimOptions {
 			.put("userinfo", userInfo);
 	}
 
-	private Map<ClaimSection, Set<OptionItem>> itemsMap = new HashMap<>();
-
 	public static class OptionItem {
+
+		private final Boolean essential;
+		private final ClaimItem claimItem;
 
 		public static OptionItem of(ClaimItem claimItem, Boolean essential)
 			throws OIDCException {
@@ -136,8 +139,6 @@ public class ClaimOptions {
 			return false;
 		}
 
-		private final Boolean essential;
-		private final ClaimItem claimItem;
-
 	}
+
 }

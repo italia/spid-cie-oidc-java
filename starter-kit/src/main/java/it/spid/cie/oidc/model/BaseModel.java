@@ -4,6 +4,10 @@ import java.time.LocalDateTime;
 
 public abstract class BaseModel {
 
+	private String storageId;
+	private LocalDateTime createDate;
+	private LocalDateTime modifiedDate;
+
 	public LocalDateTime getCreateDate() {
 		return createDate;
 	}
@@ -32,9 +36,5 @@ public abstract class BaseModel {
 		this.createDate = LocalDateTime.now();
 		this.modifiedDate = createDate;
 	}
-
-	private String storageId;
-	private LocalDateTime createDate;
-	private LocalDateTime modifiedDate;
 
 }

@@ -33,6 +33,32 @@ import it.spid.cie.oidc.util.Validator;
 
 public class EntityConfiguration {
 
+	private static final Logger logger = LoggerFactory.getLogger(
+		EntityConfiguration.class);
+
+	private final String jwt;
+	private final JWTHelper jwtHelper;
+	private EntityConfiguration trustAnchor;
+	//private JSONObject header;
+	private JSONObject payload;
+	private String sub;
+	private String iss;
+	private long exp;
+	private long iat;
+	private JWKSet jwkSet;
+	private List<String> jwksKids = new ArrayList<>();
+	private Map<String, EntityConfiguration> failedBySuperiors = new HashMap<>();
+	private Map<String, EntityConfiguration> verifiedBySuperiors = new HashMap<>();
+	private Map<String, EntityConfiguration> failedSuperiors = new HashMap<>();
+	private Map<String, EntityConfiguration> invalidSuperiors = new HashMap<>();
+	private Map<String, EntityConfiguration> verifiedSuperiors = new HashMap<>();
+	private Map<String, JSONObject> failedDescendantStatements = new HashMap<>();
+	private Map<String, JSONObject> verifiedDescendantStatements = new HashMap<>();
+	private List<String> allowedTrustMarks = new ArrayList<>();
+	private Set<TrustMark> verifiedTrustMarks = new HashSet<>();
+
+	private boolean valid = false;
+
 	public static EntityConfiguration of(CachedEntityInfo entityInfo, JWTHelper jwtHelper)
 		throws OIDCException {
 
@@ -57,7 +83,7 @@ public class EntityConfiguration {
 
 		JSONObject token = JWTHelper.fastParse(jwt);
 
-		this.header = token.getJSONObject("header");
+		//this.header = token.getJSONObject("header");
 		this.payload = token.getJSONObject("payload");
 
 		if (logger.isDebugEnabled()) {
@@ -114,6 +140,10 @@ public class EntityConfiguration {
 
 	public LocalDateTime getIssuedAt() {
 		return LocalDateTime.ofEpochSecond(iat, 0, ZoneOffset.UTC);
+	}
+
+	public String getIssuer() {
+		return iss;
 	}
 
 	public JWKSet getJWKSet() {
@@ -178,8 +208,10 @@ public class EntityConfiguration {
 			}
 		}
 
-		logger.debug(
-			"Getting Entity Configurations for {}", StringUtil.merge(authorityHints));
+		if (logger.isDebugEnabled()) {
+			logger.debug(
+				"Getting Entity Configurations for {}", StringUtil.merge(authorityHints));
+		}
 
 		for (String authorityHint : authorityHints) {
 			EntityConfiguration ec;
@@ -204,7 +236,15 @@ public class EntityConfiguration {
 			}
 		}
 
-		// TODO: Python code logs failed.
+		if (logger.isWarnEnabled()) {
+			for (String authorityHint : authorityHints) {
+				if (!this.verifiedBySuperiors.containsKey(authorityHint)) {
+					logger.warn(
+						"{} is not available, missing or not valid authority hint",
+						authorityHint);
+				}
+			}
+		}
 
 		return this.verifiedSuperiors;
 	}
@@ -435,15 +475,13 @@ public class EntityConfiguration {
 		try {
 			payload = JWTHelper.fastParsePayload(jwt);
 
-			if (ec.validateItself(false)) {
-				if (ec.validateDescendant(jwt)) {
+			if (ec.validateItself(false) && ec.validateDescendant(jwt)) {
 
-					// Validate entity JWS using superior JWKSet
+				// Validate entity JWS using superior JWKSet
 
-					JWKSet jwkSet = JWTHelper.getJWKSetFromJWT(jwt);
+				JWKSet jwkSet = JWTHelper.getJWKSetFromJWT(jwt);
 
-					valid = jwtHelper.verifyJWS(this.jwt, jwkSet);
-				}
+				valid = jwtHelper.verifyJWS(this.jwt, jwkSet);
 			}
 		}
 		catch (Exception e) {
@@ -475,6 +513,8 @@ public class EntityConfiguration {
 		}
 		else {
 			ec.addFailedDescendantStatement(getSubject(), payload);
+
+			this.failedBySuperiors.put(payload.getString("iss"), ec);
 		}
 
 		return valid;
@@ -557,10 +597,9 @@ public class EntityConfiguration {
 		if (jwtHelper.verifyJWS(jwt, this.jwkSet)) {
 			return true;
 		}
-		else {
-			// TODO: have to throw exception?
-			return false;
-		}
+
+		// TODO: have to throw exception?
+		return false;
 	}
 
 	/**
@@ -642,31 +681,5 @@ public class EntityConfiguration {
 
 		return allowedTrustMarks.contains(trustMark.optString("id"));
 	}
-
-	private static final Logger logger = LoggerFactory.getLogger(
-		EntityConfiguration.class);
-
-	private final String jwt;
-	private final JWTHelper jwtHelper;
-	private EntityConfiguration trustAnchor;
-	private JSONObject header;
-	private JSONObject payload;
-	private String sub;
-	private String iss;
-	private long exp;
-	private long iat;
-	private JWKSet jwkSet;
-	private List<String> jwksKids = new ArrayList<>();
-	private Map<String, EntityConfiguration> failedBySuperiors = new HashMap<>();
-	private Map<String, EntityConfiguration> verifiedBySuperiors = new HashMap<>();
-	private Map<String, EntityConfiguration> failedSuperiors = new HashMap<>();
-	private Map<String, EntityConfiguration> invalidSuperiors = new HashMap<>();
-	private Map<String, EntityConfiguration> verifiedSuperiors = new HashMap<>();
-	private Map<String, JSONObject> failedDescendantStatements = new HashMap<>();
-	private Map<String, JSONObject> verifiedDescendantStatements = new HashMap<>();
-	private List<String> allowedTrustMarks = new ArrayList<>();
-	private Set<TrustMark> verifiedTrustMarks = new HashSet<>();
-
-	private boolean valid = false;
 
 }

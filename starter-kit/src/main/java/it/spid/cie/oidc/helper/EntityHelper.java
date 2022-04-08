@@ -17,6 +17,11 @@ import it.spid.cie.oidc.util.StringUtil;
 
 public class EntityHelper {
 
+	private static final Logger logger = LoggerFactory.getLogger(EntityHelper.class);
+
+	@SuppressWarnings("unused")
+	private final GlobalOptions<?> options;
+
 	/**
 	 * Contacts the subject's ".well-known" endpoint to grab its federation metadata
 	 *
@@ -94,10 +99,5 @@ public class EntityHelper {
 			throw new EntityException.Generic(e);
 		}
 	}
-
-	private static final Logger logger = LoggerFactory.getLogger(EntityHelper.class);
-
-	@SuppressWarnings("unused")
-	private final GlobalOptions<?> options;
 
 }

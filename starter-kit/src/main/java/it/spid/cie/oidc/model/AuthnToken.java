@@ -4,9 +4,16 @@ import java.time.LocalDateTime;
 
 public class AuthnToken extends BaseModel {
 
-	public AuthnToken() {
-		super();
-	}
+	private String code;
+	private String accessToken;
+	private String idToken;
+	private String scope;
+	private String tokenType;
+	private int expiresIn;
+	private String authnRequestId;
+	private String userKey;
+	private LocalDateTime revoked;
+	private String refreshToken;
 
 	public String getAccessToken() {
 		return accessToken;
@@ -107,18 +114,5 @@ public class AuthnToken extends BaseModel {
 
 		return this;
 	}
-
-	private String code;
-	private String accessToken;
-	private String idToken;
-	private String scope;
-	private String tokenType;
-	private int expiresIn;
-	private String authnRequestId;
-	private String userKey;
-	private LocalDateTime revoked;
-	private String refreshToken;
-
-
 
 }

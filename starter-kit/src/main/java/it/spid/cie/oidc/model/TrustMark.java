@@ -11,6 +11,17 @@ import it.spid.cie.oidc.helper.JWTHelper;
 
 public class TrustMark {
 
+	private static final Logger logger = LoggerFactory.getLogger(TrustMark.class);
+
+	private final JWTHelper jwtHelper;
+	private final JSONObject header;
+	private final String id;
+	private final String iss;
+	private final String jwt;
+	private final String sub;
+	private boolean valid = false;
+	private EntityConfiguration issuerEC;
+
 	public TrustMark(String jwt, JWTHelper jwtHelper) {
 		JSONObject token = JWTHelper.fastParse(jwt);
 
@@ -89,14 +100,4 @@ public class TrustMark {
 		return String.format("%s to %s issued by %s", id, sub, iss);
 	}
 
-	private static final Logger logger = LoggerFactory.getLogger(TrustMark.class);
-
-	private final JWTHelper jwtHelper;
-	private final JSONObject header;
-	private final String id;
-	private final String iss;
-	private final String jwt;
-	private final String sub;
-	private boolean valid = false;
-	private EntityConfiguration issuerEC;
 }

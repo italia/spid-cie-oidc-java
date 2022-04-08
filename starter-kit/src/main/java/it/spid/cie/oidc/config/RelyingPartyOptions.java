@@ -42,6 +42,29 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 		Scope.PROFILE.getValue(), Scope.EMAIL.getValue()
 	};
 
+	private String defaultTrustAnchor;
+	private Set<String> trustAnchors = new HashSet<>();
+	private Map<String, String> spidProviders = new HashMap<>();
+	private Map<String, String> cieProviders = new HashMap<>();
+
+	private String applicationName;
+	private String applicationType = "web";
+	private Set<String> contacts = new HashSet<>();
+	private String clientId;
+	private Set<String> redirectUris = new HashSet<>();
+	private String jwk;
+	private String trustMarks;
+
+	private String loginURL = "/oidc/rp/landing";
+	private String loginRedirectURL = "/oidc/rp/echo_attributes";
+	private String logoutRedirectURL = "/oidc/rp/landing";
+
+	private String userKeyClaim;
+
+	private Map<String, String> acrMap = new HashMap<>();
+	private Map<String, Set<String>> scopeMap = new HashMap<>();
+	private Map<String, ClaimOptions> requestedClaimsMap = new HashMap<>();
+
 	public RelyingPartyOptions addRequestedClaim(
 			OIDCProfile profile, ClaimSection section, ClaimItem claimItem,
 			Boolean essential)
@@ -146,11 +169,15 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 	}
 
 	public String getLoginURL() {
-		return loginRedirectURL;
+		return loginURL;
 	}
 
 	public String getUserKeyClaim() {
 		return userKeyClaim;
+	}
+
+	public String getLoginRedirectURL() {
+		return loginRedirectURL;
 	}
 
 	public String getLogoutRedirectURL() {
@@ -464,28 +491,5 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 				"invalid-user-key-claim-for-cie: %s", userKeyClaim);
 		}
 	}
-
-	private String defaultTrustAnchor;
-	private Set<String> trustAnchors = new HashSet<>();
-	private Map<String, String> spidProviders = new HashMap<>();
-	private Map<String, String> cieProviders = new HashMap<>();
-
-	private String applicationName;
-	private String applicationType = "web";
-	private Set<String> contacts = new HashSet<>();
-	private String clientId;
-	private Set<String> redirectUris = new HashSet<>();
-	private String jwk;
-	private String trustMarks;
-
-	private String loginURL = "/oidc/rp/landing";
-	private String loginRedirectURL = "/oidc/rp/echo_attributes";
-	private String logoutRedirectURL = "/oidc/rp/landing";
-
-	private String userKeyClaim;
-
-	private Map<String, String> acrMap = new HashMap<>();
-	private Map<String, Set<String>> scopeMap = new HashMap<>();
-	private Map<String, ClaimOptions> requestedClaimsMap = new HashMap<>();
 
 }

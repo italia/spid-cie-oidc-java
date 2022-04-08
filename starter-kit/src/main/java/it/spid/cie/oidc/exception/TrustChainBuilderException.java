@@ -2,6 +2,8 @@ package it.spid.cie.oidc.exception;
 
 public class TrustChainBuilderException extends OIDCException {
 
+	private static final long serialVersionUID = -6071661647891519660L;
+
 	public TrustChainBuilderException() {
 		super();
 	}
@@ -17,7 +19,5 @@ public class TrustChainBuilderException extends OIDCException {
 	public TrustChainBuilderException(Throwable cause) {
 		super(cause);
 	}
-
-	private static final long serialVersionUID = -6071661647891519660L;
 
 }

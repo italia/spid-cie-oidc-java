@@ -2,9 +2,15 @@ package it.spid.cie.oidc.model;
 
 public class AuthnRequest extends BaseModel {
 
-	public AuthnRequest() {
-		super();
-	}
+	private String clientId;
+	private String state;
+	private String endpoint;
+	private String data;
+	private boolean successful;
+	private String providerConfiguration;
+	private String provider;
+	private String providerId;
+	private String providerJwks;
 
 	public String getClientId() {
 		return clientId;
@@ -95,15 +101,5 @@ public class AuthnRequest extends BaseModel {
 
 		return this;
 	}
-
-	private String clientId;
-	private String state;
-	private String endpoint;
-	private String data;
-	private boolean successful;
-	private String providerConfiguration;
-	private String provider;
-	private String providerId;
-	private String providerJwks;
 
 }

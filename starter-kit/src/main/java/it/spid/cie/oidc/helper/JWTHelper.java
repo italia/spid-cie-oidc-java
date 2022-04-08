@@ -46,14 +46,18 @@ import it.spid.cie.oidc.util.GetterUtil;
 
 public class JWTHelper {
 
+	private static final Logger logger = LoggerFactory.getLogger(JWTHelper.class);
+
+	private final GlobalOptions<?> options;
+
 	public static RSAKey createRSAKey(JWSAlgorithm alg, KeyUse use) throws OIDCException {
-		if (alg == null) {
-			alg = JWSAlgorithm.RS256;
-		}
+		JWSAlgorithm goodAlg = GetterUtil.getObject(alg, JWSAlgorithm.RS256);
+
+		// TODO: check targetAlg is RSA
 
 		try {
 			return new RSAKeyGenerator(2048)
-				.algorithm(JWSAlgorithm.RS256)
+				.algorithm(goodAlg)
 				.keyUse(use)
 				.keyIDFromThumbprint(true)
 				.generate();
@@ -280,16 +284,16 @@ public class JWTHelper {
 	 */
 	public static JWKSet getJWKSetFromJSON(String value) throws OIDCException {
 		try {
-			value = GetterUtil.getString(value, "{}").trim();
+			String goodValue = GetterUtil.getString(value, "{}").trim();
 
 			JSONObject jwks;
 
-			if (value.startsWith("[")) {
+			if (goodValue.startsWith("[")) {
 				jwks = new JSONObject()
-					.put("keys", new JSONArray(value));
+					.put("keys", new JSONArray(goodValue));
 			}
 			else {
-				jwks = new JSONObject(value);
+				jwks = new JSONObject(goodValue);
 			}
 
 			return JWKSet.parse(jwks.toMap());
@@ -640,9 +644,5 @@ public class JWTHelper {
 
 		throw new JWTException.Generic("Unsupported or unimplemented alg " + alg);
 	}
-
-	private static final Logger logger = LoggerFactory.getLogger(JWTHelper.class);
-
-	private final GlobalOptions<?> options;
 
 }

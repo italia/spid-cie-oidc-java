@@ -16,6 +16,10 @@ import it.spid.cie.oidc.exception.OIDCException;
 
 public class OIDCHelper {
 
+	private static final Logger logger = LoggerFactory.getLogger(OIDCHelper.class);
+
+	private final JWTHelper jwtHelper;
+
 	public OIDCHelper(JWTHelper jwtHelper) {
 		this.jwtHelper = jwtHelper;
 	}
@@ -50,8 +54,9 @@ public class OIDCHelper {
 			JSONObject jwt = jwtHelper.getJWTFromJWE(
 				response.body(), entityJwks, providerJwks);
 
-			// TODO: Debug
-			logger.info("Userinfo endpoint result: " + jwt.toString(2));
+			if (logger.isDebugEnabled()) {
+				logger.debug("Userinfo endpoint result: " + jwt.toString(2));
+			}
 
 			return jwt.getJSONObject("payload");
 		}
@@ -62,9 +67,5 @@ public class OIDCHelper {
 			throw new OIDCException(e);
 		}
 	}
-
-	private static final Logger logger = LoggerFactory.getLogger(OIDCHelper.class);
-
-	private final JWTHelper jwtHelper;
 
 }

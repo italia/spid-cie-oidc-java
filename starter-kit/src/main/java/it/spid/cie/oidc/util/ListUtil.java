@@ -22,16 +22,11 @@ public class ListUtil {
 	}
 
 	public static <E> List<E> subList(List<E> list, int start, int end) {
-		if (start < 0) {
-			start = 0;
-		}
+		int goodStart = GetterUtil.getRangeStart(start);
+		int goodEnd = GetterUtil.getRangeEnd(end, list.size());
 
-		if ((end < 0) || (end > list.size())) {
-			end = list.size();
-		}
-
-		if (start < end) {
-			return list.subList(start, end);
+		if (goodStart < goodEnd) {
+			return list.subList(goodStart, goodEnd);
 		}
 
 		return Collections.emptyList();

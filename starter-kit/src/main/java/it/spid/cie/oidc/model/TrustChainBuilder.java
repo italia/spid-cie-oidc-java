@@ -32,6 +32,24 @@ import it.spid.cie.oidc.util.ListUtil;
  */
 public class TrustChainBuilder {
 
+	private static final Logger logger = LoggerFactory.getLogger(
+		TrustChainBuilder.class);
+
+	private final JWTHelper jwtHelper;
+	private final String metadataType;
+	private final String subject;
+	private EntityConfiguration subjectConfiguration;
+	private EntityConfiguration trustAnchorConfiguration;
+	private int maxPathLength = 0;
+	private int maxAuthorityHints = 10;
+	private String[] requiredTrustMasks = new String[0];
+	private Map<Integer, List<EntityConfiguration>> trustsTree = new TreeMap<>();
+	private List<EntityConfiguration> trustPath = new ArrayList<>();
+	private long exp = 0;
+	private boolean valid = false;
+	private JSONObject finalMetadata;
+	private Set<TrustMark> verifiedTrustMasks = new HashSet<>();
+
 	public TrustChainBuilder(String subject, String metadataType, JWTHelper jwtHelper) {
 		this.jwtHelper = jwtHelper;
 		this.metadataType = metadataType;
@@ -274,7 +292,7 @@ public class TrustChainBuilder {
 					metadata.put(key, p.get("default"));
 				}
 				else if (p.has("essential")) {
-					// TODO: understand essential
+					// TODO: essential on policy?
 				}
 
 				continue;
@@ -602,25 +620,5 @@ public class TrustChainBuilder {
 
 		return new JSONArray(s1);
 	}
-
-
-	private static final Logger logger = LoggerFactory.getLogger(
-		TrustChainBuilder.class);
-
-	private final JWTHelper jwtHelper;
-	private final String metadataType;
-	private final String subject;
-	private EntityConfiguration subjectConfiguration;
-	private EntityConfiguration trustAnchorConfiguration;
-	private int maxPathLength = 0;
-	private int maxAuthorityHints = 10;
-	private String[] requiredTrustMasks = new String[0];
-	private Map<Integer, List<EntityConfiguration>> trustsTree = new TreeMap<>();
-	private List<EntityConfiguration> trustPath = new ArrayList<>();
-	private long exp = 0;
-	private boolean valid = false;
-	private JSONObject finalMetadata;
-	private Set<TrustMark> verifiedTrustMasks = new HashSet<>();
-
 
 }

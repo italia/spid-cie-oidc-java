@@ -5,6 +5,8 @@ public enum GrantType {
 	REFRESH_TOKEN("refresh_token"),
 	AUTHORIZATION_CODE("authorization_code");
 
+	private final String value;
+
 	public static GrantType parse(String value) {
 		try {
 			return parse(value, false);
@@ -39,7 +41,5 @@ public enum GrantType {
 	private GrantType(String value) {
 		this.value =value;
 	}
-
-	private final String value;
 
 }

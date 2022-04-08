@@ -2,6 +2,8 @@ package it.spid.cie.oidc.exception;
 
 public class EntityException extends OIDCException {
 
+	private static final long serialVersionUID = 9206740073587833396L;
+
 	@SuppressWarnings("serial")
 	public static class Generic extends EntityException {
 
@@ -48,7 +50,5 @@ public class EntityException extends OIDCException {
 	private EntityException(Throwable cause) {
 		super(cause);
 	}
-
-	private static final long serialVersionUID = 9206740073587833396L;
 
 }
