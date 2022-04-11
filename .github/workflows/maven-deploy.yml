@@ -47,9 +47,5 @@ jobs:
       env:
           GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Codacy coverage reporter
-      if: ${{ github.event_name != 'pull_request' && env.HAVE_CODACY == 'true' }}
-      uses: codacy/codacy-coverage-reporter-action@v1
-      with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports:  coverage/target/site/jacoco-aggregate/jacoco.xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
