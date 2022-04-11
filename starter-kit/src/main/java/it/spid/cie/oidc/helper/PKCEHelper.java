@@ -29,7 +29,7 @@ public class PKCEHelper {
 		}
 	}
 
-	private static String generateCodeVerifier() throws UnsupportedEncodingException {
+	private static String generateCodeVerifier() {
 		SecureRandom secureRandom = new SecureRandom();
 
 		byte[] codeVerifier = new byte[CODE_VERIFIER_LENGTH];

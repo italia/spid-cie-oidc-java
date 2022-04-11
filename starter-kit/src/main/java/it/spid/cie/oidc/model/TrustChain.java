@@ -55,7 +55,7 @@ public class TrustChain extends BaseModel {
 		return metadata;
 	}
 
-	public JSONObject getMetadataAsJSON() throws OIDCException {
+	public JSONObject getMetadataAsJSON() {
 		try {
 			return new JSONObject(this.metadata);
 		}
@@ -99,7 +99,11 @@ public class TrustChain extends BaseModel {
 	}
 
 	public boolean isExpired() {
-		return exp.isBefore(LocalDateTime.now());
+		if (exp != null) {
+			return exp.isBefore(LocalDateTime.now());
+		}
+
+		return true;
 	}
 
 	public TrustChain setActive(boolean active) {

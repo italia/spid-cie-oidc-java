@@ -10,39 +10,51 @@ public enum AcrValue {
 
 	private final String value;
 
+	/**
+	 * Identify the AcrValue by its {@code value} or {@code name}. While value is strictly
+	 * checked, name is evalueated case insensitive.
+	 *
+	 * @param value value to search
+	 * @return found element, or null
+	 */
 	public static AcrValue parse(String value) {
-		try {
-			return parse(value, false);
-		}
-		catch (Exception e) {
-			// Ignore
+		if (value != null) {
+			for (AcrValue elem : AcrValue.values()) {
+				if (value.equals(elem.value())) {
+					return elem;
+				}
+			}
+			for (AcrValue elem : AcrValue.values()) {
+				if (value.equalsIgnoreCase(elem.name())) {
+					return elem;
+				}
+			}
 		}
 
 		return null;
 	}
 
 	public static AcrValue parse(String value, boolean strict) throws OIDCException {
-		if (value != null) {
-			for (AcrValue elem : AcrValue.values()) {
-				if (value.equals(elem.getValue())) {
-					return elem;
-				}
-			}
-		}
+		AcrValue result = parse(value);
 
-		if (strict) {
+		if (result == null && strict) {
 			throw new OIDCException("Invalid value: " + value);
 		}
 
-		return null;
+		return result;
 	}
 
-	public String getValue() {
+	@Override
+	public String toString() {
+		return value();
+	}
+
+	public String value() {
 		return value;
 	}
 
 	private AcrValue(String value) {
-		this.value =value;
+		this.value = value;
 	}
 
 }

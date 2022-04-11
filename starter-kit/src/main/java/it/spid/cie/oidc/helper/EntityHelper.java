@@ -38,9 +38,7 @@ public class EntityHelper {
 				OIDCConstants.OIDC_FEDERATION_WELLKNOWN_URL
 			);
 
-		if (logger.isInfoEnabled()) {
-			logger.info("Starting Entity Configuration Request for " + url);
-		}
+		logger.info("Starting Entity Configuration Request for {}", url);
 
 		return doHttpGet(url);
 	}
@@ -53,9 +51,7 @@ public class EntityHelper {
 	 * @throws OIDCException
 	 */
 	public static String getEntityStatement(String url) throws OIDCException {
-		if (logger.isInfoEnabled()) {
-			logger.info("Starting Entity Statement Request to " + url);
-		}
+		logger.info("Starting Entity Statement Request to {}", url);
 
 		return doHttpGet(url);
 	}
@@ -82,9 +78,7 @@ public class EntityHelper {
 				.build()
 				.send(request, BodyHandlers.ofString());
 
-			if (logger.isDebugEnabled()) {
-				logger.debug(url + " --> " + response.statusCode());
-			}
+			logger.debug("{} --> {}", url, response.statusCode());
 
 			if (response.statusCode() != 200) {
 				throw new EntityException.Generic(url + " gets " + response.statusCode());

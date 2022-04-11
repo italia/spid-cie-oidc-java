@@ -57,9 +57,12 @@ public class CachedEntityInfo extends BaseModel {
 	}
 
 	public boolean isExpired() {
-		return exp.isBefore(LocalDateTime.now());
-	}
+		if (exp != null) {
+			return exp.isBefore(LocalDateTime.now());
+		}
 
+		return true;
+	}
 
 	public CachedEntityInfo setExpiresOn(LocalDateTime expiresOn) {
 		this.exp = expiresOn;

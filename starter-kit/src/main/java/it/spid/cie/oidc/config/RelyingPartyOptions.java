@@ -27,19 +27,19 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 	public static final String[] SUPPORTED_APPLICATION_TYPES = new String[] { "web" };
 
 	public static final String[] SUPPORTED_GRANT_TYPES = new String[] {
-		GrantType.REFRESH_TOKEN.getValue(),
-		GrantType.AUTHORIZATION_CODE.getValue()
+		GrantType.REFRESH_TOKEN.value(),
+		GrantType.AUTHORIZATION_CODE.value()
 	};
 
 	public static final String[] SUPPORTED_RESPONSE_TYPES = new String[] { "code" };
 
 	public static final String[] SUPPORTED_SCOPES_SPID = new String[] {
-		Scope.OPEN_ID.getValue(), Scope.OFFLINE_ACCESS.getValue()
+		Scope.OPEN_ID.value(), Scope.OFFLINE_ACCESS.value()
 	};
 
 	public static final String[] SUPPORTED_SCOPES_CIE = new String[] {
-		Scope.OPEN_ID.getValue(), Scope.OFFLINE_ACCESS.getValue(),
-		Scope.PROFILE.getValue(), Scope.EMAIL.getValue()
+		Scope.OPEN_ID.value(), Scope.OFFLINE_ACCESS.value(),
+		Scope.PROFILE.value(), Scope.EMAIL.value()
 	};
 
 	private String defaultTrustAnchor;
@@ -77,12 +77,16 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 			OIDCProfile profile, ClaimSection section, String name, Boolean essential)
 		throws OIDCException {
 
-		ClaimOptions claims = requestedClaimsMap.get(profile.getValue());
+		if (profile == null || section == null ) {
+			throw new ConfigException("null profile or section");
+		}
+
+		ClaimOptions claims = requestedClaimsMap.get(profile.value());
 
 		if (claims == null) {
 			claims = new ClaimOptions();
 
-			requestedClaimsMap.put(profile.getValue(), claims);
+			requestedClaimsMap.put(profile.value(), claims);
 		}
 
 		if (OIDCProfile.SPID.equals(profile)) {
@@ -92,14 +96,14 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 			claims.addSectionItem(section, CIEClaimItem.get(name), essential);
 		}
 		else {
-			throw new ConfigException("unknown profile %s", profile.getValue());
+			throw new ConfigException("unknown profile %s", profile.value());
 		}
 
 		return this;
 	}
 
 	public String getAcrValue(OIDCProfile profile) {
-		return acrMap.get(profile.getValue());
+		return acrMap.get(profile.value());
 	}
 
 	public String getDefaultTrustAnchor() {
@@ -143,7 +147,7 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 	}
 
 	public Set<String> getScopes(OIDCProfile profile) {
-		Set<String> result = scopeMap.get(profile.getValue());
+		Set<String> result = scopeMap.get(profile.value());
 
 		if (result != null) {
 			return Collections.unmodifiableSet(result);
@@ -185,7 +189,7 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 	}
 
 	public ClaimOptions getRequestedClaims(OIDCProfile profile) {
-		return requestedClaimsMap.get(profile.getValue());
+		return requestedClaimsMap.get(profile.value());
 	}
 
 	public JSONObject getRequestedClaimsAsJSON(OIDCProfile profile) {
@@ -201,17 +205,17 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 	public RelyingPartyOptions setProfileAcr(OIDCProfile profile, String acr) {
 		if (acr != null) {
 			if (OIDCProfile.SPID.equals(profile)) {
-				AcrValue value = AcrValue.parse(acr);
+				AcrValue acrValue = AcrValue.parse(acr);
 
-				if (value != null) {
-					this.acrMap.put(profile.getValue(), acr);
+				if (acrValue != null) {
+					this.acrMap.put(profile.value(), acrValue.value());
 				}
 			}
 			else if (OIDCProfile.CIE.equals(profile)) {
-				AcrValue value = AcrValue.parse(acr);
+				AcrValue acrValue = AcrValue.parse(acr);
 
-				if (value != null) {
-					this.acrMap.put(profile.getValue(), acr);
+				if (acrValue != null) {
+					this.acrMap.put(profile.value(), acrValue.value());
 				}
 			}
 		}
@@ -269,9 +273,9 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 		return this;
 	}
 
-	public RelyingPartyOptions setScopes(OIDCProfile profile,Collection<String> scopes) {
-		if (scopes != null && !scopes.isEmpty()) {
-			this.scopeMap.put(profile.getValue(), new HashSet<>(scopes));
+	public RelyingPartyOptions setScopes(OIDCProfile profile, Collection<String> scopes) {
+		if (scopes != null) {
+			this.scopeMap.put(profile.value(), new HashSet<>(scopes));
 		}
 
 		return this;
@@ -389,28 +393,28 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 			throw new ConfigException("no-client-id");
 		}
 
-		if (!scopeMap.containsKey(OIDCProfile.SPID.getValue())) {
+		Set<String> spidScopes = scopeMap.get(OIDCProfile.SPID.value());
+
+		if (spidScopes == null || spidScopes.isEmpty()) {
 			scopeMap.put(
-				OIDCProfile.SPID.getValue(), ArrayUtil.asSet(SUPPORTED_SCOPES_SPID));
+				OIDCProfile.SPID.value(), ArrayUtil.asSet(SUPPORTED_SCOPES_SPID));
 		}
 		else {
-			Set<String> scopes = scopeMap.get(OIDCProfile.SPID.getValue());
-
-			for (String scope : scopes) {
+			for (String scope : spidScopes) {
 				if (!ArrayUtil.contains(SUPPORTED_SCOPES_SPID, scope)) {
 					throw new ConfigException("unsupported-spid-scope %s", scope);
 				}
 			}
 		}
 
-		if (!scopeMap.containsKey(OIDCProfile.CIE.getValue())) {
+		Set<String> cieScopes = scopeMap.get(OIDCProfile.CIE.value());
+
+		if (cieScopes == null || cieScopes.isEmpty()) {
 			scopeMap.put(
-				OIDCProfile.CIE.getValue(), ArrayUtil.asSet(SUPPORTED_SCOPES_CIE));
+				OIDCProfile.CIE.value(), ArrayUtil.asSet(SUPPORTED_SCOPES_CIE));
 		}
 		else {
-			Set<String> scopes = scopeMap.get(OIDCProfile.CIE.getValue());
-
-			for (String scope : scopes) {
+			for (String scope : cieScopes) {
 				if (!ArrayUtil.contains(SUPPORTED_SCOPES_CIE, scope)) {
 					throw new ConfigException("unsupported-cie-scope %s", scope);
 				}
@@ -421,11 +425,11 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 			throw new ConfigException("no-redirect-uris");
 		}
 
-		if (!acrMap.containsKey(OIDCProfile.SPID.getValue())) {
-			acrMap.put(OIDCProfile.SPID.getValue(), AcrValue.L2.getValue());
+		if (!acrMap.containsKey(OIDCProfile.SPID.value())) {
+			acrMap.put(OIDCProfile.SPID.value(), AcrValue.L2.value());
 		}
-		if (!acrMap.containsKey(OIDCProfile.CIE.getValue())) {
-			acrMap.put(OIDCProfile.CIE.getValue(), AcrValue.L2.getValue());
+		if (!acrMap.containsKey(OIDCProfile.CIE.value())) {
+			acrMap.put(OIDCProfile.CIE.value(), AcrValue.L2.value());
 		}
 
 		if (Validator.isNullOrEmpty(logoutRedirectURL)) {

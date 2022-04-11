@@ -1,5 +1,7 @@
 package it.spid.cie.oidc.schemas;
 
+import it.spid.cie.oidc.exception.OIDCException;
+
 public enum GrantType {
 
 	REFRESH_TOKEN("refresh_token"),
@@ -8,38 +10,38 @@ public enum GrantType {
 	private final String value;
 
 	public static GrantType parse(String value) {
-		try {
-			return parse(value, false);
-		}
-		catch (Exception e) {
-			// Ignore
-		}
-
-		return null;
-	}
-
-	public static GrantType parse(String value, boolean strict) throws Exception {
 		if (value != null) {
 			for (GrantType elem : GrantType.values()) {
-				if (value.equals(elem.getValue())) {
+				if (value.equals(elem.value())) {
 					return elem;
 				}
 			}
 		}
 
-		if (strict) {
-			throw new Exception("Invalid value: " + value);
-		}
-
 		return null;
 	}
 
-	public String getValue() {
+	public static GrantType parse(String value, boolean strict) throws OIDCException {
+		GrantType result = parse(value);
+
+		if (result == null && strict) {
+			throw new OIDCException("Invalid value: " + value);
+		}
+
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return value();
+	}
+
+	public String value() {
 		return value;
 	}
 
 	private GrantType(String value) {
-		this.value =value;
+		this.value = value;
 	}
 
 }

@@ -10,38 +10,37 @@ public enum OIDCProfile {
 	private final String value;
 
 	public static OIDCProfile parse(String value) {
-		try {
-			return parse(value, false);
-		}
-		catch (Exception e) {
-			// Ignore
+		if (value != null) {
+			for (OIDCProfile elem : OIDCProfile.values()) {
+				if (value.equals(elem.value())) {
+					return elem;
+				}
+			}
 		}
 
 		return null;
 	}
 
 	public static OIDCProfile parse(String value, boolean strict) throws OIDCException {
-		if (value != null) {
-			if (value.equals(SPID.getValue())) {
-				return SPID;
-			}
-			else if (value.equals(CIE.getValue())) {
-				return CIE;
-			}
-		}
+		OIDCProfile result = parse(value);
 
-		if (strict) {
+		if (result == null && strict) {
 			throw new OIDCException("Invalid value: " + value);
 		}
 
-		return null;
+		return result;
 	}
 
 	public boolean equalValue(String value) {
 		return this.value.equals(value);
 	}
 
-	public String getValue() {
+	@Override
+	public String toString() {
+		return value();
+	}
+
+	public String value() {
 		return value;
 	}
 

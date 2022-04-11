@@ -88,8 +88,4 @@ public class TrustChainException extends OIDCException {
 		super(message);
 	}
 
-	private TrustChainException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
 }

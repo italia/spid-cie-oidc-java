@@ -52,7 +52,7 @@
 
 		<!-- SPID/CIE OIDC StarterKit -->
 		<dependency>
-			<groupId>it.spid.cie.oidc</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>it.spid.cie.oidc.starter.kit</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>

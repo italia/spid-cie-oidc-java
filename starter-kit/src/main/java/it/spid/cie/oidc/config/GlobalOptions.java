@@ -111,20 +111,12 @@ public class GlobalOptions<T extends GlobalOptions<T>> {
 			}
 		}
 
-		if (Validator.isNullOrEmpty(jweDefaultAlgorithm)) {
-			throw new ConfigException(
-				"Invalid jweDefaultAlgorithm %s", jweDefaultAlgorithm);
-		}
-		else if (!allowedEncryptionAlgs.contains(jweDefaultAlgorithm)) {
+		if (!allowedEncryptionAlgs.contains(jweDefaultAlgorithm)) {
 			throw new ConfigException(
 				"Not allowed jweDefaultAlgorithm %s", jweDefaultAlgorithm);
 		}
 
-		if (Validator.isNullOrEmpty(jwsDefaultAlgorithm)) {
-			throw new ConfigException(
-				"Invalid jwsDefaultAlgorithm %s", jwsDefaultAlgorithm);
-		}
-		else if (!allowedSigningAlgs.contains(jwsDefaultAlgorithm)) {
+		if (!allowedSigningAlgs.contains(jwsDefaultAlgorithm)) {
 			throw new ConfigException(
 				"Not allowed jwsDefaultAlgorithm %s", jwsDefaultAlgorithm);
 		}

@@ -49,12 +49,12 @@
 		<repository>
 			<id>github-releases</id>
 			<name>github-releases</name>
-			<url>https://github.com/italia/spid-cie-oidc-java</url>
+			<url>https://maven.pkg.github.com/italia/spid-cie-oidc-java</url>
 		</repository>
 		<snapshotRepository>
 			<id>github-snapshots</id>
 			<name>github-snapshots</name>
-			<url>https://github.com/italia/spid-cie-oidc-java</url>
+			<url>https://maven.pkg.github.com/italia/spid-cie-oidc-java</url>
 		</snapshotRepository>
 	</distributionManagement>
 

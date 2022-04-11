@@ -40,7 +40,7 @@ public abstract class ClaimItem implements Serializable {
 			throw new IllegalArgumentException("name already configured");
 		}
 
-		aliasMap.put(name, alias);
+		aliasMap.put(alias, name);
 
 		this.name = name;
 		this.alias = alias;

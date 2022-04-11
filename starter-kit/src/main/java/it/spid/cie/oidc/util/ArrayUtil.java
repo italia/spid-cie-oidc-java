@@ -53,11 +53,22 @@ public class ArrayUtil {
 		return subset(array, start, end);
 	}
 
+	/**
+	 * Return a sub set of the provider array
+	 *
+	 * @param array the source array
+	 * @param start lower index, included. Use -1 or 0 for first element
+	 * @param end upper index, excluded, use -1 for array.legth
+	 * @return a new array with the requested elements
+	 */
 	public static String[] subset(String[] array, int start, int end) {
-		int goodStart = checkStart(start);
+		int goodStart = checkStart(start, array.length);
 		int goodEnd = checkEnd(end, array.length);
 
-		if ((goodStart < 0) || (goodEnd < 0) || ((goodEnd - goodStart) < 0)) {
+		if ((goodEnd - goodStart) < 0) {
+			return new String[0];
+		}
+		else if ((goodEnd - goodStart) == array.length) {
 			return array;
 		}
 
@@ -79,9 +90,12 @@ public class ArrayUtil {
 		return end;
 	}
 
-	private static int checkStart(int start) {
+	private static int checkStart(int start, int arrayLength) {
 		if (start < 0) {
 			return 0;
+		}
+		else if (start > arrayLength) {
+			return arrayLength;
 		}
 
 		return start;

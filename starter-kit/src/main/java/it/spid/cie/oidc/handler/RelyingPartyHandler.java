@@ -42,8 +42,11 @@ import it.spid.cie.oidc.model.FederationEntity;
 import it.spid.cie.oidc.model.TrustChain;
 import it.spid.cie.oidc.model.TrustChainBuilder;
 import it.spid.cie.oidc.persistence.PersistenceAdapter;
+import it.spid.cie.oidc.schemas.CIEClaimItem;
+import it.spid.cie.oidc.schemas.ClaimItem;
 import it.spid.cie.oidc.schemas.OIDCProfile;
 import it.spid.cie.oidc.schemas.ProviderButtonInfo;
+import it.spid.cie.oidc.schemas.SPIDClaimItem;
 import it.spid.cie.oidc.schemas.Scope;
 import it.spid.cie.oidc.schemas.TokenResponse;
 import it.spid.cie.oidc.schemas.WellKnownData;
@@ -166,7 +169,7 @@ public class RelyingPartyHandler {
 		}
 
 		if (Validator.isNullOrEmpty(scope)) {
-			scope = Scope.OPEN_ID.getValue();
+			scope = Scope.OPEN_ID.value();
 		}
 
 		if (Validator.isNullOrEmpty(prompt)) {
@@ -440,7 +443,7 @@ public class RelyingPartyHandler {
 			state, tokenResponse.getAccessToken(), providerConfiguration, true,
 			entityJwks);
 
-		authnToken.setUserKey(userInfo.optString(options.getUserKeyClaim()));
+		authnToken.setUserKey(getUserKeyFromUserInfo(userInfo));
 
 		authnToken = persistence.storeOIDCAuthnToken(authnToken);
 
@@ -450,6 +453,7 @@ public class RelyingPartyHandler {
 	protected String doPerformLogout(
 			String userKey, RelyingPartyLogoutCallback callback)
 		throws Exception {
+
 		if (Validator.isNullOrEmpty(userKey)) {
 			throw new RelyingPartyException.Generic("UserKey null or empty");
 		}
@@ -492,7 +496,7 @@ public class RelyingPartyHandler {
 		FederationEntity entityConf = persistence.fetchFederationEntity(
 			authnRequest.getClientId(), true);
 
-		JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(entityConf.getJwks());
+		JWTHelper.getJWKSetFromJSON(entityConf.getJwks());
 
 		authnToken.setRevoked(LocalDateTime.now());
 
@@ -744,6 +748,58 @@ public class RelyingPartyHandler {
 		}
 
 		return "";
+	}
+
+	private String getUserKeyFromUserInfo(JSONObject userInfo) {
+		String userKey = userInfo.optString(options.getUserKeyClaim(), null);
+
+		if (userKey != null) {
+			return userKey;
+		}
+
+		ClaimItem spidClaim = SPIDClaimItem.get(options.getUserKeyClaim());
+
+		if (spidClaim != null) {
+			userKey = userInfo.optString(spidClaim.getAlias(), null);
+
+			if (userKey != null) {
+				return userKey;
+			}
+		}
+		else {
+			spidClaim = SPIDClaimItem.getByAlias(options.getUserKeyClaim());
+
+			if (spidClaim != null) {
+				userKey = userInfo.optString(spidClaim.getName(), null);
+
+				if (userKey != null) {
+					return userKey;
+				}
+			}
+		}
+
+		ClaimItem cieClaim = CIEClaimItem.get(options.getUserKeyClaim());
+
+		if (cieClaim != null) {
+			userKey = userInfo.optString(cieClaim.getAlias(), null);
+
+			if (userKey != null) {
+				return userKey;
+			}
+		}
+		else {
+			cieClaim = CIEClaimItem.getByAlias(options.getUserKeyClaim());
+
+			if (cieClaim != null) {
+				userKey = userInfo.optString(cieClaim.getName());
+
+				if (userKey != null) {
+					return userKey;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	private WellKnownData getWellKnownData(FederationEntity entity, boolean jsonMode)
