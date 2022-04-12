@@ -329,6 +329,24 @@ public class JWTHelper {
 	}
 
 	/**
+	 * Build a JSON Web Key (JWK) set with a single JWK
+	 *
+	 * @param value a string representation of a JWK
+	 * @return a JWKSet
+	 * @throws OIDCException
+	 */
+	public static JWKSet getJWKSetFromJWK(String value) throws OIDCException {
+		try {
+			JWK jwk = JWK.parse(value);
+
+			return new JWKSet(jwk);
+		}
+		catch (Exception e) {
+			throw new JWTException.Parse(e);
+		}
+	}
+
+	/**
 	 * Get the JSON Web Key (JWK) set from the "payload" part of the provided JWT Token,
 	 * or null if not present
 	 *

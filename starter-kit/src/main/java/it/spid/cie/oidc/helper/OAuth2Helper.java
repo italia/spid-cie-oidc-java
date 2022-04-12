@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import it.spid.cie.oidc.exception.OIDCException;
 import it.spid.cie.oidc.model.FederationEntity;
 import it.spid.cie.oidc.util.JSONUtil;
+import it.spid.cie.oidc.util.Validator;
 
 public class OAuth2Helper {
 
@@ -43,7 +44,8 @@ public class OAuth2Helper {
 	 * @param state
 	 * @param code
 	 * @param issuerId
-	 * @param clientConf
+	 * @param clientConf the "well known" configuration of the federation entity making
+	 * the request
 	 * @param tokenEndpointUrl
 	 * @param codeVerifier
 	 * @return
@@ -54,40 +56,48 @@ public class OAuth2Helper {
 			FederationEntity clientConf, String tokenEndpointUrl, String codeVerifier)
 		throws OIDCException {
 
-		// create client assertion (JWS Token)
-
-		JSONObject payload = new JSONObject()
-			.put("iss", clientConf.getSubject())
-			.put("sub", clientConf.getSubject())
-			.put("aud", JSONUtil.asJSONArray(tokenEndpointUrl))
-			.put("iat", JWTHelper.getIssuedAt())
-			.put("exp", JWTHelper.getExpiresOn())
-			.put("jti", UUID.randomUUID().toString());
-
-		JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(clientConf.getJwks());
-
-		String clientAssertion = jwtHelper.createJWS(payload, jwkSet);
-
-		// Body Parameters
-
-		Map<String, Object> params = new HashMap<>();
-
-		params.put("grant_type", "authorization_code");
-		params.put("redirect_uri", redirectUrl);
-		params.put("client_id", clientConf.getSubject());
-		params.put("state", state);
-		params.put("code", code);
-		params.put("code_verifier", codeVerifier);
-		params.put("client_assertion_type", JWT_BARRIER);
-		params.put("client_assertion", clientAssertion);
-
-		if (logger.isDebugEnabled()) {
-			logger.debug("Access Token Request for {}: {}", state, buildPostBody(params));
+		if (clientConf == null || Validator.isNullOrEmpty(tokenEndpointUrl)) {
+			throw new OIDCException(
+				String.format(
+					"Invalid clientConf %s or tokenEndpoint %s", clientConf,
+					tokenEndpointUrl));
 		}
 
-		// POST
-
 		try {
+			// create client assertion (JWS Token)
+
+			JSONObject payload = new JSONObject()
+				.put("iss", clientConf.getSubject())
+				.put("sub", clientConf.getSubject())
+				.put("aud", JSONUtil.asJSONArray(tokenEndpointUrl))
+				.put("iat", JWTHelper.getIssuedAt())
+				.put("exp", JWTHelper.getExpiresOn())
+				.put("jti", UUID.randomUUID().toString());
+
+			JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(clientConf.getJwks());
+
+			String clientAssertion = jwtHelper.createJWS(payload, jwkSet);
+
+			// Body Parameters
+
+			Map<String, Object> params = new HashMap<>();
+
+			params.put("grant_type", "authorization_code");
+			params.put("redirect_uri", redirectUrl);
+			params.put("client_id", clientConf.getSubject());
+			params.put("state", state);
+			params.put("code", code);
+			params.put("code_verifier", codeVerifier);
+			params.put("client_assertion_type", JWT_BARRIER);
+			params.put("client_assertion", clientAssertion);
+
+			if (logger.isDebugEnabled()) {
+				logger.debug(
+					"Access Token Request for {}: {}", state, buildPostBody(params));
+			}
+
+			// POST
+
 			HttpRequest request = HttpRequest.newBuilder()
 				.uri(new URI(tokenEndpointUrl))
 				.POST(HttpRequest.BodyPublishers.ofString(buildPostBody(params)))
@@ -125,36 +135,43 @@ public class OAuth2Helper {
 			FederationEntity clientConf)
 		throws OIDCException {
 
-		// create client assertion (JWS Token)
-
-		JSONObject payload = new JSONObject()
-			.put("iss", clientId)
-			.put("sub", clientId)
-			.put("aud", JSONUtil.asJSONArray(revocationUrl))
-			.put("iat", JWTHelper.getIssuedAt())
-			.put("exp", JWTHelper.getExpiresOn())
-			.put("jti", UUID.randomUUID().toString());
-
-		JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(clientConf.getJwks());
-
-		String clientAssertion = jwtHelper.createJWS(payload, jwkSet);
-
-		// Body Parameters
-
-		Map<String, Object> params = new HashMap<>();
-
-		params.put("token", token);
-		params.put("client_id", clientId);
-		params.put("client_assertion", clientAssertion);
-		params.put("client_assertion_type", JWT_BARRIER);
-
-		if (logger.isDebugEnabled()) {
-			logger.debug("Send Token Revocation: {}", buildPostBody(params));
+		if (clientConf == null || Validator.isNullOrEmpty(revocationUrl)) {
+			throw new OIDCException(
+				String.format(
+					"Invalid clientConf %s or revocationUrl %s", clientConf,
+					revocationUrl));
 		}
 
-		// POST
-
 		try {
+			// create client assertion (JWS Token)
+
+			JSONObject payload = new JSONObject()
+				.put("iss", clientId)
+				.put("sub", clientId)
+				.put("aud", JSONUtil.asJSONArray(revocationUrl))
+				.put("iat", JWTHelper.getIssuedAt())
+				.put("exp", JWTHelper.getExpiresOn())
+				.put("jti", UUID.randomUUID().toString());
+
+			JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(clientConf.getJwks());
+
+			String clientAssertion = jwtHelper.createJWS(payload, jwkSet);
+
+			// Body Parameters
+
+			Map<String, Object> params = new HashMap<>();
+
+			params.put("token", token);
+			params.put("client_id", clientId);
+			params.put("client_assertion", clientAssertion);
+			params.put("client_assertion_type", JWT_BARRIER);
+
+			if (logger.isDebugEnabled()) {
+				logger.debug("Send Token Revocation: {}", buildPostBody(params));
+			}
+
+			// POST
+
 			HttpRequest request = HttpRequest.newBuilder()
 				.uri(new URI(revocationUrl))
 				.POST(HttpRequest.BodyPublishers.ofString(buildPostBody(params)))

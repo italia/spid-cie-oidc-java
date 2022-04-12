@@ -286,6 +286,15 @@ public class TestRelyinPartyHandler {
 		catched = false;
 
 		try {
+			// SPID Provider Logout
+
+			wireMockServer.stubFor(
+				WireMock.post(
+					"/oidc/op/revocation/"
+				).willReturn(
+					WireMock.ok("")
+				));
+
 			handler.performLogout(userKey, new MockRelyingPartyLogoutCallback());
 		}
 		catch (Exception e) {
