@@ -53,7 +53,7 @@ public class JWTHelper {
 	public static RSAKey createRSAKey(JWSAlgorithm alg, KeyUse use) throws OIDCException {
 		JWSAlgorithm goodAlg = GetterUtil.getObject(alg, JWSAlgorithm.RS256);
 
-		// TODO: check targetAlg is RSA
+		// TODO: check goodAlg is RSA
 
 		try {
 			return new RSAKeyGenerator(2048)
@@ -111,7 +111,7 @@ public class JWTHelper {
 	public static JSONObject fastParseHeader(String jwt) {
 		String[] parts = jwt.split("\\.");
 
-		return new JSONObject(decodeBase64(parts[1]));
+		return new JSONObject(decodeBase64(parts[0]));
 	}
 
 	/**

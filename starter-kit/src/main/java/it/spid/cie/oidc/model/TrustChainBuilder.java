@@ -597,6 +597,11 @@ public class TrustChainBuilder {
 		return new JSONArray(s1);
 	}
 
+	/**
+	 * @param o1 first set
+	 * @param o2 second set
+	 * @return elements of first set non present in the second set
+	 */
 	private JSONArray jsonArrayDifference(Object o1, Object o2) {
 		Set<Object> s1 = new HashSet<>();
 

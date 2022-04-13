@@ -540,7 +540,7 @@ public class RelyingPartyHandler {
 
 			if (trustAnchorEntity == null) {
 				trustAnchorEntity = CachedEntityInfo.of(
-					trustAnchor, subject, taConf.getExpiresOn(), taConf.getIssuedAt(),
+					trustAnchor, trustAnchor, taConf.getExpiresOn(), taConf.getIssuedAt(),
 					taConf.getPayload(), taConf.getJwt());
 
 				trustAnchorEntity = persistence.storeEntityInfo(trustAnchorEntity);

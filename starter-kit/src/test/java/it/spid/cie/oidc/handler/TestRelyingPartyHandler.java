@@ -44,13 +44,14 @@ import it.spid.cie.oidc.handler.extras.MemoryStorage;
 import it.spid.cie.oidc.handler.extras.MockRelyingPartyLogoutCallback;
 import it.spid.cie.oidc.helper.JWTHelper;
 import it.spid.cie.oidc.model.AuthnToken;
+import it.spid.cie.oidc.model.TrustChain;
 import it.spid.cie.oidc.schemas.OIDCProfile;
 import it.spid.cie.oidc.schemas.ProviderButtonInfo;
 import it.spid.cie.oidc.util.ArrayUtil;
 import it.spid.cie.oidc.util.JSONUtil;
 import it.spid.cie.oidc.util.Validator;
 
-public class TestRelyinPartyHandler {
+public class TestRelyingPartyHandler {
 
 	private static String TRUST_ANCHOR = "http://127.0.0.1:18000/";
 	private static String SPID_PROVIDER = "http://127.0.0.1:18000/oidc/op/";
@@ -173,11 +174,54 @@ public class TestRelyinPartyHandler {
 
 	@Test
 	public void testLoginLogout() {
+		MemoryStorage storage = new MemoryStorage();
+
+		doTestLoginLogout(storage);
+
+		// Expire provider TrustChain to force rebuild
+
+		boolean catched = false;
+
+		try {
+			TrustChain taChain = storage.fetchTrustChain(SPID_PROVIDER, TRUST_ANCHOR);
+
+			taChain.setExpiresOn(LocalDateTime.now());
+
+			storage.storeTrustChain(taChain);
+		}
+		catch (Exception e) {
+			catched = true;
+		}
+
+		assertFalse(catched);
+
+		doTestLoginLogout(storage);
+
+		// Disable provider TrustChain to force error
+
+		catched = false;
+
+		try {
+			TrustChain taChain = storage.fetchTrustChain(SPID_PROVIDER, TRUST_ANCHOR);
+
+			taChain.setActive(false);
+
+			storage.storeTrustChain(taChain);
+		}
+		catch (Exception e) {
+			catched = true;
+		}
+
+		assertFalse(catched);
+
+		doTestLoginLogout2(storage);
+	}
+
+	protected void doTestLoginLogout(MemoryStorage storage) {
 		boolean catched = false;
 		String url = "";
 		RelyingPartyOptions options = null;
 		RelyingPartyHandler handler = null;
-		MemoryStorage storage = new MemoryStorage();
 
 		try {
 			wireMockServer.resetAll();
@@ -304,6 +348,62 @@ public class TestRelyinPartyHandler {
 		}
 
 		assertFalse(catched);
+	}
+
+	protected void doTestLoginLogout2(MemoryStorage storage) {
+		boolean catched = false;
+		RelyingPartyOptions options = null;
+		RelyingPartyHandler handler = null;
+
+		try {
+			wireMockServer.resetAll();
+
+			// SPID Provider Entity Configuration
+
+			wireMockServer.stubFor(
+				WireMock.get(
+					"/oidc/op/" + OIDCConstants.OIDC_FEDERATION_WELLKNOWN_URL
+				).willReturn(
+					WireMock.ok(mockedSPIDProviderEntityConfiguration())
+				));
+
+			// TrustAnchor Entity Configuration
+
+			wireMockServer.stubFor(
+				WireMock.get(
+					"/" + OIDCConstants.OIDC_FEDERATION_WELLKNOWN_URL
+				).willReturn(
+					WireMock.ok(mockedTrustAnchorEntityConfiguration())
+				));
+
+			// TrustAnchor fetch Provider
+
+			wireMockServer.stubFor(
+				WireMock.get(
+						WireMock.urlPathMatching("/fetch.*")
+					).withQueryParam(
+						"sub", WireMock.equalTo(SPID_PROVIDER)
+					).willReturn(
+						WireMock.ok(mockedSPIDProviderEntityStatement())
+					));
+
+//			wireMockServer.getStubMappings().forEach(sb -> {
+//				System.out.println("stub:" + sb.toString());
+//			});
+
+			options = getOptions();
+
+			handler = new RelyingPartyHandler(options, storage);
+
+			handler.getAuthorizeURL(
+				SPID_PROVIDER, null, null, null, null, null);
+		}
+		catch (Exception e) {
+			//e.printStackTrace();
+			catched = true;
+		}
+
+		assertTrue(catched);
 	}
 
 	private RelyingPartyOptions getOptions() throws Exception {
