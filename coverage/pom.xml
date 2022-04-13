@@ -29,7 +29,7 @@
 
 	<profiles>
 		<profile>
-			<id>coverage</id>
+			<id>aggregateCoverage</id>
 			<build>
 				<plugins>
 					<plugin>
