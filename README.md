@@ -46,7 +46,7 @@ Actually only "**OpenID Connect Relying Party**" _role_ is managed. The starter-
 * UserInfo claims retrieving
 * Build (discover) TrustChain of OPs
 * Multitenancy
-* see [Usage](#usage) for a more detailed list
+* see [Usage](docs/USAGE.md) for a more detailed list
 
 
 The "**OpenID Connect Provider**" _role_ is in my thoughts. Several requirements are already covered by the current starter-kit and the missing aspects should not require lot effort.
@@ -61,6 +61,8 @@ There are no plans to extends the starter-kit to allow you to implement an "**Op
 
 Both Snapshots and Released artifacts are available on [GitHub Packages](https://github.com/orgs/italia/packages?repo_name=spid-cie-oidc-java):
 
+* if you use Maven
+
 ```xml
 <dependency>
   <groupId>it.spid.cie.oidc</groupId>
@@ -68,6 +70,14 @@ Both Snapshots and Released artifacts are available on [GitHub Packages](https:/
   <version><!--replace with the wanted version --></version>
 </dependency>
 ```
+
+* if you use Gradle
+
+```gradle
+implementation group:'it.spid.cie.oidc', name:'it.spid.cie.oidc.starter.kit', version: 'wanted-version'
+```
+
+
 
 Unfortunately, as stated in the [documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry#authenticating-to-github-packages), to use GitHub packages you have define GitHub repository in your `~/.m2/settings.xml` together with your credentials.
 
@@ -79,12 +89,7 @@ The "starter-kit" is a _backend_ library with few dependencies:
 * [`org.slf4j:slf4j-api`](https://mvnrepository.com/artifact/org.slf4j/slf4j-api)
 
 
-TODO: Describe `PersistenceAdapter`
-- describe entities, provide SQL
-
-TODO: Describe `RelyingPartyOptions` and `GeneralOptions`
-
-TODO: Describe `RelyingPartyHandler`
+go [here](docs/USAGE.md) for more detailed information
 
 
 
@@ -133,10 +138,6 @@ Please open your Pull Request on the __main__ branch, but before start coding op
 In this project we adopt [Semver](https://semver.org/lang/it/) and
 [Conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) specifications.
 
-
-## About this implementation
-
-TODO: few notes about the profiles supported and how they was implemented.
 
 
 ## License and Authors
