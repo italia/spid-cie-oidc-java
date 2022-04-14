@@ -37,7 +37,7 @@ The purpose of this project is to provide a simple and immediate tool to integra
 
 It contains a _[starter-kit](starter-kit)_, a java library that exposes utilities, _helpers_ and _handlers_ you can include into your application in order to support the SPID/CIE OpenID Connect Authentication profile and OpenID Federation 1.0.
 
-The library is developed using Java 11 with a "Low Level Java" approach to limit dependencies and allowing it to be included into projects mades with high-level framework like Spring, SpringBoot, OSGi, Quarkus and many others java based frameworks.
+The library is developed using **Java 11** with a "Low Level Java" approach to limit dependencies and allowing it to be included into projects mades with high-level framework like Spring, SpringBoot, OSGi, Quarkus and many others java based frameworks.
 
 Actually only "**OpenID Connect Relying Party**" _role_ is managed. The starter-kit provides:
 
