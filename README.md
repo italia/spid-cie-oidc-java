@@ -3,6 +3,7 @@
 [![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
 [![Join the #spid openid](https://img.shields.io/badge/Slack%20channel-%23spid%20openid-blue.svg)](https://developersitalia.slack.com/archives/C7E85ED1N/)
 ![Apache license](https://img.shields.io/badge/license-Apache%202-blue.svg)
+[![java: 11](https://oss.aoapps.com/ao-badges/java-11.svg)](https://docs.oracle.com/en/java/javase/11/docs/api/)
 [![CodeQL](https://github.com/italia/spid-cie-oidc-java/actions/workflows/codeql.yml/badge.svg)](https://github.com/italia/spid-cie-oidc-java/actions/workflows/codeql.yml)
 [![codecov](https://codecov.io/gh/italia/spid-cie-oidc-java/branch/main/graph/badge.svg?token=FjYaMfpxkK)](https://codecov.io/gh/italia/spid-cie-oidc-java)
 
