@@ -7,7 +7,7 @@
 [![CodeQL](https://github.com/italia/spid-cie-oidc-java/actions/workflows/codeql.yml/badge.svg)](https://github.com/italia/spid-cie-oidc-java/actions/workflows/codeql.yml)
 [![codecov](https://codecov.io/gh/italia/spid-cie-oidc-java/branch/main/graph/badge.svg?token=FjYaMfpxkK)](https://codecov.io/gh/italia/spid-cie-oidc-java)
 
-**SPID/CIE OIDC Federation** is a **starter kit** and **example projects** designed to ease the creation of an OpenID Connect Federation.
+**SPID/CIE OIDC Federation (for Java)** is a **starter kit** and **example projects** designed to ease the creation of an OpenID Connect Federation.
 
 
 
