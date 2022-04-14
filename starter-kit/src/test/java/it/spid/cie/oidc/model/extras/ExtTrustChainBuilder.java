@@ -24,4 +24,8 @@ public class ExtTrustChainBuilder extends TrustChainBuilder {
 		processSubjectConfiguration();
 	}
 
+	public void testableProcessTrustAnchorConfiguration() throws OIDCException {
+		processTrustAnchorConfiguration();
+	}
+
 }

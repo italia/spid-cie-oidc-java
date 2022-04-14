@@ -166,6 +166,20 @@ public class TestEntityHelper {
 		assertTrue(catched);
 	}
 
+	@Test
+	public void test_getEntityStatement() {
+		boolean catched = false;
+
+		try {
+			EntityHelper.getEntityStatement("bad-url");
+		}
+		catch (Exception e) {
+			catched = true;
+		}
+
+		assertTrue(catched);
+	}
+
 	private String getBaseHttpURL() {
 		return "http://127.0.0.1:" + wireMockServer.port() + "/";
 	}

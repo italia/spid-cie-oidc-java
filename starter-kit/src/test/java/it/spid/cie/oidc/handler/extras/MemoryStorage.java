@@ -2,6 +2,7 @@ package it.spid.cie.oidc.handler.extras;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +96,12 @@ public class MemoryStorage implements PersistenceAdapter {
 
 		AuthnRequest authnRequest = authnRequests.get(state);
 
-		return Arrays.asList(authnRequest);
+		if (authnRequest != null) {
+			return Arrays.asList(authnRequest);
+		}
+		else {
+			return Collections.emptyList();
+		}
 	}
 
 	@Override

@@ -1,35 +1,71 @@
 package it.spid.cie.oidc.test.util;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.nimbusds.jose.EncryptionMethod;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWEAlgorithm;
+import com.nimbusds.jose.JWEHeader;
+import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.crypto.RSAEncrypter;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
 
 import it.spid.cie.oidc.config.RelyingPartyOptions;
 import it.spid.cie.oidc.helper.JWTHelper;
 import it.spid.cie.oidc.util.ArrayUtil;
+import it.spid.cie.oidc.util.GetterUtil;
 import it.spid.cie.oidc.util.JSONUtil;
 
 public class RPTestUtils extends TestUtils {
 
 	public static String TRUST_ANCHOR = "http://127.0.0.1:18000/";
 	public static String SPID_PROVIDER = "http://127.0.0.1:18000/oidc/op/";
-	public static String RELYING_PARTY = "http://127.0.0.1:18080/oidc/rp/";
+	public static String RELYING_PARTY = "http://127.0.0.1:18000/oidc/rp/";
+	public static String TM_ISSUER1 = "http://127.0.0.1:18000/tmi1/";
+	public static String TM_ISSUER2 = "http://127.0.0.1:18000/tmi2/";
+
+	public static String createJWE(
+			JSONObject payload, JSONObject senderJwks, String recipientJWK)
+		throws Exception {
+
+		String jws = createJWS(payload, senderJwks);
+
+		//JWKSet recipientJWKSet = JWTHelper.getJWKSetFromJSON(recipientJwks);
+		//JWK jwk = JWTHelper.getFirstJWK(recipientJWKSet);
+		//RSAKey rsaKey = (RSAKey)jwk;
+
+		RSAKey rsaKey = JWTHelper.parseRSAKey(recipientJWK);
+
+		JWEHeader header = new JWEHeader.Builder(
+				JWEAlgorithm.RSA_OAEP_256, EncryptionMethod.A256GCM
+			).keyID(
+				rsaKey.getKeyID()
+			).contentType(
+				"JWT"  // required to indicate nested JWT
+			).build();
+
+		JWEObject jweObject = new JWEObject(header, new Payload(jws));
+
+		// Encrypt with the recipient's public key
+		jweObject.encrypt(new RSAEncrypter(rsaKey.toRSAPublicKey()));
+
+		// Serialise to JWE compact form
+		return jweObject.serialize();
+	}
 
 	public static String createJWS(JSONObject payload, JSONObject jwks)
 		throws Exception {
@@ -54,6 +90,13 @@ public class RPTestUtils extends TestUtils {
 
 		// Serialize to compact form
 		return jwsObject.serialize();
+	}
+
+	public static JWKSet createJWKSet() throws Exception {
+		RSAKey rsaKey1 = JWTHelper.createRSAKey(JWSAlgorithm.RS256, KeyUse.SIGNATURE);
+		//RSAKey rsaKey2 = JWTHelper.createRSAKey(null, KeyUse.ENCRYPTION);
+
+		return new JWKSet(Arrays.asList(rsaKey1));
 	}
 
 	public static RelyingPartyOptions getOptions() throws Exception {
@@ -282,17 +325,54 @@ public class RPTestUtils extends TestUtils {
 		JSONObject trustMarksIssuers = new JSONObject()
 			.put(
 				"https://www.spid.gov.it/certification/rp/public", JSONUtil.asJSONArray(
-					"https://registry.spid.agid.gov.it",
-					"https://public.intermediary.spid.it"))
+					TM_ISSUER1, TM_ISSUER2))
 			.put(
 				"https://www.spid.gov.it/certification/rp/private", JSONUtil.asJSONArray(
-					"https://registry.spid.agid.gov.it",
-					"https://private.other.intermediary.it"))
+					TM_ISSUER1, TM_ISSUER2))
 			.put(
 				"https://sgd.aa.it/onboarding", JSONUtil.asJSONArray(
-					"https://sgd.aa.it"));
+					TM_ISSUER1));
 
 		payload.put("trust_marks_issuers", trustMarksIssuers);
+		payload.put("constraints", new JSONObject().put("max_path_length", 1));
+
+		JSONObject jwks = mockedTrustAnchorPrivateJWKS();
+
+		return createJWS(payload, jwks);
+	}
+
+	public static String mockedTrustMarkIssuer1EntityConfiguration() throws Exception {
+		JSONObject payload = new JSONObject()
+			.put("iat", makeIssuedAt())
+			.put("exp", makeExpiresOn())
+			.put("iss", TM_ISSUER1)
+			.put("sub", TM_ISSUER1)
+			.put("jwks", mockedTrustAnchorPublicJWKS());
+
+		JSONObject trustAnchorMetadata = new JSONObject()
+			.put("contacts", JSONUtil.asJSONArray("ta@localhost"))
+			.put("federation_fetch_endpoint", TM_ISSUER1 + "fetch/")
+			.put("federation_resolve_endpoint", TM_ISSUER1 + "resolve/")
+			.put("federation_status_endpoint", TM_ISSUER1 + "trust_mask_status/")
+			.put("homepage_uri", TM_ISSUER1)
+			.put("name", "example TA")
+			.put("federation_list_endpoint", TM_ISSUER1 + "list/");
+
+		payload.put(
+			"metadata", new JSONObject().put("federation_entity", trustAnchorMetadata));
+
+//		JSONObject trustMarksIssuers = new JSONObject()
+//			.put(
+//				"https://www.spid.gov.it/certification/rp/public", JSONUtil.asJSONArray(
+//					TM_ISSUER1, TM_ISSUER2))
+//			.put(
+//				"https://www.spid.gov.it/certification/rp/private", JSONUtil.asJSONArray(
+//					TM_ISSUER1, TM_ISSUER2))
+//			.put(
+//				"https://sgd.aa.it/onboarding", JSONUtil.asJSONArray(
+//					TM_ISSUER1));
+//
+//		payload.put("trust_marks_issuers", trustMarksIssuers);
 		payload.put("constraints", new JSONObject().put("max_path_length", 1));
 
 		JSONObject jwks = mockedTrustAnchorPrivateJWKS();
@@ -308,5 +388,57 @@ public class RPTestUtils extends TestUtils {
 		return new JSONObject(getContent("ta-private-jwks.json"));
 	}
 
+	public static JSONObject mockedTrustMark(JWKSet jwkSet, String id) throws Exception {
+		return mockedTrustMark(jwkSet, id, null, null);
+	}
 
+	public static JSONObject mockedTrustMark(
+			JWKSet jwkSet, String id, String iss, String sub)
+		throws Exception {
+
+		if (jwkSet == null) {
+			jwkSet = createJWKSet();
+		}
+
+		JSONObject payload = new JSONObject()
+			.put("iss", GetterUtil.getString(iss, TRUST_ANCHOR))
+			.put("sub", GetterUtil.getString(iss, SPID_PROVIDER))
+			.put("iat", makeIssuedAt())
+			.put(
+				"id", GetterUtil.getString(
+					id, "https://www.spid.gov.it/certification/op"))
+			.put("mark", "https://www.agid.gov.it/themes/custom/agid/logo.svg")
+			.put(
+				"ref",
+				"https://docs.italia.it/italia/spid/spid-regole-tecniche-oidc/it/stabile/index.html");
+
+
+		JWK jwk = JWTHelper.getFirstJWK(jwkSet);
+
+		RSAKey rsaKey = (RSAKey)jwk;
+
+		JWSSigner signer = new RSASSASigner(rsaKey);
+		JWSAlgorithm alg = JWSAlgorithm.RS256;
+
+		// Prepare JWS object with the payload
+
+		JWSHeader header = new JWSHeader.Builder(alg)
+			.keyID(jwk.getKeyID())
+			.type(new JOSEObjectType("trust-mark+jwt"))
+			.build();
+
+		JWSObject jwsObject = new JWSObject(header, new Payload(payload.toString()));
+
+		// Compute the signature
+		jwsObject.sign(signer);
+
+		// Serialize to compact form
+		String jws = jwsObject.serialize();
+
+		JSONObject trustMark = new JSONObject()
+			.put("id", id)
+			.put("trust_mark", jws);
+
+		return trustMark;
+	}
 }

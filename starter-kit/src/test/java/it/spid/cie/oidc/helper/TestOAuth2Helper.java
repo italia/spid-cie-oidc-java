@@ -1,10 +1,12 @@
 package it.spid.cie.oidc.helper;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,6 +21,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 
 import it.spid.cie.oidc.config.RelyingPartyOptions;
 import it.spid.cie.oidc.model.FederationEntity;
+import it.spid.cie.oidc.test.util.RPTestUtils;
 import it.spid.cie.oidc.test.util.TestUtils;
 import it.spid.cie.oidc.util.ArrayUtil;
 
@@ -363,6 +366,56 @@ public class TestOAuth2Helper {
 
 		assertFalse(catched);
 	}
+
+	@Test
+	public void test_buildPostBody() {
+		boolean catched = false;
+
+		OAuth2Helper helper = null;
+		Method privateMethod = null;
+		try {
+			JWTHelper jwtHelper = new JWTHelper(RPTestUtils.getOptions());
+
+			helper = new OAuth2Helper(jwtHelper);
+
+			privateMethod = OAuth2Helper.class.getDeclaredMethod(
+					"buildPostBody", Map.class);
+
+			privateMethod.setAccessible(true);
+
+		}
+		catch (Exception e) {
+			catched = true;
+		}
+
+		assertFalse(catched);
+
+		String returnValue = "";
+		catched = false;
+
+		try {
+			returnValue = (String) privateMethod.invoke(
+				helper, new HashMap<String, String>());
+		}
+		catch (Exception e) {
+			catched = true;
+		}
+
+		assertFalse(catched);
+		assertEquals(returnValue, "");
+
+		catched = false;
+
+		try {
+			returnValue = (String) privateMethod.invoke(helper, (Map<String,String>)null);
+		}
+		catch (Exception e) {
+			catched = true;
+		}
+
+		assertFalse(catched);
+		assertEquals(returnValue, "");
+}
 
 	private RelyingPartyOptions getOptions() throws Exception {
 		Map<String, String> spidProviders = new HashMap<>();

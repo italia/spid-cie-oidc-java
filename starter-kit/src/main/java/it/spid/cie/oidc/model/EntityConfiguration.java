@@ -489,7 +489,14 @@ public class EntityConfiguration {
 
 			sb.append(getSubject());
 			sb.append(" failed validation with ");
-			sb.append(ec.getSubject());
+
+			if (ec != null) {
+				sb.append(ec.getSubject());
+			}
+			else {
+				sb.append("_null_");
+			}
+
 			sb.append("'s superior statement ");
 
 			if (payload != null) {
@@ -511,7 +518,7 @@ public class EntityConfiguration {
 			this.verifiedBySuperiors.put(payload.getString("iss"), ec);
 			this.valid = true;
 		}
-		else {
+		else if (ec != null && payload != null) {
 			ec.addFailedDescendantStatement(getSubject(), payload);
 
 			this.failedBySuperiors.put(payload.getString("iss"), ec);
