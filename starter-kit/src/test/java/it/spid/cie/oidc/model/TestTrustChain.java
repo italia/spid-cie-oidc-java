@@ -42,7 +42,7 @@ public class TestTrustChain {
 		model.setModifiedDate(now);
 		model.setActive(true);
 		model.setChain("testChain");
-		model.setExpiresOn(now);
+		model.setExpiresOn(now.minusSeconds(1));
 		model.setIssuedAt(now);
 		model.setLog("testLog");
 		model.setMetadata(new JSONObject().put("test", "test").toString());
