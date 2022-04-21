@@ -33,7 +33,7 @@ public class TestCachedEntityInfo {
 		model.setCreateDate(now);
 		model.setModifiedDate(now);
 
-		model.setExpiresOn(now);
+		model.setExpiresOn(now.minusSeconds(1));
 		model.setIssuedAt(now);
 		model.setIssuer("testIssuer");
 		model.setJwt("testJwt");
@@ -48,7 +48,7 @@ public class TestCachedEntityInfo {
 
 	@Test
 	public void testCachedEntityInfo2() {
-		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime now = LocalDateTime.now().minusSeconds(1);
 
 		CachedEntityInfo model = CachedEntityInfo.of(
 			"testIss", "testSub", now, now, "testStatement", "testJwt");
