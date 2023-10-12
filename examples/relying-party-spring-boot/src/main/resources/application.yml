@@ -62,7 +62,7 @@ oidc:
       - offline_access
       token-endpoint-auth-method:
       - private_key_jwt
-      client-id: "http://${oidc.hosts.relying-party}:8080/oidc/rp"
+      client-id: "http://${oidc.hosts.relying-party}:8080/oidc/rp/"
       redirect-uris:
       - "http://${oidc.hosts.relying-party}:8080/oidc/rp/callback"
       jwk-file-path: ${user.home}/oidc-rp-jwk.json
