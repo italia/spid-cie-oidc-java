@@ -13,46 +13,29 @@ public final class SPIDClaimItem extends ClaimItem {
 	private static final Map<String, ClaimItem> claims = new HashMap<>();
 	private static final Map<String, String> aliasMap = new HashMap<>();
 
-	public static final ClaimItem NAME = withDefaultURI("name");
-	public static final ClaimItem FAMILY_NAME = withDefaultURI(
-		"family_name", "familyName");
-	public static final ClaimItem FISCAL_NUMBER = withDefaultURI(
-		"fiscal_number", "fiscalNumber");
-	public static final ClaimItem EMAIL = withDefaultURI("email");
-	public static final ClaimItem DIGITAL_ADDRESS = withDefaultURI(
-		"digital_address", "digitalAddress");
-	public static final ClaimItem MAIL = withDefaultURI("mail");
-	public static final ClaimItem ADDRESS = withDefaultURI("address");
+	public static final ClaimItem SPID_CODE = withDefaultURI("spid_code", "spid_code");
+	public static final ClaimItem NAME = withDefaults("given_name");
+	public static final ClaimItem FAMILY_NAME = withDefaults("family_name");
+	public static final ClaimItem PLACE_OF_BIRTH = withDefaults("place_of_birth");
+	public static final ClaimItem DATE_OF_BIRTH = withDefaults("birthdate");
+	public static final ClaimItem GENDER = withDefaults("gender");
 	public static final ClaimItem COMPANY_NAME = withDefaultURI(
-		"company_name", "companyName");
-	public static final ClaimItem COUNTRY_OF_BIRTH = withDefaultURI(
-		"county_of_birth", "countyOfBirth");
-	public static final ClaimItem DATE_OF_BIRTH = withDefaultURI(
-		"date_of_birth", "dateOfBirth");
-	public static final ClaimItem PLACE_OF_BIRTH = withDefaultURI(
-		"place_of_birth", "placeOfBirth");
-	public static final ClaimItem EXPIRATION_DATE = withDefaultURI(
-		"expiration_date", "expirationDate");
-	public static final ClaimItem GENDER = withDefaultURI("gender");
-	public static final ClaimItem ID_CARD = withDefaultURI("id_card", "idcard");
-	public static final ClaimItem IVA_CODE = withDefaultURI("iva_code", "ivaCode");  //TODO: VAT Code?
-	public static final ClaimItem MOBILE_PHONE = withDefaultURI(
-		"mobile_phone", "mobilePhone");
+			"company_name", "company_name");
 	public static final ClaimItem REGISTERED_OFFICE = withDefaultURI(
-		"registered_office", "registeredOffice");
-	public static final ClaimItem SPID_CODE = withDefaultURI("spid_code", "spidCode");
+			"registered_office", "registered_office");
+	public static final ClaimItem FISCAL_NUMBER = withDefaultURI(
+			"fiscal_number", "fiscal_number");
 	public static final ClaimItem COMPANY_FISCAL_NUMBER = withDefaultURI(
-		"company_fiscal_number", "companyFiscalNumber");
-	public static final ClaimItem DOMICILE_STREET_ADDRESS = withDefaultURI(
-		"domicile_street_address", "domicileStreetAddress");
-	public static final ClaimItem DOMICILE_POSTAL_CODE = withDefaultURI(
-		"domicile_postal_code", "domicilePostalCode");
-	public static final ClaimItem DOMICILE_MUNICIPALITY = withDefaultURI(
-		"domicile_municipality", "domicileMunicipality");
-	public static final ClaimItem DOMICILE_PROVINCE = withDefaultURI(
-		"domicile_province", "domicileProvince");
-	public static final ClaimItem DOMICILE_NATION = withDefaultURI(
-		"domicile_nation", "domicileNation");
+			"company_fiscal_number", "company_fiscal_number");
+	public static final ClaimItem VAT_NUMBER = withDefaultURI("vat_number", "vat_number");
+	public static final ClaimItem ID_CARD = withDefaults("document_details");
+	public static final ClaimItem MOBILE_PHONE = withDefaults("phone_number");
+	public static final ClaimItem EMAIL = withDefaults("email");
+	public static final ClaimItem DIGITAL_ADDRESS = withDefaultURI(
+			"e_delivery_service", "e_delivery_service");
+	public static final ClaimItem EXPIRATION_DATE = withDefaultURI(
+			"eid_exp_date", "eid_exp_date");
+	public static final ClaimItem ADDRESS = withDefaults("address");
 
 	public static final ClaimItem get(String name) {
 		return claims.get(name);
@@ -83,5 +66,7 @@ public final class SPIDClaimItem extends ClaimItem {
 	private static ClaimItem withDefaultURI(String name, String aliasSuffix) {
 		return new SPIDClaimItem(name, ATTRIBUTE_BASE_URI + aliasSuffix);
 	}
-
+	private static ClaimItem withDefaults(String name) {
+		return new SPIDClaimItem(name, name);
+	}
 }

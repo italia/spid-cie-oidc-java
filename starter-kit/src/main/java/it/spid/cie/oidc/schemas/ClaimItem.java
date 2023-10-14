@@ -9,7 +9,7 @@ import net.jcip.annotations.Immutable;
 @Immutable
 public abstract class ClaimItem implements Serializable {
 
-	public static final String ATTRIBUTE_BASE_URI = "https://attributes.spid.gov.it/";
+	public static final String ATTRIBUTE_BASE_URI = "https://attributes.eid.gov.it/";
 
 	private static final long serialVersionUID = 7770619618195001323L;
 

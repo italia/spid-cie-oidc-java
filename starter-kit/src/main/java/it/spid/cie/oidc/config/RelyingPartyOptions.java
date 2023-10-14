@@ -458,6 +458,9 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 			addRequestedClaim(
 				OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.FISCAL_NUMBER,
 				null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.VAT_NUMBER,
+					null);
 		}
 
 		ClaimOptions cieClaims = getRequestedClaims(OIDCProfile.CIE);
@@ -473,6 +476,8 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 				OIDCProfile.CIE, ClaimSection.USER_INFO, CIEClaimItem.FAMILY_NAME, null);
 			addRequestedClaim(
 				OIDCProfile.CIE, ClaimSection.USER_INFO, CIEClaimItem.EMAIL, null);
+			addRequestedClaim(
+					OIDCProfile.CIE, ClaimSection.USER_INFO, CIEClaimItem.FISCAL_NUMBER, null);
 		}
 	}
 
