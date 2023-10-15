@@ -647,10 +647,10 @@ public class TestRelyingPartyHandler {
 		JSONObject payload = new JSONObject()
 			.put(
 				"sub", "e6b06083c2644bdc06f5a1cea22e6538b8fd59fc091837938c5969a8390be944")
-			.put("https://attributes.spid.gov.it/name", "peppe")
-			.put("https://attributes.spid.gov.it/familyName", "maradona")
-			.put("https://attributes.spid.gov.it/email", "that@ema.il")
-			.put("https://attributes.spid.gov.it/fiscalNumber", "abcabc00a00a123a");
+			.put("given_name", "peppe")
+			.put("family_name", "maradona")
+			.put("email", "that@ema.il")
+			.put("https://attributes.eid.gov.it/fiscal_number", "abcabc00a00a123a");
 
 		return createJWE(payload, providerJWKS, relyingPartyJWK);
 	}
