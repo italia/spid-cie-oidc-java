@@ -1,8 +1,8 @@
 FROM python:3.11-slim
 
 RUN apt update && apt -y install git
-#--branch v1.1.2
-RUN git clone --depth=1 https://github.com/rglauco/spid-cie-oidc-django && \
+
+RUN git clone --depth=1 --branch v1.1.2 https://github.com/italia/spid-cie-oidc-django && \
 	cd spid-cie-oidc-django && \
 	pip install --upgrade pip && \
 	pip install -e . && \
