@@ -445,21 +445,57 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 
 		if (spidClaims == null || spidClaims.isEmpty()) {
 			addRequestedClaim(
-				OIDCProfile.SPID, ClaimSection.ID_TOKEN, SPIDClaimItem.FAMILY_NAME, true);
+					OIDCProfile.SPID, ClaimSection.ID_TOKEN, SPIDClaimItem.FAMILY_NAME, true);
 			addRequestedClaim(
-				OIDCProfile.SPID, ClaimSection.ID_TOKEN, SPIDClaimItem.EMAIL, true);
+					OIDCProfile.SPID, ClaimSection.ID_TOKEN, SPIDClaimItem.EMAIL, true);
 			addRequestedClaim(
-				OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.NAME, null);
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.NAME, null);
 			addRequestedClaim(
-				OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.FAMILY_NAME,
-				null);
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.FAMILY_NAME,
+					null);
 			addRequestedClaim(
-				OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.EMAIL, null);
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.EMAIL, null);
 			addRequestedClaim(
-				OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.FISCAL_NUMBER,
-				null);
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.FISCAL_NUMBER,
+					null);
 			addRequestedClaim(
 					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.VAT_NUMBER,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.ID_CARD,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.MOBILE_PHONE,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.COMPANY_NAME,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.ADDRESS,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.REGISTERED_OFFICE,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.SPID_CODE,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.DIGITAL_ADDRESS,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.EXPIRATION_DATE,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.COMPANY_FISCAL_NUMBER,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.GENDER,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.PLACE_OF_BIRTH,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.DATE_OF_BIRTH,
 					null);
 		}
 
