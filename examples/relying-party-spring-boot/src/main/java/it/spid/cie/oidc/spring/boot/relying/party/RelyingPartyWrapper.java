@@ -48,7 +48,7 @@ public class RelyingPartyWrapper {
 	}
 
 	public String getUserKey(JSONObject userInfo) {
-		String userKey = userInfo.optString("https://attributes.eid.gov.it/email");
+		String userKey = userInfo.optString("email");
 
 		if (Validator.isNullOrEmpty(userKey)) {
 			userKey = userInfo.optString("email", "");
