@@ -60,8 +60,12 @@ oidc:
       scope:
       - openid
       - offline_access
-      token-endpoint-auth-method:
-      - private_key_jwt
+      token-endpoint-auth-method: "private_key_jwt"
+      id-token-signed-response-alg: "RS256"
+      userinfo-signed-response-alg: "RS256"
+      userinfo-encrypted-response-alg: "RSA-OAEP"
+      userinfo-encrypted-response-enc: "A128CBC-HS256"
+
       client-id: "http://${oidc.hosts.relying-party}:8080/oidc/rp/"
       redirect-uris:
       - "http://${oidc.hosts.relying-party}:8080/oidc/rp/callback"
