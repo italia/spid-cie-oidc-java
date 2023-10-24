@@ -872,6 +872,11 @@ public class RelyingPartyHandler {
 		rpJson.put("grant_types", RelyingPartyOptions.SUPPORTED_GRANT_TYPES);
 		rpJson.put("response_types", RelyingPartyOptions.SUPPORTED_RESPONSE_TYPES);
 		rpJson.put("redirect_uris", options.getRedirectUris());
+		rpJson.put("id_token_signed_response_alg", options.getIdTokenSignedResponseAlg());
+		rpJson.put("userinfo_signed_response_alg", options.getUserinfoSignedResponseAlg());
+		rpJson.put("userinfo_encrypted_response_alg", options.getUserinfoEncryptedResponseAlg());
+		rpJson.put("userinfo_encrypted_response_enc", options.getUserinfoEncryptedResponseEnc());
+		rpJson.put("token_endpoint_auth_method", options.getTokenEndpointAuthMethod());
 
 		JSONObject metadataJson = new JSONObject();
 

@@ -61,6 +61,12 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 
 	private String userKeyClaim;
 
+	private String idTokenSignedResponseAlg;
+	private String userinfoSignedResponseAlg;
+	private String userinfoEncryptedResponseAlg;
+	private String userinfoEncryptedResponseEnc;
+
+	private String tokenEndpointAuthMethod;
 	private Map<String, String> acrMap = new HashMap<>();
 	private Map<String, Set<String>> scopeMap = new HashMap<>();
 	private Map<String, ClaimOptions> requestedClaimsMap = new HashMap<>();
@@ -175,6 +181,21 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 	public String getLoginURL() {
 		return loginURL;
 	}
+	public String getIdTokenSignedResponseAlg() {
+		return idTokenSignedResponseAlg;
+	}
+	public String getUserinfoSignedResponseAlg() {
+		return userinfoSignedResponseAlg;
+	}
+	public String getUserinfoEncryptedResponseAlg() {
+		return userinfoEncryptedResponseAlg;
+	}
+	public String getUserinfoEncryptedResponseEnc() {
+		return userinfoEncryptedResponseEnc;
+	}
+	public String getTokenEndpointAuthMethod() {
+		return tokenEndpointAuthMethod;
+	}
 
 	public String getUserKeyClaim() {
 		return userKeyClaim;
@@ -239,6 +260,42 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 		return this;
 	}
 
+	public RelyingPartyOptions setIdTokenSignedResponseAlg(String idTokenSignedResponseAlg) {
+		if (!Validator.isNullOrEmpty(idTokenSignedResponseAlg)) {
+			this.idTokenSignedResponseAlg = idTokenSignedResponseAlg;
+		}
+
+		return this;
+	}
+
+	public RelyingPartyOptions setUserinfoSignedResponseAlg(String userinfoSignedResponseAlg) {
+		if (!Validator.isNullOrEmpty(userinfoSignedResponseAlg)) {
+			this.userinfoSignedResponseAlg = userinfoSignedResponseAlg;
+		}
+
+		return this;
+	}
+	public RelyingPartyOptions setUserinfoEncryptedResponseAlg(String userinfoEncryptedResponseAlg) {
+		if (!Validator.isNullOrEmpty(userinfoEncryptedResponseAlg)) {
+			this.userinfoEncryptedResponseAlg = userinfoEncryptedResponseAlg;
+		}
+
+		return this;
+	}
+	public RelyingPartyOptions setUserinfoEncryptedResponseEnc(String userinfoEncryptedResponseEnc) {
+		if (!Validator.isNullOrEmpty(userinfoEncryptedResponseEnc)) {
+			this.userinfoEncryptedResponseEnc = userinfoEncryptedResponseEnc;
+		}
+
+		return this;
+	}
+	public RelyingPartyOptions setTokenEndpointAuthMethod(String tokenEndpointAuthMethod) {
+		if (!Validator.isNullOrEmpty(tokenEndpointAuthMethod)) {
+			this.tokenEndpointAuthMethod = tokenEndpointAuthMethod;
+		}
+
+		return this;
+	}
 	public RelyingPartyOptions setContacts(Collection<String> contacts) {
 		if (contacts != null && !contacts.isEmpty()) {
 			this.contacts.clear();
