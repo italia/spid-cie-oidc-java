@@ -313,6 +313,28 @@ public class TestRelyingPartyOptions {
 		assertTrue(res.getProviders(OIDCProfile.SPID).size() == 2);
 		assertTrue(res.getProviders(OIDCProfile.CIE).size() == 2);
 		assertTrue(res.getProviders(null).size() == 0);
+
+		//signing and encryption algorithms
+		res.setTokenEndpointAuthMethod("test");
+
+		assertEquals("test", res.getTokenEndpointAuthMethod());
+
+
+		res.setUserinfoEncryptedResponseEnc("test");
+
+		assertEquals("test", res.getTokenEndpointAuthMethod());
+
+		res.setUserinfoSignedResponseAlg("test");
+
+		assertEquals("test", res.getUserinfoSignedResponseAlg());
+
+		res.setUserinfoEncryptedResponseAlg("test");
+
+		assertEquals("test", res.getUserinfoEncryptedResponseAlg());
+
+		res.setIdTokenSignedResponseAlg("test");
+
+		assertEquals("test", res.getIdTokenSignedResponseAlg());
 	}
 
 	@Test
