@@ -30,8 +30,15 @@ public class TestSPIDClaimItem {
 	}
 
 	@Test
+	public void testClass2c() {
+		assertNotNull(SPIDClaimItem.getByAlias(SPIDClaimItem.SPID_CODE.getAlias()));
+	}
+	@Test
 	public void testClass3() {
 		assertNotNull(SPIDClaimItem.registerItem("test_name", "testAlias"));
 	}
+
+
+
 
 }
