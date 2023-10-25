@@ -13,8 +13,8 @@ COPY docker/django/docker-prepare.sh spid-cie-oidc-django/docker-prepare.sh
 
 RUN cd spid-cie-oidc-django && \
 	bash docker-prepare.sh && \
-	cd /examples-docker/federation_authority && \
+	cd /examples-docker/provider && \
 	python3 ./manage.py migrate && \
 	python3 ./manage.py loaddata dumps/example.json
 
-ENTRYPOINT python3 /examples-docker/federation_authority/manage.py runserver 0.0.0.0:8000
+ENTRYPOINT python3 /examples-docker/provider/manage.py runserver 0.0.0.0:8002

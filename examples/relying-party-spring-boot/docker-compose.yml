@@ -10,6 +10,15 @@ services:
     networks:
       - oidcfed
 
+  cie-provider.org:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile-cie.django
+    ports:
+      - "8002:8002"
+    networks:
+      - oidcfed
+
   relying-party.org:
     build:
       context: .

@@ -10,7 +10,7 @@ spring:
    datasource:
       driver-class-name: org.h2.Driver
       url: jdbc:h2:file:${user.home}/oidc-rp
-      username: sa 
+      username: sa
       password: password
       initialization-mode: always
       initialize: true
@@ -35,9 +35,9 @@ oidc:
       trust-anchor: 127.0.0.1
       cie-provider: 127.0.0.1
       relying-party: 127.0.0.1
-      
+
    # required for onboarding checks and also for all the leafs
-   default-trust-anchor: "http://${oidc.hosts.trust-anchor}:8000/"
+   default-trust-anchor: "http://${oidc.hosts.trust-anchor}:8000"
 
    # List of trust anchors
    trust-anchors:
@@ -45,10 +45,10 @@ oidc:
 
    # Map of known OPs and related Trust Anchor.
    spid-providers:
-     - subject: "http://${oidc.hosts.trust-anchor}:8000/oidc/op/"
+     - subject: "http://${oidc.hosts.trust-anchor}:8000/oidc/op"
        trust-anchor: ${oidc.default-trust-anchor}
    cie-providers:
-     - subject: "http://${oidc.hosts.cie-provider}:8002/oidc/op/"
+     - subject: "http://${oidc.hosts.cie-provider}:8002/oidc/op"
        trust-anchor: ${oidc.default-trust-anchor}
 
    relying-party:
@@ -60,11 +60,14 @@ oidc:
       scope:
       - openid
       - offline_access
-      token-endpoint-auth-method: 
-      - private_key_jwt
+      token-endpoint-auth-method: "private_key_jwt"
+      id-token-signed-response-alg: "RS256"
+      userinfo-signed-response-alg: "RS256"
+      userinfo-encrypted-response-alg: "RSA-OAEP"
+      userinfo-encrypted-response-enc: "A128CBC-HS256"
+
       client-id: "http://${oidc.hosts.relying-party}:8080/oidc/rp/"
       redirect-uris:
       - "http://${oidc.hosts.relying-party}:8080/oidc/rp/callback"
       jwk-file-path: ${user.home}/oidc-rp-jwk.json
       trust-marks-file-path: ${user.home}/oidc-rp-trust-marks.json
-

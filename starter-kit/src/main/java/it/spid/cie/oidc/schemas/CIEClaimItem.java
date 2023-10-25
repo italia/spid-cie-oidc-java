@@ -15,32 +15,18 @@ public final class CIEClaimItem extends ClaimItem {
 
 	public static final ClaimItem GIVEN_NAME = withDefaults("given_name");
 	public static final ClaimItem FAMILY_NAME = withDefaults("family_name");
-	public static final ClaimItem FISCAL_NUMBER = withDefaults("fiscal_number");
-	public static final ClaimItem EMAIL = withDefaults("email");
-	public static final ClaimItem DIGITAL_ADDRESS = withDefaults("digital_address");
-	public static final ClaimItem MAIL = withDefaults("mail");
-	public static final ClaimItem ADDRESS = withDefaults("address");
-	public static final ClaimItem COMPANY_NAME = withDefaults("company_name");
-	public static final ClaimItem COUNTRY_OF_BIRTH = withDefaults("county_of_birth");
-	public static final ClaimItem DATE_OF_BIRTH = withDefaults("date_of_birth");
 	public static final ClaimItem PLACE_OF_BIRTH = withDefaults("place_of_birth");
-	public static final ClaimItem EXPIRATION_DATE = withDefaults("expiration_date");
+	public static final ClaimItem DATE_OF_BIRTH = withDefaults("birthdate");
 	public static final ClaimItem GENDER = withDefaults("gender");
-	public static final ClaimItem ID_CARD = withDefaults("id_card");
-	public static final ClaimItem IVA_CODE = withDefaults("iva_code");
-	public static final ClaimItem MOBILE_PHONE = withDefaults("mobile_phone");
-	public static final ClaimItem REGISTERED_OFFICE = withDefaults("registered_office");
-	public static final ClaimItem SPID_CODE = withDefaults("spid_code");
-	public static final ClaimItem COMPANY_FISCAL_NUMBER = withDefaults(
-		"company_fiscal_number");
-	public static final ClaimItem DOMICILE_STREET_ADDRESS = withDefaults(
-		"domicile_street_address");
-	public static final ClaimItem DOMICILE_POSTAL_CODE = withDefaults(
-		"domicile_postal_code");
-	public static final ClaimItem DOMICILE_MUNICIPALITY = withDefaults(
-		"domicile_municipality");
-	public static final ClaimItem DOMICILE_PROVINCE = withDefaults("domicile_province");
-	public static final ClaimItem DOMICILE_NATION = withDefaults("domicile_nation");
+	public static final ClaimItem FISCAL_NUMBER = withDefaultURI("fiscal_number", "fiscal_number");
+	public static final ClaimItem ID_CARD = withDefaults("document_details");
+	public static final ClaimItem MOBILE_PHONE = withDefaults("phone_number");
+	public static final ClaimItem MOBILE_PHONE_VERIFIED = withDefaults("phone_number_verified");
+	public static final ClaimItem LANDLINE_NUMBER = withDefaultURI("landline_number", "landline_number");
+	public static final ClaimItem EMAIL = withDefaults("email");
+	public static final ClaimItem EMAIL_VERIFIED = withDefaults("email_verified");
+	public static final ClaimItem DIGITAL_ADDRESS = withDefaultURI("e_delivery_service", "e_delivery_service");
+	public static final ClaimItem ADDRESS = withDefaults("address");
 
 	public static ClaimItem get(String name) {
 		return claims.get(name);
@@ -66,6 +52,10 @@ public final class CIEClaimItem extends ClaimItem {
 
 	private static CIEClaimItem withDefaults(String name) {
 		return new CIEClaimItem(name, name);
+	}
+
+	private static CIEClaimItem withDefaultURI(String name, String aliasSuffix) {
+		return new CIEClaimItem(name, ATTRIBUTE_BASE_URI + aliasSuffix);
 	}
 
 }

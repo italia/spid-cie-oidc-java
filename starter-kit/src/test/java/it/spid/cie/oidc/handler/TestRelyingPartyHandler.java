@@ -474,23 +474,23 @@ public class TestRelyingPartyHandler {
 					"https://www.spid.gov.it/SpidL3"))
 			.put(
 				"claims_supported", JSONUtil.asJSONArray(
-					"https://attributes.spid.gov.it/spidCode",
-					"https://attributes.spid.gov.it/name",
-					"https://attributes.spid.gov.it/familyName",
-					"https://attributes.spid.gov.it/placeOfBirth",
-					"https://attributes.spid.gov.it/countyOfBirth",
-					"https://attributes.spid.gov.it/dateOfBirth",
-					"https://attributes.spid.gov.it/gender",
-					"https://attributes.spid.gov.it/companyName",
-					"https://attributes.spid.gov.it/registeredOffice",
-					"https://attributes.spid.gov.it/fiscalNumber",
-					"https://attributes.spid.gov.it/ivaCode",
-					"https://attributes.spid.gov.it/idCard",
-					"https://attributes.spid.gov.it/mobilePhone",
-					"https://attributes.spid.gov.it/email",
-					"https://attributes.spid.gov.it/address",
-					"https://attributes.spid.gov.it/expirationDate",
-					"https://attributes.spid.gov.it/digitalAddress"))
+						"https://attributes.eid.gov.it/spid_code",
+							"given_name",
+							"family_name",
+							"place_of_birth",
+							"birthdate",
+							"gender",
+							"https://attributes.eid.gov.it/company_name",
+							"https://attributes.eid.gov.it/registered_office",
+							"https://attributes.eid.gov.it/fiscal_number",
+							"https://attributes.eid.gov.it/company_fiscal_number",
+							"https://attributes.eid.gov.it/vat_number",
+							"document_details",
+							"phone_number",
+							"email",
+							"https://attributes.eid.gov.it/e_delivery_service",
+							"https://attributes.eid.gov.it/eid_exp_date",
+							"address"))
 			.put(
 				"grant_types_supported", JSONUtil.asJSONArray(
 					"authorization_code", "refresh_token"))
@@ -647,10 +647,10 @@ public class TestRelyingPartyHandler {
 		JSONObject payload = new JSONObject()
 			.put(
 				"sub", "e6b06083c2644bdc06f5a1cea22e6538b8fd59fc091837938c5969a8390be944")
-			.put("https://attributes.spid.gov.it/name", "peppe")
-			.put("https://attributes.spid.gov.it/familyName", "maradona")
-			.put("https://attributes.spid.gov.it/email", "that@ema.il")
-			.put("https://attributes.spid.gov.it/fiscalNumber", "abcabc00a00a123a");
+			.put("given_name", "peppe")
+			.put("family_name", "maradona")
+			.put("email", "that@ema.il")
+			.put("https://attributes.eid.gov.it/fiscal_number", "abcabc00a00a123a");
 
 		return createJWE(payload, providerJWKS, relyingPartyJWK);
 	}

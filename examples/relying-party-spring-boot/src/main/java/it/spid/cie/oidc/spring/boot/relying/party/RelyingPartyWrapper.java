@@ -48,7 +48,7 @@ public class RelyingPartyWrapper {
 	}
 
 	public String getUserKey(JSONObject userInfo) {
-		String userKey = userInfo.optString("https://attributes.spid.gov.it/email");
+		String userKey = userInfo.optString("email");
 
 		if (Validator.isNullOrEmpty(userKey)) {
 			userKey = userInfo.optString("email", "");
@@ -91,16 +91,21 @@ public class RelyingPartyWrapper {
 		logger.info("final trust_marks: " + trustMarks);
 
 		RelyingPartyOptions options = new RelyingPartyOptions()
-			.setDefaultTrustAnchor(oidcConfig.getDefaultTrustAnchor())
-			.setCIEProviders(oidcConfig.getIdentityProviders(OIDCProfile.CIE))
-			.setSPIDProviders(oidcConfig.getIdentityProviders(OIDCProfile.SPID))
-			.setTrustAnchors(oidcConfig.getTrustAnchors())
-			.setApplicationName(oidcConfig.getRelyingParty().getApplicationName())
-			.setClientId(oidcConfig.getRelyingParty().getClientId())
-			.setRedirectUris(oidcConfig.getRelyingParty().getRedirectUris())
-			.setContacts(oidcConfig.getRelyingParty().getContacts())
-			.setJWK(jwk)
-			.setTrustMarks(trustMarks);
+				.setDefaultTrustAnchor(oidcConfig.getDefaultTrustAnchor())
+				.setCIEProviders(oidcConfig.getIdentityProviders(OIDCProfile.CIE))
+				.setSPIDProviders(oidcConfig.getIdentityProviders(OIDCProfile.SPID))
+				.setTrustAnchors(oidcConfig.getTrustAnchors())
+				.setApplicationName(oidcConfig.getRelyingParty().getApplicationName())
+				.setClientId(oidcConfig.getRelyingParty().getClientId())
+				.setRedirectUris(oidcConfig.getRelyingParty().getRedirectUris())
+				.setContacts(oidcConfig.getRelyingParty().getContacts())
+				.setIdTokenSignedResponseAlg(oidcConfig.getRelyingParty().getIdTokenSignedResponseAlg())
+				.setUserinfoSignedResponseAlg(oidcConfig.getRelyingParty().getUserinfoSignedResponseAlg())
+				.setUserinfoEncryptedResponseAlg(oidcConfig.getRelyingParty().getUserinfoEncryptedResponseAlg())
+				.setUserinfoEncryptedResponseEnc(oidcConfig.getRelyingParty().getUserinfoEncryptedResponseEnc())
+				.setTokenEndpointAuthMethod(oidcConfig.getRelyingParty().getTokenEndpointAuthMethod())
+				.setJWK(jwk)
+				.setTrustMarks(trustMarks);
 
 		relyingPartyHandler = new RelyingPartyHandler(options, persistenceImpl);
 	}

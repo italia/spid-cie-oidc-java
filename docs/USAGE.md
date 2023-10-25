@@ -231,10 +231,10 @@ The JSONObject looks like
 ```json
 {
     sub: "e6b06083c2644bdc06f5a1cea22e6538b8fd59fc091837938c5969a8390be944",
-    "https://attributes.spid.gov.it/name": "peppe",
-    "https://attributes.spid.gov.it/familyName": "maradona",
-    "https://attributes.spid.gov.it/email": "that@ema.il",
-    "https://attributes.spid.gov.it/fiscalNumber": "8sada89s7da89sd7a98sd78",
+    "given_name": "peppe",
+    "family_name": "maradona",
+    "email": "that@ema.il",
+    "https://attributes.eid.gov.it/fiscal_number": "8sada89s7da89sd7a98sd78",
 }
 ```
 

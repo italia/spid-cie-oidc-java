@@ -178,6 +178,19 @@ public class OidcConfig extends BaseConfig {
 			return clientId;
 		}
 
+		public String getIdTokenSignedResponseAlg() {
+			return idTokenSignedResponseAlg;
+		}
+		public String getUserinfoSignedResponseAlg() {
+			return userinfoSignedResponseAlg;
+		}
+		public String getUserinfoEncryptedResponseAlg() {
+			return userinfoEncryptedResponseAlg;
+		}
+		public String getUserinfoEncryptedResponseEnc() { return userinfoEncryptedResponseEnc; }
+
+		public String getTokenEndpointAuthMethod() { return tokenEndpointAuthMethod; }
+
 		public Set<String> getRedirectUris() {
 			return Collections.unmodifiableSet(redirectUris);
 		}
@@ -210,6 +223,21 @@ public class OidcConfig extends BaseConfig {
 			this.clientId = clientId;
 		}
 
+		public void setIdTokenSignedResponseAlg(String idTokenSignedResponseAlg) {
+			this.idTokenSignedResponseAlg = idTokenSignedResponseAlg;
+		}
+		public void setUserinfoSignedResponseAlg(String userinfoSignedResponseAlg) {
+			this.userinfoSignedResponseAlg = userinfoSignedResponseAlg;
+		}
+		public void setUserinfoEncryptedResponseAlg(String userinfoEncryptedResponseAlg) {
+			this.userinfoEncryptedResponseAlg = userinfoEncryptedResponseAlg;
+		}
+		public void setUserinfoEncryptedResponseEnc(String userinfoEncryptedResponseEnc) {
+			this.userinfoEncryptedResponseEnc = userinfoEncryptedResponseEnc;
+		}
+		public void setTokenEndpointAuthMethod(String tokenEndpointAuthMethod) {
+			this.tokenEndpointAuthMethod = tokenEndpointAuthMethod;
+		}
 //		public void setJwk(String jwk) {
 //			this.jwk = jwk;
 //		}
@@ -265,6 +293,12 @@ public class OidcConfig extends BaseConfig {
 		private String jwkFilePath;
 		//private String trustMarks;
 		private String trustMarksFilePath;
+
+		private String idTokenSignedResponseAlg;
+		private String userinfoSignedResponseAlg;
+		private String userinfoEncryptedResponseAlg;
+		private String userinfoEncryptedResponseEnc;
+		private String tokenEndpointAuthMethod;
 
 	}
 

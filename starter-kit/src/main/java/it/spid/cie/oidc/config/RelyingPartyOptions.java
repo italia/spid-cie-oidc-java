@@ -61,6 +61,12 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 
 	private String userKeyClaim;
 
+	private String idTokenSignedResponseAlg;
+	private String userinfoSignedResponseAlg;
+	private String userinfoEncryptedResponseAlg;
+	private String userinfoEncryptedResponseEnc;
+
+	private String tokenEndpointAuthMethod;
 	private Map<String, String> acrMap = new HashMap<>();
 	private Map<String, Set<String>> scopeMap = new HashMap<>();
 	private Map<String, ClaimOptions> requestedClaimsMap = new HashMap<>();
@@ -95,9 +101,9 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 		else if (OIDCProfile.CIE.equals(profile)) {
 			claims.addSectionItem(section, CIEClaimItem.get(name), essential);
 		}
-		else {
-			throw new ConfigException("unknown profile %s", profile.value());
-		}
+//		else {
+//			throw new ConfigException("unknown profile %s", profile.value());
+//		}
 
 		return this;
 	}
@@ -175,6 +181,21 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 	public String getLoginURL() {
 		return loginURL;
 	}
+	public String getIdTokenSignedResponseAlg() {
+		return idTokenSignedResponseAlg;
+	}
+	public String getUserinfoSignedResponseAlg() {
+		return userinfoSignedResponseAlg;
+	}
+	public String getUserinfoEncryptedResponseAlg() {
+		return userinfoEncryptedResponseAlg;
+	}
+	public String getUserinfoEncryptedResponseEnc() {
+		return userinfoEncryptedResponseEnc;
+	}
+	public String getTokenEndpointAuthMethod() {
+		return tokenEndpointAuthMethod;
+	}
 
 	public String getUserKeyClaim() {
 		return userKeyClaim;
@@ -239,6 +260,42 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 		return this;
 	}
 
+	public RelyingPartyOptions setIdTokenSignedResponseAlg(String idTokenSignedResponseAlg) {
+		if (!Validator.isNullOrEmpty(idTokenSignedResponseAlg)) {
+			this.idTokenSignedResponseAlg = idTokenSignedResponseAlg;
+		}
+
+		return this;
+	}
+
+	public RelyingPartyOptions setUserinfoSignedResponseAlg(String userinfoSignedResponseAlg) {
+		if (!Validator.isNullOrEmpty(userinfoSignedResponseAlg)) {
+			this.userinfoSignedResponseAlg = userinfoSignedResponseAlg;
+		}
+
+		return this;
+	}
+	public RelyingPartyOptions setUserinfoEncryptedResponseAlg(String userinfoEncryptedResponseAlg) {
+		if (!Validator.isNullOrEmpty(userinfoEncryptedResponseAlg)) {
+			this.userinfoEncryptedResponseAlg = userinfoEncryptedResponseAlg;
+		}
+
+		return this;
+	}
+	public RelyingPartyOptions setUserinfoEncryptedResponseEnc(String userinfoEncryptedResponseEnc) {
+		if (!Validator.isNullOrEmpty(userinfoEncryptedResponseEnc)) {
+			this.userinfoEncryptedResponseEnc = userinfoEncryptedResponseEnc;
+		}
+
+		return this;
+	}
+	public RelyingPartyOptions setTokenEndpointAuthMethod(String tokenEndpointAuthMethod) {
+		if (!Validator.isNullOrEmpty(tokenEndpointAuthMethod)) {
+			this.tokenEndpointAuthMethod = tokenEndpointAuthMethod;
+		}
+
+		return this;
+	}
 	public RelyingPartyOptions setContacts(Collection<String> contacts) {
 		if (contacts != null && !contacts.isEmpty()) {
 			this.contacts.clear();
@@ -445,19 +502,58 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 
 		if (spidClaims == null || spidClaims.isEmpty()) {
 			addRequestedClaim(
-				OIDCProfile.SPID, ClaimSection.ID_TOKEN, SPIDClaimItem.FAMILY_NAME, true);
+					OIDCProfile.SPID, ClaimSection.ID_TOKEN, SPIDClaimItem.FAMILY_NAME, true);
 			addRequestedClaim(
-				OIDCProfile.SPID, ClaimSection.ID_TOKEN, SPIDClaimItem.EMAIL, true);
+					OIDCProfile.SPID, ClaimSection.ID_TOKEN, SPIDClaimItem.EMAIL, true);
 			addRequestedClaim(
-				OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.NAME, null);
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.NAME, null);
 			addRequestedClaim(
-				OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.FAMILY_NAME,
-				null);
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.FAMILY_NAME,
+					null);
 			addRequestedClaim(
-				OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.EMAIL, null);
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.EMAIL, null);
 			addRequestedClaim(
-				OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.FISCAL_NUMBER,
-				null);
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.FISCAL_NUMBER,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.VAT_NUMBER,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.ID_CARD,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.MOBILE_PHONE,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.COMPANY_NAME,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.ADDRESS,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.REGISTERED_OFFICE,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.SPID_CODE,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.DIGITAL_ADDRESS,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.EXPIRATION_DATE,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.COMPANY_FISCAL_NUMBER,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.GENDER,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.PLACE_OF_BIRTH,
+					null);
+			addRequestedClaim(
+					OIDCProfile.SPID, ClaimSection.USER_INFO, SPIDClaimItem.DATE_OF_BIRTH,
+					null);
 		}
 
 		ClaimOptions cieClaims = getRequestedClaims(OIDCProfile.CIE);
@@ -473,6 +569,8 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 				OIDCProfile.CIE, ClaimSection.USER_INFO, CIEClaimItem.FAMILY_NAME, null);
 			addRequestedClaim(
 				OIDCProfile.CIE, ClaimSection.USER_INFO, CIEClaimItem.EMAIL, null);
+			addRequestedClaim(
+					OIDCProfile.CIE, ClaimSection.USER_INFO, CIEClaimItem.FISCAL_NUMBER, null);
 		}
 	}
 
