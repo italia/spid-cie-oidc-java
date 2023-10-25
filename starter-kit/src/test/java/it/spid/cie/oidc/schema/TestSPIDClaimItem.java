@@ -31,7 +31,7 @@ public class TestSPIDClaimItem {
 
 	@Test
 	public void testClass2c() {
-		assertNotNull(SPIDClaimItem.getByAlias(SPIDClaimItem.SPID_CODE.getAlias()));
+		assertNotNull(SPIDClaimItem.SPID_CODE);
 	}
 	@Test
 	public void testClass3() {

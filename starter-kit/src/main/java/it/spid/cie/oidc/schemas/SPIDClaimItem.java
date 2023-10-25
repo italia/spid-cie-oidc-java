@@ -13,7 +13,7 @@ public final class SPIDClaimItem extends ClaimItem {
 	private static final Map<String, ClaimItem> claims = new HashMap<>();
 	private static final Map<String, String> aliasMap = new HashMap<>();
 
-	public static final ClaimItem SPID_CODE = withDefaultURI("spid_code", "spid_code");
+	public static final ClaimItem SPID_CODE = withDefaultURI("spid_code");
 	public static final ClaimItem NAME = withDefaults("given_name");
 	public static final ClaimItem FAMILY_NAME = withDefaults("family_name");
 	public static final ClaimItem PLACE_OF_BIRTH = withDefaults("place_of_birth");
