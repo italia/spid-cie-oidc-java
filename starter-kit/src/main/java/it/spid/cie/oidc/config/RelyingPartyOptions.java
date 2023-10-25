@@ -101,9 +101,9 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 		else if (OIDCProfile.CIE.equals(profile)) {
 			claims.addSectionItem(section, CIEClaimItem.get(name), essential);
 		}
-		else {
-			throw new ConfigException("unknown profile %s", profile.value());
-		}
+//		else {
+//			throw new ConfigException("unknown profile %s", profile.value());
+//		}
 
 		return this;
 	}
