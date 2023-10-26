@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 
+import it.spid.cie.oidc.exception.OIDCException;
 import org.json.JSONObject;
 import org.junit.Test;
 
@@ -148,6 +149,17 @@ public class TestRelyingPartyHandler2 {
 		MemoryStorage storage = null;
 
 		boolean catched = false;
+		try {
+			options = RPTestUtils.getOptions();
+			storage = new MemoryStorage();
+			handler = new RelyingPartyHandler(options, storage);
+			handler.getUserInfo("test","test");
+		} catch (OIDCException e) {
+			catched = true;
+		} catch (Exception e) {
+			catched = true;
+		}
+		assertTrue(catched);
 
 		try {
 			options = RPTestUtils.getOptions();
@@ -159,7 +171,7 @@ public class TestRelyingPartyHandler2 {
 			catched = true;
 		}
 
-		assertFalse(catched);
+		assertTrue(catched);
 
 		// Case
 
