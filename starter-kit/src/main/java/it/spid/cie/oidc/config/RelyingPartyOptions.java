@@ -65,8 +65,15 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 	private String userinfoSignedResponseAlg;
 	private String userinfoEncryptedResponseAlg;
 	private String userinfoEncryptedResponseEnc;
-
 	private String tokenEndpointAuthMethod;
+
+	private String federationResolveEndpoint;
+	private String organizationName;
+	private String homepageUri;
+	private String policyUri;
+	private String logoUri;
+	private Set<String> federationContacts = new HashSet<>();
+
 	private Map<String, String> acrMap = new HashMap<>();
 	private Map<String, Set<String>> scopeMap = new HashMap<>();
 	private Map<String, ClaimOptions> requestedClaimsMap = new HashMap<>();
@@ -197,6 +204,20 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 		return tokenEndpointAuthMethod;
 	}
 
+	public String getFederationResolveEndpoint() { return federationResolveEndpoint; }
+
+	public String getOrganizationName() { return organizationName; }
+
+	public String getHomepageUri() { return homepageUri; }
+
+	public String getPolicyUri() { return policyUri; }
+
+	public String getLogoUri() { return logoUri; }
+
+	public Set<String> getFederationContacts() {
+		return Collections.unmodifiableSet(federationContacts);
+	}
+
 	public String getUserKeyClaim() {
 		return userKeyClaim;
 	}
@@ -296,6 +317,51 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 
 		return this;
 	}
+
+	public RelyingPartyOptions setFederationResolveEndpoint(String federationResolveEndpoint) {
+		if (!Validator.isNullOrEmpty(federationResolveEndpoint)) {
+			this.federationResolveEndpoint = federationResolveEndpoint;
+		}
+
+		return this;
+	}
+	public RelyingPartyOptions setOrganizationName(String organizationName) {
+		if (!Validator.isNullOrEmpty(organizationName)) {
+			this.organizationName = organizationName;
+		}
+
+		return this;
+	}
+	public RelyingPartyOptions setHomepageUri(String homepageUri) {
+		if (!Validator.isNullOrEmpty(homepageUri)) {
+			this.homepageUri = homepageUri;
+		}
+
+		return this;
+	}
+	public RelyingPartyOptions setPolicyUri(String policyUri) {
+		if (!Validator.isNullOrEmpty(policyUri)) {
+			this.policyUri = policyUri;
+		}
+
+		return this;
+	}
+	public RelyingPartyOptions setLogoUri(String logoUri) {
+		if (!Validator.isNullOrEmpty(logoUri)) {
+			this.logoUri = logoUri;
+		}
+
+		return this;
+	}
+	public RelyingPartyOptions setFederationContacts(Collection<String> federationContacts) {
+		if (federationContacts != null && !federationContacts.isEmpty()) {
+			this.federationContacts.clear();
+			this.federationContacts.addAll(federationContacts);
+		}
+
+		return this;
+	}
+
 	public RelyingPartyOptions setContacts(Collection<String> contacts) {
 		if (contacts != null && !contacts.isEmpty()) {
 			this.contacts.clear();

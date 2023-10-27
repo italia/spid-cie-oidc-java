@@ -878,9 +878,22 @@ public class RelyingPartyHandler {
 		rpJson.put("userinfo_encrypted_response_enc", options.getUserinfoEncryptedResponseEnc());
 		rpJson.put("token_endpoint_auth_method", options.getTokenEndpointAuthMethod());
 
+
+		JSONObject fedJson = new JSONObject();
+
+		fedJson.put("federation_resolve_endpoint", options.getFederationResolveEndpoint());
+		fedJson.put("organization_name", options.getOrganizationName());
+		fedJson.put("homepage_uri", options.getHomepageUri());
+		fedJson.put("policy_uri", options.getPolicyUri());
+		fedJson.put("logo_uri", options.getLogoUri());
+		fedJson.put("contacts",options.getFederationContacts());
+
+
 		JSONObject metadataJson = new JSONObject();
 
 		metadataJson.put(OIDCConstants.OPENID_RELYING_PARTY, rpJson);
+
+		metadataJson.put(OIDCConstants.FEDERATION_ENTITY, fedJson);
 
 		long iat = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
 

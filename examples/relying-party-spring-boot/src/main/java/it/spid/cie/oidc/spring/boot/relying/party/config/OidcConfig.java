@@ -191,6 +191,15 @@ public class OidcConfig extends BaseConfig {
 
 		public String getTokenEndpointAuthMethod() { return tokenEndpointAuthMethod; }
 
+		public String getFederationResolveEndpoint() { return federationResolveEndpoint; }
+		public String getOrganizationName() { return organizationName; }
+		public String getHomepageUri() { return homepageUri; }
+		public String getPolicyUri() { return policyUri; }
+		public String getLogoUri() { return logoUri; }
+		public Set<String> getFederationContacts() {
+			return Collections.unmodifiableSet(federationContacts);
+		}
+
 		public Set<String> getRedirectUris() {
 			return Collections.unmodifiableSet(redirectUris);
 		}
@@ -238,6 +247,26 @@ public class OidcConfig extends BaseConfig {
 		public void setTokenEndpointAuthMethod(String tokenEndpointAuthMethod) {
 			this.tokenEndpointAuthMethod = tokenEndpointAuthMethod;
 		}
+
+		public void setFederationResolveEndpoint(String federationResolveEndpoint) {
+			this.federationResolveEndpoint = federationResolveEndpoint;
+		}
+		public void setOrganizationName(String organizationName) {
+			this.organizationName = organizationName;
+		}
+		public void setHomepageUri(String homepageUri) {
+			this.homepageUri = homepageUri;
+		}
+		public void setPolicyUri(String policyUri) {
+			this.policyUri = policyUri;
+		}
+		public void setLogoUri(String logoUri) {
+			this.logoUri = logoUri;
+		}
+		public void setFederationContacts(Set<String> federationContacts) {
+			this.federationContacts = federationContacts;
+		}
+
 //		public void setJwk(String jwk) {
 //			this.jwk = jwk;
 //		}
@@ -299,6 +328,13 @@ public class OidcConfig extends BaseConfig {
 		private String userinfoEncryptedResponseAlg;
 		private String userinfoEncryptedResponseEnc;
 		private String tokenEndpointAuthMethod;
+
+		private String federationResolveEndpoint;
+		private String organizationName;
+		private String homepageUri;
+		private String policyUri;
+		private String logoUri;
+		private Set<String> federationContacts = new HashSet<>();
 
 	}
 
