@@ -76,7 +76,7 @@ A docker image containing this example can be built a run:
 - visit `http://relying-party.org:8080/`
 
 Some hints:
-- we are using [federation](https://github.com/italia/spid-cie-oidc-django) v0.6.2
+- we are using [federation](https://github.com/italia/spid-cie-oidc-django) v1.2.0
 - docker images currently sets a proxy of the exposed ports on the localhost interface, so you could use
 previous chapter instructions replacing `127.0.0.1` with the right hostname
 - docker image mounts the folder `./docker/data-java` as `/data` inside spring-boot container to externalize `jwk` and `trust-marks` configuration
