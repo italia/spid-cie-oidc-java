@@ -70,7 +70,7 @@ oidc:
       organization-name: "PA OIDC Relying Party"
       homepage-uri: "http://${oidc.hosts.relying-party}:8080/oidc/rp/landing"
       policy-uri: "http://${oidc.hosts.relying-party}:8080/oidc/rp/policy"
-      logo-uri: "http://${oidc.hosts.relying-party}:8080/static/logo.svg"
+      logo-uri: "http://${oidc.hosts.relying-party}:8080/static/images/logo-it.svg"
       federation-contacts:
          - "federation-dev@example.com"
 
