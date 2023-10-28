@@ -31,7 +31,7 @@ public interface TrustChainRepository extends CrudRepository<TrustChainModel, Lo
 			"SELECT tc.* FROM trust_chain tc " +
 			" INNER JOIN fetched_entity_statement fes ON (" +
 			" fes.id = tc.trust_anchor_id AND fes.sub = ?2)" +
-			" WHERE tc.sub = ?1 AND tc.type_ = ?3" +
+			" WHERE tc.sub = ?1 AND tc.type_ = ?3 AND tc.is_active = 1" +
 			" LIMIT 1",
 		nativeQuery = true
 	)
