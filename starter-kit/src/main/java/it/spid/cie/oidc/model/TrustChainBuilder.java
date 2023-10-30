@@ -64,24 +64,24 @@ public class TrustChainBuilder {
 		return sj.toString();
 	}
 
-	public String getChainAsString() {
-		StringJoiner sj = new StringJoiner(",", "[", "]");
-
-		for (EntityConfiguration ec : trustPath) {
-			sj.add(ec.getPayload());
-			if (ec.hasVerifiedDescendantStatement()) {
-				StringJoiner sj2 = new StringJoiner(",", "[", "]");
-
-				for (String value : ec.getVerifiedDescendantStatement()) {
-					sj2.add(value);
-				}
-
-				sj.add(sj2.toString());
-			}
-		}
-
-		return sj.toString();
-	}
+//	public String getChainAsString() {
+//		StringJoiner sj = new StringJoiner(",", "[", "]");
+//
+//		for (EntityConfiguration ec : trustPath) {
+//			sj.add(ec.getPayload());
+//			if (ec.hasVerifiedDescendantStatement()) {
+//				StringJoiner sj2 = new StringJoiner(",", "[", "]");
+//
+//				for (String value : ec.getVerifiedDescendantStatement()) {
+//					sj2.add(value);
+//				}
+//
+//				sj.add(sj2.toString());
+//			}
+//		}
+//
+//		return sj.toString();
+//	}
 
 	public LocalDateTime getExpiresOn() {
 		return LocalDateTime.ofEpochSecond(exp, 0, ZoneOffset.UTC);
