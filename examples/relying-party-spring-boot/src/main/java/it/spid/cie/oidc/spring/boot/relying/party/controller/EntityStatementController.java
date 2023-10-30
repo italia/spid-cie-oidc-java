@@ -62,8 +62,9 @@ public class EntityStatementController {
         response.put("metadata", metadata);
         response.put("trust_chain",trust_chain);
 
+        logger.info("resolve endpoint for {}, {}", sub, anchor);
+
         if ("json".equals(format)) {
-            logger.info("resolve endpoint for {}, {}", sub, anchor);
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(response.toString());

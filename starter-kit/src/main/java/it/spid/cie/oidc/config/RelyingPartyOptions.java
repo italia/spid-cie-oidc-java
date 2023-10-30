@@ -555,9 +555,9 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 			acrMap.put(OIDCProfile.CIE.value(), AcrValue.L2.value());
 		}
 
-		if (Validator.isNullOrEmpty(logoutRedirectURL)) {
-			throw new ConfigException("no-logout-redirect-url");
-		}
+//		if (Validator.isNullOrEmpty(logoutRedirectURL)) {
+//			throw new ConfigException("no-logout-redirect-url");
+//		}
 
 		validateRequestedClaims();
 		validateUserKeyClaim();

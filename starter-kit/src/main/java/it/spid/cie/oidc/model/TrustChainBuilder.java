@@ -56,6 +56,14 @@ public class TrustChainBuilder {
 		this.subject = subject;
 	}
 
+	public String getChain() {
+		StringJoiner sj =  new StringJoiner(",", "[", "]");
+		for (EntityConfiguration ec : trustPath) {
+			sj.add(ec.getJwt());
+		}
+		return sj.toString();
+	}
+
 	public String getChainAsString() {
 		StringJoiner sj = new StringJoiner(",", "[", "]");
 

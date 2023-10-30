@@ -63,6 +63,7 @@ public class TestTrustChainBuilder {
 		catched = false;
 
 		try {
+			tcb.getChain();
 			tcb.getChainAsString();
 			tcb.getExpiresOn();
 			tcb.getFinalMetadata();

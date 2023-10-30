@@ -595,7 +595,7 @@ public class RelyingPartyHandler {
 					.setSubject(subject)
 					.setType(metadataType)
 					.setExpiresOn(tcb.getExpiresOn())
-					.setChain(tcb.getChainAsString())
+					.setChain(tcb.getChain())
 					.setPartiesInvolved(tcb.getPartiesInvolvedAsString())
 					.setProcessingStart(LocalDateTime.now())
 					.setActive(true)
@@ -607,7 +607,7 @@ public class RelyingPartyHandler {
 			else {
 				trustChain = trustChain
 					.setExpiresOn(tcb.getExpiresOn())
-					.setChain(tcb.getChainAsString())
+					.setChain(tcb.getChain())
 					.setPartiesInvolved(tcb.getPartiesInvolvedAsString())
 					.setProcessingStart(LocalDateTime.now())
 					.setActive(true)
