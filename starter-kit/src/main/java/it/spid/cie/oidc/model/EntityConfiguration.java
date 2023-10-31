@@ -41,6 +41,7 @@ public class EntityConfiguration {
 	private EntityConfiguration trustAnchor;
 	//private JSONObject header;
 	private JSONObject payload;
+	private String verifiedDescendantStatementJwt;
 	private String sub;
 	private String iss;
 	private long exp;
@@ -307,7 +308,9 @@ public class EntityConfiguration {
 
 		return Collections.unmodifiableList(result);
 	}
-
+	public String getVerifiedDescendantStatementJwt() {
+		return this.verifiedDescendantStatementJwt;
+	}
 	public Set<TrustMark> getVerifiedTrustMarks() {
 		return Collections.unmodifiableSet(verifiedTrustMarks);
 	}
@@ -354,7 +357,9 @@ public class EntityConfiguration {
 	public void setAllowedTrustMarks(String[] allowedTrustMarks) {
 		this.allowedTrustMarks = Arrays.asList(allowedTrustMarks);
 	}
-
+	public void setVerifiedDescendantStatementJwt(String jwt) {
+		this.verifiedDescendantStatementJwt = jwt;
+	}
 	@Override
 	public String toString() {
 		return String.format("(%s valid:%b", this.sub, this.valid);
@@ -514,7 +519,7 @@ public class EntityConfiguration {
 
 		if (valid) {
 			ec.addVerifiedDescendantStatement(getSubject(), payload);
-
+			ec.setVerifiedDescendantStatementJwt(jwt);
 			this.verifiedBySuperiors.put(payload.getString("iss"), ec);
 			this.valid = true;
 		}

@@ -24,9 +24,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.nimbusds.jose.jwk.JWKSet;
 
 import it.spid.cie.oidc.config.OIDCConstants;
-import it.spid.cie.oidc.handler.RelyingPartyHandler;
 import it.spid.cie.oidc.helper.JWTHelper;
-import it.spid.cie.oidc.schemas.SPIDClaimItem;
 import it.spid.cie.oidc.test.util.RPTestUtils;
 import it.spid.cie.oidc.util.JSONUtil;
 
@@ -95,6 +93,9 @@ public class TestEntityConfiguration {
 		assertFalse(catched);
 		assertFalse(ec.hasJWK("test"));
 		assertFalse(ec.hasJWK(""));
+
+		ec.setVerifiedDescendantStatementJwt("test");
+		assertEquals(ec.getVerifiedDescendantStatementJwt(), "test");
 
 		catched = false;
 		EntityConfiguration ec2 = null;
