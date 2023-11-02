@@ -260,7 +260,7 @@ public class TestEntityConfiguration {
 	}
 
 	@Test
-	public void test_getTrustMarksIssuers() {
+	public void test_gettrustMarkIssuers() {
 		JWTHelper jwtHelper = null;
 		EntityConfiguration ec = null;
 		boolean catched = false;
@@ -283,7 +283,7 @@ public class TestEntityConfiguration {
 		Map<String, Set<String>> res = null;
 
 		try {
-			res = ec.getTrustMarksIssuers();
+			res = ec.gettrustMarkIssuers();
 		}
 		catch (Exception e) {
 			catched = true;
@@ -762,7 +762,7 @@ public class TestEntityConfiguration {
 		payload.put(
 			"metadata", new JSONObject().put("federation_entity", trustAnchorMetadata));
 
-		JSONObject trustMarksIssuers = new JSONObject()
+		JSONObject trustMarkIssuers = new JSONObject()
 			.put(
 				"https://www.spid.gov.it/certification/rp/public", JSONUtil.asJSONArray(
 					"https://registry.spid.agid.gov.it",
@@ -775,7 +775,7 @@ public class TestEntityConfiguration {
 				"https://sgd.aa.it/onboarding", JSONUtil.asJSONArray(
 					"https://sgd.aa.it"));
 
-		payload.put("trust_marks_issuers", trustMarksIssuers);
+		payload.put("trust_mark_issuers", trustMarkIssuers);
 		payload.put("constraints", new JSONObject().put("max_path_length", 1));
 
 		JSONObject jwks = RPTestUtils.mockedTrustAnchorPrivateJWKS();
@@ -805,7 +805,7 @@ public class TestEntityConfiguration {
 		payload.put(
 			"metadata", new JSONObject().put("federation_entity", trustAnchorMetadata));
 
-		JSONObject trustMarksIssuers = new JSONObject()
+		JSONObject trustMarkIssuers = new JSONObject()
 			.put(
 				"https://www.spid.gov.it/certification/rp/public", JSONUtil.asJSONArray(
 					"https://registry.spid.agid.gov.it",
@@ -819,7 +819,7 @@ public class TestEntityConfiguration {
 				"https://sgd.aa.it/onboarding", JSONUtil.asJSONArray(
 					"https://sgd.aa.it"));
 
-		payload.put("trust_marks_issuers", trustMarksIssuers);
+		payload.put("trust_mark_issuers", trustMarkIssuers);
 		//payload.put("constraints", new JSONObject().put("max_path_length", 1));
 
 		JSONObject jwks = RPTestUtils.mockedTrustAnchorPrivateJWKS();

@@ -929,7 +929,7 @@ public class RelyingPartyHandler {
 			entity.setJwks(
 				JWTHelper.getJWKSetAsJSONArray(jwkSet, true, false).toString());
 			entity.setTrustMarks(json.getJSONArray("trust_marks").toString());
-			entity.setTrustMarksIssuers("{}");
+			entity.settrustMarkIssuers("{}");
 			entity.setMetadata(json.getJSONObject("metadata").toString());
 			entity.setActive(true);
 			entity.setConstraints("{}");

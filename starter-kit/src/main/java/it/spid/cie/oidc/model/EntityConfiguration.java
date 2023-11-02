@@ -250,14 +250,14 @@ public class EntityConfiguration {
 		return this.verifiedSuperiors;
 	}
 
-	public Map<String, Set<String>> getTrustMarksIssuers() {
+	public Map<String, Set<String>> gettrustMarkIssuers() {
 		Map<String, Set<String>> result = new HashMap<>();
 
-		JSONObject trustMarksIssuers = payload.optJSONObject(
-			"trust_marks_issuers", new JSONObject());
+		JSONObject trustMarkIssuers = payload.optJSONObject(
+			"trust_mark_issuers", new JSONObject());
 
-		for (String key : trustMarksIssuers.keySet()) {
-			JSONArray jsonArray = trustMarksIssuers.optJSONArray(key);
+		for (String key : trustMarkIssuers.keySet()) {
+			JSONArray jsonArray = trustMarkIssuers.optJSONArray(key);
 
 			if (jsonArray == null) {
 				continue;
@@ -422,7 +422,7 @@ public class EntityConfiguration {
 				"Required Trust marks are missing.");
 		}
 
-		Map<String, Set<String>> trustAnchorIssuers = trustAnchor.getTrustMarksIssuers();
+		Map<String, Set<String>> trustAnchorIssuers = trustAnchor.gettrustMarkIssuers();
 
 		boolean valid = false;
 

@@ -27,7 +27,7 @@ public class FederationEntity extends BaseModel {
 	private String authorityHints;
 	private String jwks;
 	private String trustMarks;
-	private String trustMarksIssuers;
+	private String trustMarkIssuers;
 	private String metadata;
 	private boolean active = false;
 	private String constraints;
@@ -80,8 +80,8 @@ public class FederationEntity extends BaseModel {
 		return trustMarks;
 	}
 
-	public String getTrustMarksIssuers() {
-		return trustMarksIssuers;
+	public String gettrustMarkIssuers() {
+		return trustMarkIssuers;
 	}
 
 	public boolean isActive() {
@@ -134,8 +134,8 @@ public class FederationEntity extends BaseModel {
 		this.trustMarks = trustMarks;
 	}
 
-	public void setTrustMarksIssuers(String trustMarksIssuers) {
-		this.trustMarksIssuers = trustMarksIssuers;
+	public void settrustMarkIssuers(String trustMarkIssuers) {
+		this.trustMarkIssuers = trustMarkIssuers;
 	}
 
 

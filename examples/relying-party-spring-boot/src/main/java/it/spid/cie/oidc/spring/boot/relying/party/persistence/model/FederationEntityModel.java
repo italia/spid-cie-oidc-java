@@ -32,7 +32,7 @@ public class FederationEntityModel {
 		target.setConstraints(source.getConstraints());
 		target.setJwks(source.getJwks());
 		target.setTrustMarks(source.getTrustMarks());
-		target.setTrustMarksIssuers(source.getTrustMarksIssuers());
+		target.setTrustMarkIssuers(source.gettrustMarkIssuers());
 		target.setMetadata(source.getMetadata());
 
 		return target;
@@ -79,8 +79,8 @@ public class FederationEntityModel {
 		return trustMarks;
 	}
 
-	public String getTrustMarksIssuers() {
-		return trustMarksIssuers;
+	public String getTrustMarkIssuers() {
+		return trustMarkIssuers;
 	}
 
 	public String getMetadata() {
@@ -134,8 +134,8 @@ public class FederationEntityModel {
 		this.trustMarks = trustMarks;
 	}
 
-	public void setTrustMarksIssuers(String trustMarksIssuers) {
-		this.trustMarksIssuers = trustMarksIssuers;
+	public void setTrustMarkIssuers(String trustMarkIssuers) {
+		this.trustMarkIssuers = trustMarkIssuers;
 	}
 
 	public void setMetadata(String metadata) {
@@ -169,7 +169,7 @@ public class FederationEntityModel {
 		target.setConstraints(getConstraints());
 		target.setJwks(getJwks());
 		target.setTrustMarks(getTrustMarks());
-		target.setTrustMarksIssuers(getTrustMarksIssuers());
+		target.settrustMarkIssuers(getTrustMarkIssuers());
 		target.setMetadata(getMetadata());
 
 		return target;
@@ -218,8 +218,8 @@ public class FederationEntityModel {
 	@Column(name = "trust_marks", nullable = false, length = 2000)
 	private String trustMarks;
 
-	@Column(name = "trust_marks_issuers", nullable = false, length = 2000)
-	private String trustMarksIssuers;
+	@Column(name = "trust_mark_issuers", nullable = false, length = 2000)
+	private String trustMarkIssuers;
 
 	@Column(nullable = false, length = 5000)
 	private String metadata;
