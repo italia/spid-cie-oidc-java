@@ -97,6 +97,10 @@ public class TestEntityConfiguration {
 		ec.setVerifiedDescendantStatementJwt("test");
 		assertEquals(ec.getVerifiedDescendantStatementJwt(), "test");
 
+		ec.addVerifiedDescendantStatement("1",new JSONObject().put("test","test"));
+		List descendant = ec.getVerifiedDescendantStatement();
+		assertEquals(descendant.size(),1);
+
 		catched = false;
 		EntityConfiguration ec2 = null;
 
