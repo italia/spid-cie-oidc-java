@@ -59,12 +59,20 @@ public class TrustChainBuilder {
     public String getChain() {
         StringJoiner sj = new StringJoiner(",", "[", "]");
         for (EntityConfiguration ec : trustPath) {
-            sj.add("\""+ec.getJwt()+"\"");
+            String statement = (new StringBuilder())
+                            .append("\"")
+                            .append(ec.getJwt())
+                            .append("\"").toString();
+            sj.add(statement);
             if (ec.hasVerifiedDescendantStatement()) {
                 String descendant = ec.getVerifiedDescendantStatementJwt();
 
                 StringJoiner sj2 = new StringJoiner(",", "[", "]");
-                sj2.add("\""+descendant+"\"");
+                String descendantStatement = (new StringBuilder())
+                        .append("\"")
+                        .append(descendant)
+                        .append("\"").toString();
+                sj2.add(descendantStatement);
 
                 sj.add(sj2.toString());
             }
