@@ -66,6 +66,14 @@ oidc:
       userinfo-encrypted-response-alg: "RSA-OAEP"
       userinfo-encrypted-response-enc: "A128CBC-HS256"
 
+      federation-resolve-endpoint: "http://${oidc.hosts.relying-party}:8080/resolve"
+      organization-name: "PA OIDC Relying Party"
+      homepage-uri: "http://${oidc.hosts.relying-party}:8080/oidc/rp/landing"
+      policy-uri: "http://${oidc.hosts.relying-party}:8080/oidc/rp/policy"
+      logo-uri: "http://${oidc.hosts.relying-party}:8080/static/images/logo-it.svg"
+      federation-contacts:
+         - "federation-dev@example.com"
+
       client-id: "http://${oidc.hosts.relying-party}:8080/oidc/rp/"
       redirect-uris:
       - "http://${oidc.hosts.relying-party}:8080/oidc/rp/callback"

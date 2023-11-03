@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS federation_entity_configuration (
 	authority_hints VARCHAR NOT NULL,
 	jwks VARCHAR NOT NULL,
 	trust_marks VARCHAR NOT NULL,
-	trust_marks_issuers VARCHAR NOT NULL,
+	trust_mark_issuers VARCHAR NOT NULL,
 	metadata VARCHAR NOT NULL,
 	constraints VARCHAR NOT NULL,
 	is_active BOOLEAN NOT NULL,

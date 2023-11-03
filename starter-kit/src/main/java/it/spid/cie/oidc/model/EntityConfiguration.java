@@ -41,6 +41,7 @@ public class EntityConfiguration {
 	private EntityConfiguration trustAnchor;
 	//private JSONObject header;
 	private JSONObject payload;
+	private String verifiedDescendantStatementJwt;
 	private String sub;
 	private String iss;
 	private long exp;
@@ -249,14 +250,14 @@ public class EntityConfiguration {
 		return this.verifiedSuperiors;
 	}
 
-	public Map<String, Set<String>> getTrustMarksIssuers() {
+	public Map<String, Set<String>> gettrustMarkIssuers() {
 		Map<String, Set<String>> result = new HashMap<>();
 
-		JSONObject trustMarksIssuers = payload.optJSONObject(
-			"trust_marks_issuers", new JSONObject());
+		JSONObject trustMarkIssuers = payload.optJSONObject(
+			"trust_mark_issuers", new JSONObject());
 
-		for (String key : trustMarksIssuers.keySet()) {
-			JSONArray jsonArray = trustMarksIssuers.optJSONArray(key);
+		for (String key : trustMarkIssuers.keySet()) {
+			JSONArray jsonArray = trustMarkIssuers.optJSONArray(key);
 
 			if (jsonArray == null) {
 				continue;
@@ -307,7 +308,9 @@ public class EntityConfiguration {
 
 		return Collections.unmodifiableList(result);
 	}
-
+	public String getVerifiedDescendantStatementJwt() {
+		return this.verifiedDescendantStatementJwt;
+	}
 	public Set<TrustMark> getVerifiedTrustMarks() {
 		return Collections.unmodifiableSet(verifiedTrustMarks);
 	}
@@ -354,7 +357,9 @@ public class EntityConfiguration {
 	public void setAllowedTrustMarks(String[] allowedTrustMarks) {
 		this.allowedTrustMarks = Arrays.asList(allowedTrustMarks);
 	}
-
+	public void setVerifiedDescendantStatementJwt(String jwt) {
+		this.verifiedDescendantStatementJwt = jwt;
+	}
 	@Override
 	public String toString() {
 		return String.format("(%s valid:%b", this.sub, this.valid);
@@ -417,7 +422,7 @@ public class EntityConfiguration {
 				"Required Trust marks are missing.");
 		}
 
-		Map<String, Set<String>> trustAnchorIssuers = trustAnchor.getTrustMarksIssuers();
+		Map<String, Set<String>> trustAnchorIssuers = trustAnchor.gettrustMarkIssuers();
 
 		boolean valid = false;
 
@@ -514,7 +519,7 @@ public class EntityConfiguration {
 
 		if (valid) {
 			ec.addVerifiedDescendantStatement(getSubject(), payload);
-
+			ec.setVerifiedDescendantStatementJwt(jwt);
 			this.verifiedBySuperiors.put(payload.getString("iss"), ec);
 			this.valid = true;
 		}

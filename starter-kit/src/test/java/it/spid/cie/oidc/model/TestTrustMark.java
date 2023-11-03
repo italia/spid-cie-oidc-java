@@ -297,7 +297,7 @@ public class TestTrustMark {
 		payload.put(
 			"metadata", new JSONObject().put("federation_entity", trustAnchorMetadata));
 
-		JSONObject trustMarksIssuers = new JSONObject()
+		JSONObject trustMarkIssuers = new JSONObject()
 			.put(
 				"https://www.spid.gov.it/certification/rp/public", JSONUtil.asJSONArray(
 					"https://registry.spid.agid.gov.it",
@@ -310,7 +310,7 @@ public class TestTrustMark {
 				"https://sgd.aa.it/onboarding", JSONUtil.asJSONArray(
 					"https://sgd.aa.it"));
 
-		payload.put("trust_marks_issuers", trustMarksIssuers);
+		payload.put("trust_mark_issuers", trustMarkIssuers);
 		payload.put("constraints", new JSONObject().put("max_path_length", 1));
 
 		return RPTestUtils.createJWS(payload, privateJwks);

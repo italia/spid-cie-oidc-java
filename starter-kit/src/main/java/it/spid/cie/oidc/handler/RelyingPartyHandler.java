@@ -595,7 +595,7 @@ public class RelyingPartyHandler {
 					.setSubject(subject)
 					.setType(metadataType)
 					.setExpiresOn(tcb.getExpiresOn())
-					.setChain(tcb.getChainAsString())
+					.setChain(tcb.getChain())
 					.setPartiesInvolved(tcb.getPartiesInvolvedAsString())
 					.setProcessingStart(LocalDateTime.now())
 					.setActive(true)
@@ -607,7 +607,7 @@ public class RelyingPartyHandler {
 			else {
 				trustChain = trustChain
 					.setExpiresOn(tcb.getExpiresOn())
-					.setChain(tcb.getChainAsString())
+					.setChain(tcb.getChain())
 					.setPartiesInvolved(tcb.getPartiesInvolvedAsString())
 					.setProcessingStart(LocalDateTime.now())
 					.setActive(true)
@@ -878,9 +878,22 @@ public class RelyingPartyHandler {
 		rpJson.put("userinfo_encrypted_response_enc", options.getUserinfoEncryptedResponseEnc());
 		rpJson.put("token_endpoint_auth_method", options.getTokenEndpointAuthMethod());
 
+
+		JSONObject fedJson = new JSONObject();
+
+		fedJson.put("federation_resolve_endpoint", options.getFederationResolveEndpoint());
+		fedJson.put("organization_name", options.getOrganizationName());
+		fedJson.put("homepage_uri", options.getHomepageUri());
+		fedJson.put("policy_uri", options.getPolicyUri());
+		fedJson.put("logo_uri", options.getLogoUri());
+		fedJson.put("contacts",options.getFederationContacts());
+
+
 		JSONObject metadataJson = new JSONObject();
 
 		metadataJson.put(OIDCConstants.OPENID_RELYING_PARTY, rpJson);
+
+		metadataJson.put(OIDCConstants.FEDERATION_ENTITY, fedJson);
 
 		long iat = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
 
@@ -916,7 +929,7 @@ public class RelyingPartyHandler {
 			entity.setJwks(
 				JWTHelper.getJWKSetAsJSONArray(jwkSet, true, false).toString());
 			entity.setTrustMarks(json.getJSONArray("trust_marks").toString());
-			entity.setTrustMarksIssuers("{}");
+			entity.settrustMarkIssuers("{}");
 			entity.setMetadata(json.getJSONObject("metadata").toString());
 			entity.setActive(true);
 			entity.setConstraints("{}");

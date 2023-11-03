@@ -322,7 +322,7 @@ public class RPTestUtils extends TestUtils {
 		payload.put(
 			"metadata", new JSONObject().put("federation_entity", trustAnchorMetadata));
 
-		JSONObject trustMarksIssuers = new JSONObject()
+		JSONObject trustMarkIssuers = new JSONObject()
 			.put(
 				"https://www.spid.gov.it/certification/rp/public", JSONUtil.asJSONArray(
 					TM_ISSUER1, TM_ISSUER2))
@@ -333,7 +333,7 @@ public class RPTestUtils extends TestUtils {
 				"https://sgd.aa.it/onboarding", JSONUtil.asJSONArray(
 					TM_ISSUER1));
 
-		payload.put("trust_marks_issuers", trustMarksIssuers);
+		payload.put("trust_mark_issuers", trustMarkIssuers);
 		payload.put("constraints", new JSONObject().put("max_path_length", 1));
 
 		JSONObject jwks = mockedTrustAnchorPrivateJWKS();
@@ -361,7 +361,7 @@ public class RPTestUtils extends TestUtils {
 		payload.put(
 			"metadata", new JSONObject().put("federation_entity", trustAnchorMetadata));
 
-//		JSONObject trustMarksIssuers = new JSONObject()
+//		JSONObject trustMarkIssuers = new JSONObject()
 //			.put(
 //				"https://www.spid.gov.it/certification/rp/public", JSONUtil.asJSONArray(
 //					TM_ISSUER1, TM_ISSUER2))
@@ -372,7 +372,7 @@ public class RPTestUtils extends TestUtils {
 //				"https://sgd.aa.it/onboarding", JSONUtil.asJSONArray(
 //					TM_ISSUER1));
 //
-//		payload.put("trust_marks_issuers", trustMarksIssuers);
+//		payload.put("trust_mark_issuers", trustMarkIssuers);
 		payload.put("constraints", new JSONObject().put("max_path_length", 1));
 
 		JSONObject jwks = mockedTrustAnchorPrivateJWKS();

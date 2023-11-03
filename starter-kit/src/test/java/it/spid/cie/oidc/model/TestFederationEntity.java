@@ -30,7 +30,7 @@ public class TestFederationEntity {
 		model.getMetadata();
 		model.getSubject();
 		model.getTrustMarks();
-		model.getTrustMarksIssuers();
+		model.gettrustMarkIssuers();
 		model.isActive();
 
 		LocalDateTime now = LocalDateTime.now();
@@ -48,7 +48,7 @@ public class TestFederationEntity {
 		model.setJwks("testJwks");
 		model.setSubject("testSubject");
 		model.setTrustMarks("testTrustMarks");
-		model.setTrustMarksIssuers("testIssuer");
+		model.settrustMarkIssuers("testIssuer");
 
 		JSONObject metadata = new JSONObject()
 			.put("testKey", new JSONObject().put("test", "ok"));

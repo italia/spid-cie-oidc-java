@@ -319,7 +319,6 @@ public class TestRelyingPartyOptions {
 
 		assertEquals("test", res.getTokenEndpointAuthMethod());
 
-
 		res.setUserinfoEncryptedResponseEnc("test");
 
 		assertEquals("test", res.getTokenEndpointAuthMethod());
@@ -335,6 +334,45 @@ public class TestRelyingPartyOptions {
 		res.setIdTokenSignedResponseAlg("test");
 
 		assertEquals("test", res.getIdTokenSignedResponseAlg());
+
+		//federation_entity metadata
+		res.setFederationResolveEndpoint("test");
+
+		assertEquals("test", res.getFederationResolveEndpoint());
+
+		res.setOrganizationName("test");
+
+		assertEquals("test", res.getOrganizationName());
+
+		res.setPolicyUri("test");
+
+		assertEquals("test", res.getPolicyUri());
+
+		res.setHomepageUri("test");
+
+		assertEquals("test", res.getHomepageUri());
+
+		res.setLogoUri("test");
+
+		assertEquals("test", res.getLogoUri());
+
+		// Federation Contacts
+
+		res.setFederationContacts(null);
+
+		assertTrue(res.getFederationContacts().size() == 0);
+
+		Set<String> federationContacts = new HashSet<>();
+
+		res.setFederationContacts(federationContacts);
+
+		assertTrue(res.getFederationContacts().size() == 0);
+
+		federationContacts.add("test@test.com");
+
+		res.setFederationContacts(federationContacts);
+
+		assertTrue(res.getFederationContacts().size() == 1);
 	}
 
 	@Test

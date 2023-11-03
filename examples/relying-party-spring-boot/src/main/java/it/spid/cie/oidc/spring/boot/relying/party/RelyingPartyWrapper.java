@@ -104,6 +104,12 @@ public class RelyingPartyWrapper {
 				.setUserinfoEncryptedResponseAlg(oidcConfig.getRelyingParty().getUserinfoEncryptedResponseAlg())
 				.setUserinfoEncryptedResponseEnc(oidcConfig.getRelyingParty().getUserinfoEncryptedResponseEnc())
 				.setTokenEndpointAuthMethod(oidcConfig.getRelyingParty().getTokenEndpointAuthMethod())
+				.setFederationResolveEndpoint(oidcConfig.getRelyingParty().getFederationResolveEndpoint())
+				.setOrganizationName(oidcConfig.getRelyingParty().getOrganizationName())
+				.setHomepageUri(oidcConfig.getRelyingParty().getHomepageUri())
+				.setLogoUri(oidcConfig.getRelyingParty().getLogoUri())
+				.setPolicyUri(oidcConfig.getRelyingParty().getPolicyUri())
+				.setFederationContacts(oidcConfig.getRelyingParty().getFederationContacts())
 				.setJWK(jwk)
 				.setTrustMarks(trustMarks);
 
