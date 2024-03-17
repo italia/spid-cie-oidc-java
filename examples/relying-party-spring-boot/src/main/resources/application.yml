@@ -63,7 +63,7 @@ oidc:
       token-endpoint-auth-method: "private_key_jwt"
       id-token-signed-response-alg: "RS256"
       userinfo-signed-response-alg: "RS256"
-      userinfo-encrypted-response-alg: "RSA-OAEP"
+      userinfo-encrypted-response-alg: "RSA-OAEP-256"
       userinfo-encrypted-response-enc: "A128CBC-HS256"
 
       federation-resolve-endpoint: "http://${oidc.hosts.relying-party}:8080/resolve"
@@ -77,5 +77,6 @@ oidc:
       client-id: "http://${oidc.hosts.relying-party}:8080/oidc/rp/"
       redirect-uris:
       - "http://${oidc.hosts.relying-party}:8080/oidc/rp/callback"
-      jwk-file-path: ${user.home}/oidc-rp-jwk.json
+      jwk-fed-file-path: ${user.home}/oidc-rp-jwk.json
+      jwk-core-file-path: ${user.home}/oidc-rp-core-jwk.json
       trust-marks-file-path: ${user.home}/oidc-rp-trust-marks.json

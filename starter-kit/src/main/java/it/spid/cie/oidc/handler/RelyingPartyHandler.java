@@ -1,6 +1,8 @@
 package it.spid.cie.oidc.handler;
 
+import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -9,12 +11,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -135,7 +132,7 @@ public class RelyingPartyHandler {
 				throw new OIDCException("Entity metadata is empty");
 			}
 
-			entityJWKSet = JWTHelper.getJWKSetFromJSON(entityConf.getJwks());
+			entityJWKSet = JWTHelper.getJWKSetFromJSON(entityConf.getJwksCoreByUse(KeyUse.SIGNATURE));
 
 			if (entityJWKSet.getKeys().isEmpty()) {
 				throw new OIDCException("Entity with invalid or empty jwks");
@@ -437,7 +434,7 @@ public class RelyingPartyHandler {
 
 		authnToken = persistence.storeOIDCAuthnToken(authnToken);
 
-		JWKSet entityJwks = JWTHelper.getJWKSetFromJSON(entityConf.getJwks());
+		JWKSet entityJwks = JWTHelper.getJWKSetFromJSON(entityConf.getJwksCoreByUse(KeyUse.ENCRYPTION));
 
 		JSONObject userInfo = oidcHelper.getUserInfo(
 			state, tokenResponse.getAccessToken(), providerConfiguration, true,
@@ -496,7 +493,7 @@ public class RelyingPartyHandler {
 		FederationEntity entityConf = persistence.fetchFederationEntity(
 			authnRequest.getClientId(), true);
 
-		JWTHelper.getJWKSetFromJSON(entityConf.getJwks());
+		JWTHelper.getJWKSetFromJSON(entityConf.getJwksFed());
 
 		authnToken.setRevoked(LocalDateTime.now());
 
@@ -805,7 +802,7 @@ public class RelyingPartyHandler {
 	private WellKnownData getWellKnownData(FederationEntity entity, boolean jsonMode)
 		throws OIDCException {
 
-		JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(entity.getJwks());
+		JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(entity.getJwksFed());
 
 		JSONObject metadataJson = new JSONObject(entity.getMetadata());
 
@@ -836,34 +833,52 @@ public class RelyingPartyHandler {
 
 		// TODO: JWSAlgorithm via default?
 
-		String confJwk = options.getJwk();
+		String confJwkFed = options.getJwkFed();
 
+		String confJwkCore = options.getJwkCore();
 		// If not JSON Web Key is configured I have to create a new one
 
-		if (Validator.isNullOrEmpty(confJwk)) {
+		if (Validator.isNullOrEmpty(confJwkFed) || Validator.isNullOrEmpty(confJwkCore)) {
 
 			// TODO: Type has to be defined by configuration?
-			RSAKey jwk = JWTHelper.createRSAKey(JWSAlgorithm.RS256, KeyUse.SIGNATURE);
+			RSAKey jwkFed = JWTHelper.createRSAKey(JWSAlgorithm.RS256, KeyUse.SIGNATURE);
+			RSAKey jwkCoreSig = JWTHelper.createRSAKey(JWSAlgorithm.RS256, KeyUse.SIGNATURE);
+			RSAKey jwkCoreEnc = JWTHelper.createRSAEncKey(JWEAlgorithm.RSA_OAEP_256, KeyUse.ENCRYPTION);
 
-			JSONObject json = new JSONObject(jwk.toString());
+			JSONObject jsonFed = new JSONObject(jwkFed.toString());
+
+			JWKSet jwkCoreSet = new JWKSet(Arrays.asList(jwkCoreSig, jwkCoreEnc));
+
+			JSONArray json = new JSONArray()
+					.put(jsonFed)
+					.put(jwkCoreSet.toJSONObject(false));
 
 			return WellKnownData.of(WellKnownData.STEP_ONLY_JWKS, json.toString(2));
 		}
 
-		RSAKey jwk = JWTHelper.parseRSAKey(confJwk);
+		RSAKey jwkFed = JWTHelper.parseRSAKey(confJwkFed);
 
-		logger.info("Configured jwk\n" + jwk.toJSONString());
+		logger.info("Configured jwkFed\n" + jwkFed.toJSONString());
 
 		JSONArray jsonPublicJwk = new JSONArray()
-			.put(new JSONObject(jwk.toPublicJWK().toJSONObject()));
+			.put(new JSONObject(jwkFed.toPublicJWK().toJSONObject()));
 
-		logger.info("Configured public jwk\n" + jsonPublicJwk.toString(2));
+		logger.info("Configured public jwkFed\n" + jsonPublicJwk.toString(2));
 
-		JWKSet jwkSet = new JWKSet(jwk);
+		logger.info("Configured jwkFed\n" + jwkFed.toJSONString());
+
+		JWKSet jwkCoreSet = new JWKSet();
+		try {
+			jwkCoreSet = JWKSet.parse(confJwkCore.toString());
+		}
+		catch (Exception e) {
+			logger.info("Error in parsing: " + e);
+		}
+		JWKSet jwkFedSet = new JWKSet(jwkFed);
 
 		JSONObject rpJson = new JSONObject();
 
-		rpJson.put("jwks", JWTHelper.getJWKSetAsJSONObject(jwkSet, false));
+		rpJson.put("jwks", JWTHelper.getJWKSetAsJSONObject(jwkCoreSet.toPublicJWKSet(), false));
 		rpJson.put("application_type", options.getApplicationType());
 		rpJson.put("client_name", options.getApplicationName());
 		rpJson.put("client_id", sub);
@@ -903,7 +918,7 @@ public class RelyingPartyHandler {
 		json.put("iat", iat);
 		json.put("iss", sub);
 		json.put("sub", sub);
-		json.put("jwks", JWTHelper.getJWKSetAsJSONObject(jwkSet, true));
+		json.put("jwks", JWTHelper.getJWKSetAsJSONObject(jwkFedSet, true));
 		json.put("metadata", metadataJson);
 		json.put(
 			"authority_hints", JSONUtil.asJSONArray(options.getDefaultTrustAnchor()));
@@ -926,8 +941,10 @@ public class RelyingPartyHandler {
 			entity.setDefaultExpireMinutes(options.getDefaultExpiringMinutes());
 			entity.setDefaultSignatureAlg(JWSAlgorithm.RS256.toString());
 			entity.setAuthorityHints(json.getJSONArray("authority_hints").toString());
-			entity.setJwks(
-				JWTHelper.getJWKSetAsJSONArray(jwkSet, true, false).toString());
+			entity.setJwksFed(
+				JWTHelper.getJWKSetAsJSONArray(jwkFedSet, true, false).toString());
+			entity.setJwksCore(
+					JWTHelper.getJWKSetAsJSONArray(jwkCoreSet,true,false).toString());
 			entity.setTrustMarks(json.getJSONArray("trust_marks").toString());
 			entity.settrustMarkIssuers("{}");
 			entity.setMetadata(json.getJSONObject("metadata").toString());
@@ -942,7 +959,7 @@ public class RelyingPartyHandler {
 			return WellKnownData.of(step, json.toString(), jsonPublicJwk.toString(2));
 		}
 
-		String jws = jwtHelper.createJWS(json, jwkSet);
+		String jws = jwtHelper.createJWS(json, jwkFedSet);
 
 		return WellKnownData.of(step, jws, jsonPublicJwk.toString(2));
 	}

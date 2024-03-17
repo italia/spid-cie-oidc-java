@@ -83,7 +83,9 @@ public class TestRelyingPartyHandlerWellKnown {
 		WellKnownData wellKnown = null;
 
 		try {
-			options.setJWK(getContent("rp-jwks.json"));
+			options.setJWKFed(getContent("rp-jwks.json"));
+
+			options.setJWKCore(getContent("rp-core-jwks.json"));
 
 			RelyingPartyHandler handler = new RelyingPartyHandler(
 				options, new MemoryStorage());
@@ -106,7 +108,8 @@ public class TestRelyingPartyHandlerWellKnown {
 		WellKnownData wellKnown = null;
 
 		try {
-			options.setJWK(getContent("rp-jwks.json"));
+			options.setJWKFed(getContent("rp-jwks.json"));
+			options.setJWKCore(getContent("rp-core-jwks.json"));
 			options.setTrustMarks(getContent("rp-trust-marks.json"));
 
 			RelyingPartyHandler handler = new RelyingPartyHandler(
@@ -131,7 +134,8 @@ public class TestRelyingPartyHandlerWellKnown {
 		WellKnownData wellKnown = null;
 
 		try {
-			options.setJWK(getContent("rp-jwks.json"));
+			options.setJWKFed(getContent("rp-jwks.json"));
+			options.setJWKCore(getContent("rp-core-jwks.json"));
 			options.setTrustMarks(getContent("rp-trust-marks.json"));
 
 			RelyingPartyHandler handler = new RelyingPartyHandler(
@@ -157,7 +161,8 @@ public class TestRelyingPartyHandlerWellKnown {
 		WellKnownData wellKnown = null;
 
 		try {
-			options.setJWK(getContent("rp-jwks.json"));
+			options.setJWKFed(getContent("rp-jwks.json"));
+			options.setJWKCore(getContent("rp-core-jwks.json"));
 			options.setTrustMarks(getContent("rp-trust-marks.json"));
 
 			RelyingPartyHandler handler = new RelyingPartyHandler(
@@ -183,7 +188,8 @@ public class TestRelyingPartyHandlerWellKnown {
 		WellKnownData wellKnown = null;
 
 		try {
-			options.setJWK(getContent("rp-jwks.json"));
+			options.setJWKFed(getContent("rp-jwks.json"));
+			options.setJWKCore(getContent("rp-core-jwks.json"));
 			options.setTrustMarks(getContent("rp-trust-marks.json"));
 
 			RelyingPartyHandler handler = new RelyingPartyHandler(
@@ -211,7 +217,8 @@ public class TestRelyingPartyHandlerWellKnown {
 		WellKnownData wellKnown = null;
 
 		try {
-			options.setJWK(getContent("rp-jwks.json"));
+			options.setJWKFed(getContent("rp-jwks.json"));
+			options.setJWKCore(getContent("rp-core-jwks.json"));
 			options.setTrustMarks(getContent("rp-trust-marks.json"));
 
 			RelyingPartyHandler handler = new RelyingPartyHandler(

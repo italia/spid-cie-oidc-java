@@ -17,7 +17,6 @@ import it.spid.cie.oidc.schemas.CIEClaimItem;
 import it.spid.cie.oidc.schemas.ClaimSection;
 import it.spid.cie.oidc.schemas.OIDCProfile;
 import it.spid.cie.oidc.schemas.SPIDClaimItem;
-import it.spid.cie.oidc.schemas.Scope;
 import it.spid.cie.oidc.util.ArrayUtil;
 
 public class TestRelyingPartyOptions {
@@ -84,15 +83,15 @@ public class TestRelyingPartyOptions {
 
 		// Jwk
 
-		String jwk = res.getJwk();
+		String jwk = res.getJwkFed();
 
-		res.setJWK("");
+		res.setJWKFed("");
 
-		assertEquals(jwk, res.getJwk());
+		assertEquals(jwk, res.getJwkFed());
 
-		res.setJWK("test");
+		res.setJWKFed("test");
 
-		assertEquals("test", res.getJwk());
+		assertEquals("test", res.getJwkFed());
 
 		// Login
 

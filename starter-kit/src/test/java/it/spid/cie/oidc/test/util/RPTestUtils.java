@@ -111,7 +111,7 @@ public class RPTestUtils extends TestUtils {
 			.setTrustAnchors(ArrayUtil.asSet(TRUST_ANCHOR))
 			.setApplicationName("JUnit RP")
 			.setRedirectUris(ArrayUtil.asSet(RELYING_PARTY + "callback"))
-			.setJWK(getContent("rp-jwks.json"))
+			.setJWKFed(getContent("rp-jwks.json"))
 			.setTrustMarks(getContent("rp-trust-marks.json"));
 
 		return options;
@@ -440,5 +440,19 @@ public class RPTestUtils extends TestUtils {
 			.put("trust_mark", jws);
 
 		return trustMark;
+	}
+	public static JWKSet getJwksCoreByUse(JWKSet keys, KeyUse use) {
+
+		try {
+			JWK jwk = keys.getKeys().stream()
+					.filter(key -> key.getKeyUse() == use)
+					.findFirst()
+					.orElse(null);
+			JWKSet jwkCore= new JWKSet(jwk);
+			return jwkCore;
+		}
+		catch (Exception e) {
+			return null;
+		}
 	}
 }

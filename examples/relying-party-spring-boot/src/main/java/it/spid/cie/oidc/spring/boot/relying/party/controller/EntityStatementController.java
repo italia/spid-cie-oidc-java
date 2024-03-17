@@ -70,7 +70,7 @@ public class EntityStatementController {
                     .body(response.toString());
         } else {
             JWTHelper jws = new JWTHelper(new RelyingPartyOptions());
-            return new ResponseEntity<>(jws.createJWS(response, JWTHelper.getJWKSetFromJSON(entityConfiguration.getJwks())), HttpStatus.OK);
+            return new ResponseEntity<>(jws.createJWS(response, JWTHelper.getJWKSetFromJSON(entityConfiguration.getJwksFed())), HttpStatus.OK);
         }
     }
 }

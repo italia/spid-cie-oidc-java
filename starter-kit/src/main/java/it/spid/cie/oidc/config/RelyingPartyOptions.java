@@ -52,7 +52,8 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 	private Set<String> contacts = new HashSet<>();
 	private String clientId;
 	private Set<String> redirectUris = new HashSet<>();
-	private String jwk;
+	private String jwkFed;
+	private String jwkCore;
 	private String trustMarks;
 
 	private String loginURL = "/oidc/rp/landing";
@@ -177,8 +178,12 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 		return Collections.unmodifiableSet(redirectUris);
 	}
 
-	public String getJwk() {
-		return jwk;
+	public String getJwkFed() {
+		return jwkFed;
+	}
+
+	public String getJwkCore() {
+		return jwkCore;
 	}
 
 	public String getTrustMarks() {
@@ -379,14 +384,20 @@ public class RelyingPartyOptions extends GlobalOptions<RelyingPartyOptions> {
 		return this;
 	}
 
-	public RelyingPartyOptions setJWK(String jwk) {
+	public RelyingPartyOptions setJWKFed(String jwk) {
 		if (!Validator.isNullOrEmpty(jwk)) {
-			this.jwk = jwk;
+			this.jwkFed = jwk;
 		}
 
 		return this;
 	}
+	public RelyingPartyOptions setJWKCore(String jwk) {
+		if (!Validator.isNullOrEmpty(jwk)) {
+			this.jwkCore = jwk;
+		}
 
+		return this;
+	}
 	public RelyingPartyOptions setRedirectUris(Collection<String> redirectUris) {
 		if (redirectUris != null && !redirectUris.isEmpty()) {
 			this.redirectUris.clear();

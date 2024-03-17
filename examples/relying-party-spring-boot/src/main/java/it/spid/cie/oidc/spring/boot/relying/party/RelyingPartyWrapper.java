@@ -83,11 +83,12 @@ public class RelyingPartyWrapper {
 
 	@PostConstruct
 	private void postConstruct() throws OIDCException {
-		String jwk = readFile(oidcConfig.getRelyingParty().getJwkFilePath());
+		String jwkFed = readFile(oidcConfig.getRelyingParty().getJwkFedFilePath());
+		String jwkCore = readFile(oidcConfig.getRelyingParty().getJwkCoreFilePath());
 		String trustMarks = readFile(
 			oidcConfig.getRelyingParty().getTrustMarksFilePath());
 
-		logger.info("final jwk: " + jwk);
+		logger.info("final jwkFed: " + jwkFed);
 		logger.info("final trust_marks: " + trustMarks);
 
 		RelyingPartyOptions options = new RelyingPartyOptions()
@@ -110,7 +111,8 @@ public class RelyingPartyWrapper {
 				.setLogoUri(oidcConfig.getRelyingParty().getLogoUri())
 				.setPolicyUri(oidcConfig.getRelyingParty().getPolicyUri())
 				.setFederationContacts(oidcConfig.getRelyingParty().getFederationContacts())
-				.setJWK(jwk)
+				.setJWKFed(jwkFed)
+				.setJWKCore(jwkCore)
 				.setTrustMarks(trustMarks);
 
 		relyingPartyHandler = new RelyingPartyHandler(options, persistenceImpl);

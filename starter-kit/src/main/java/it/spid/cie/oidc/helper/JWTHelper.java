@@ -66,7 +66,22 @@ public class JWTHelper {
 			throw new JWTException.Generic(e);
 		}
 	}
+	public static RSAKey createRSAEncKey(JWEAlgorithm alg, KeyUse use) throws OIDCException {
+		JWEAlgorithm goodAlg = GetterUtil.getObject(alg, JWEAlgorithm.RSA_OAEP_256);
 
+		// TODO: check goodAlg is RSA
+
+		try {
+			return new RSAKeyGenerator(2048)
+					.algorithm(goodAlg)
+					.keyUse(use)
+					.keyIDFromThumbprint(true)
+					.generate();
+		}
+		catch (Exception e) {
+			throw new JWTException.Generic(e);
+		}
+	}
 	/**
 	 * Decode a Base64 string and return it
 	 *

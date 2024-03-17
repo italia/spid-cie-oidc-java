@@ -5,6 +5,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.KeyUse;
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -111,7 +113,13 @@ public class TestOIDCHelper {
 
 	private String mockedSPIDProviderUserInfo() throws Exception {
 		JSONObject providerJWKS = RPTestUtils.mockedSPIDProviderPrivateJWKS();
-		String relyingPartyJWK = RPTestUtils.getContent("rp-jwks.json");
+		String relyingPartyJWK = RPTestUtils.getContent("rp-core-jwks.json");
+		JWKSet keys = JWTHelper.getJWKSetFromJSON(relyingPartyJWK);
+		JWK jwk = keys.getKeys().stream()
+				.filter(key -> key.getKeyUse() == KeyUse.ENCRYPTION)
+				.findFirst()
+				.orElse(null);
+		String jwkCoreEnc = jwk.toString();
 
 		JSONObject payload = new JSONObject()
 			.put(
@@ -121,7 +129,7 @@ public class TestOIDCHelper {
 			.put("https://attributes.spid.gov.it/email", "that@ema.il")
 			.put("https://attributes.spid.gov.it/fiscalNumber", "abcabc00a00a123a");
 
-		return RPTestUtils.createJWE(payload, providerJWKS, relyingPartyJWK);
+		return RPTestUtils.createJWE(payload, providerJWKS, jwkCoreEnc);
 	}
 
 

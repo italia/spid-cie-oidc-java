@@ -37,7 +37,7 @@ public class WellKnownController {
 		if (wellKnown.getStep() == WellKnownData.STEP_ONLY_JWKS) {
 			logger.info(
 				"Generated jwk. Please add it into 'application.yaml' or save as '" +
-				oidcConfig.getRelyingParty().getJwkFilePath() + "'.\n" +
+				oidcConfig.getRelyingParty().getJwkFedFilePath() + "'.\n" +
 				wellKnown.getValue());
 
 			String body = new JSONObject()

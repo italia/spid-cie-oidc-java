@@ -633,7 +633,7 @@ public class TestJWTHelper {
 			.setTrustAnchors(ArrayUtil.asSet(TRUST_ANCHOR))
 			.setApplicationName("JUnit RP")
 			.setRedirectUris(ArrayUtil.asSet(RELYING_PARTY + "callback"))
-			.setJWK(TestUtils.getContent("rp-jwks.json"))
+			.setJWKFed(TestUtils.getContent("rp-jwks.json"))
 			.setTrustMarks(TestUtils.getContent("rp-trust-marks.json"));
 
 		return options;
