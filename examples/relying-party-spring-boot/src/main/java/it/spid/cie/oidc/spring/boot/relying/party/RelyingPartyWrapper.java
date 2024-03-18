@@ -48,10 +48,10 @@ public class RelyingPartyWrapper {
 	}
 
 	public String getUserKey(JSONObject userInfo) {
-		String userKey = userInfo.optString("email");
+		String userKey = userInfo.optString("sub");
 
 		if (Validator.isNullOrEmpty(userKey)) {
-			userKey = userInfo.optString("email", "");
+			userKey = userInfo.optString("sub		", "");
 		}
 
 		return userKey;
