@@ -741,7 +741,7 @@ public class RelyingPartyHandler {
 		int x = url.indexOf(OIDCConstants.OIDC_FEDERATION_WELLKNOWN_URL);
 
 		if (x > 0) {
-			return url.substring(0, x);
+			return url.substring(0, x-1); //remove final slash
 		}
 
 		return "";
@@ -882,6 +882,7 @@ public class RelyingPartyHandler {
 		rpJson.put("application_type", options.getApplicationType());
 		rpJson.put("client_name", options.getApplicationName());
 		rpJson.put("client_id", sub);
+		rpJson.put("organization_name", options.getOrganizationName());
 		rpJson.put("client_registration_types", JSONUtil.asJSONArray("automatic"));
 		rpJson.put("contacts", options.getContacts());
 		rpJson.put("grant_types", RelyingPartyOptions.SUPPORTED_GRANT_TYPES);
@@ -918,7 +919,7 @@ public class RelyingPartyHandler {
 		json.put("iat", iat);
 		json.put("iss", sub);
 		json.put("sub", sub);
-		json.put("jwks", JWTHelper.getJWKSetAsJSONObject(jwkFedSet, true));
+		json.put("jwks", JWTHelper.getJWKSetAsJSONObject(jwkFedSet, false));
 		json.put("metadata", metadataJson);
 		json.put(
 			"authority_hints", JSONUtil.asJSONArray(options.getDefaultTrustAnchor()));

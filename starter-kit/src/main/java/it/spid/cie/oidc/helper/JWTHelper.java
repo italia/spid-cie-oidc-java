@@ -1,17 +1,7 @@
 package it.spid.cie.oidc.helper;
 
-import com.nimbusds.jose.EncryptionMethod;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JOSEObject;
-import com.nimbusds.jose.JWEAlgorithm;
-import com.nimbusds.jose.JWEDecrypter;
-import com.nimbusds.jose.JWEObject;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSObject;
-import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.crypto.RSADecrypter;
 import com.nimbusds.jose.crypto.RSASSASigner;
@@ -454,7 +444,8 @@ public class JWTHelper {
 			// Prepare JWS object with the payload
 
 			JWSObject jwsObject = new JWSObject(
-				new JWSHeader.Builder(alg).keyID(jwk.getKeyID()).build(),
+
+				new JWSHeader.Builder(alg).keyID(jwk.getKeyID()).type(new JOSEObjectType("entity-statement+jwt")).build(),
 				new Payload(payload.toString()));
 
 			// Compute the signature
