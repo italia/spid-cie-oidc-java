@@ -215,7 +215,7 @@ public class RelyingPartyHandler {
 
 		authzData.remove("code_verifier");
 		authzData.put("iss", entityMetadata.getString("client_id"));
-		authzData.put("sub", entityMetadata.getString("client_id"));
+		//authzData.put("sub", entityMetadata.getString("client_id"));
 
 		String requestObj = jwtHelper.createJWS(authzData, entityJWKSet);
 
