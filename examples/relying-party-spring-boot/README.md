@@ -15,7 +15,7 @@ Run the provider [federation](https://github.com/italia/spid-cie-oidc-django)
 - the project should run on [http://127.0.0.1:8000](http://127.0.0.1:8000), keep it running
 
 
-Clone this repository and install all the lement inside the MavenLocal registry
+Clone this repository and install all the elements inside the MavenLocal registry
 ```
 git clone https://github.com/italia/spid-cie-oidc-java
 
@@ -39,9 +39,10 @@ this will start the relying party server on [http://127.0.0.1:8080](http://127.0
 Do the on-boarding process
 - generate the relying party jwks
   - go [here](http://127.0.0.1:8080/) to auto-generate it
-  - jwks are exposed on the page and inside application log
-  - create the file `${user.home}/oidc-rp-jwk.json` with the jwks
-  - use "reload" link to proceed with next step
+  - federation jwks and core jwks are exposed on the page and inside application log
+  - create the file `${user.home}/oidc-rp-jwk.json` with the federation jwks
+  - create the file `${user.home}/oidc-rp-core-jwk.json` with the core jwks
+  - - use "reload" link to proceed with next step
 - show on-boarding datas
   - go [here](http://127.0.0.1:8080/) to see it
 - register the relying party [here](http://127.0.0.1:8000/admin/spid_cie_oidc_authority/federationdescendant/add)
@@ -76,10 +77,32 @@ A docker image containing this example can be built a run:
 - visit `http://relying-party.org:8080/`
 
 Some hints:
-- we are using [federation](https://github.com/italia/spid-cie-oidc-django) v1.2.0
+- we are using [federation](https://github.com/italia/spid-cie-oidc-django) v1.4.0
 - docker images currently sets a proxy of the exposed ports on the localhost interface, so you could use
 previous chapter instructions replacing `127.0.0.1` with the right hostname
-- docker image mounts the folder `./docker/data-java` as `/data` inside spring-boot container to externalize `jwk` and `trust-marks` configuration
+- docker image mounts the folder `./docker/data-java` as `/data` inside spring-boot container to externalize federation and core `jwks` and `trust-marks` configuration
 
 
 [Docker Compose in action on YouTube](https://www.youtube.com/watch?v=U2Ec0No2EKg)
+
+**To be onboarded into CIE Federation**:
+- use always appropriate and valid TLS Certificates
+- use IP from Italian networks for server [CIE Federation servers uses geoblocking]
+- as contact use the same institutional email address as stated into the administrative part [do not use PEC]
+- when copy the federation public key please follow this pattern:
+  - ```
+    {
+    "keys": [
+        {
+          "alg": "RS256",
+          "kid": "....",
+          "kty": "RSA",
+          "n": ".....",
+          "e": "AQAB",
+          "use": "sig"
+        }
+      ]
+    }
+    ```
+- when onboarded, please retrieve the Trust Mark form TA fetch endpoint like this example for preproduction: `https://preprod.oidc.registry.servizicie.interno.gov.it/fetch?sub={your_client_id}` 
+- remember to (put `[` `]` around the Trust Mark when writing the appropriate file
