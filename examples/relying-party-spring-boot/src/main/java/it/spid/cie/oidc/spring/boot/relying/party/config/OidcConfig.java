@@ -208,10 +208,12 @@ public class OidcConfig extends BaseConfig {
 //			return jwk;
 //		}
 
-		public String getJwkFilePath() {
-			return jwkFilePath;
+		public String getJwkFedFilePath() {
+			return jwkFedFilePath;
 		}
-
+		public String getJwkCoreFilePath() {
+			return jwkCoreFilePath;
+		}
 //		public String getTrustMarks() {
 //			return trustMarks;
 //		}
@@ -271,10 +273,13 @@ public class OidcConfig extends BaseConfig {
 //			this.jwk = jwk;
 //		}
 
-		public void setJwkFilePath(String jwkFilePath) {
-			this.jwkFilePath = jwkFilePath;
+		public void setJwkFedFilePath(String jwkFedFilePath) {
+			this.jwkFedFilePath = jwkFedFilePath;
 		}
 
+		public void setJwkCoreFilePath(String jwkCoreFilePath) {
+			this.jwkCoreFilePath = jwkCoreFilePath;
+		}
 //		public void setTrustMarks(String trustMarks) {
 //			this.trustMarks = trustMarks;
 //		}
@@ -305,7 +310,8 @@ public class OidcConfig extends BaseConfig {
 			json.put("clientId", clientId);
 			json.put("redirectUris", redirectUris);
 			//json.put("jwk", jwk);
-			json.put("jwkFilePath", jwkFilePath);
+			json.put("jwkFilePath", jwkFedFilePath);
+			json.put("jwkCoreFilePath", jwkCoreFilePath);
 			//json.put("trustMarks", trustMarks);
 			json.put("trustMarksFilePath", trustMarksFilePath);
 
@@ -319,7 +325,8 @@ public class OidcConfig extends BaseConfig {
 		private String clientId;
 		private Set<String> redirectUris = new HashSet<>();
 		//private String jwk;
-		private String jwkFilePath;
+		private String jwkFedFilePath;
+		private String jwkCoreFilePath;
 		//private String trustMarks;
 		private String trustMarksFilePath;
 

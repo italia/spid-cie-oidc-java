@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.nimbusds.jose.jwk.KeyUse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.AfterClass;
@@ -418,7 +419,8 @@ public class TestRelyingPartyHandler {
 			.setTrustAnchors(ArrayUtil.asSet(TRUST_ANCHOR))
 			.setApplicationName("JUnit RP")
 			.setRedirectUris(ArrayUtil.asSet(RELYING_PARTY + "callback"))
-			.setJWK(getContent("rp-jwks.json"))
+			.setJWKFed(getContent("rp-jwks.json"))
+			.setJWKCore(getContent("rp-core-jwks.json"))
 			.setTrustMarks(getContent("rp-trust-marks.json"));
 
 		return options;
@@ -642,8 +644,13 @@ public class TestRelyingPartyHandler {
 
 	private String mockedSPIDProviderUserInfo() throws Exception {
 		JSONObject providerJWKS = mockedSPIDProviderPrivateJWKS();
-		String relyingPartyJWK = getContent("rp-jwks.json");
-
+		String relyingPartyJWK = getContent("rp-core-jwks.json");
+		JWKSet keys = JWTHelper.getJWKSetFromJSON(relyingPartyJWK);
+		JWK jwk = keys.getKeys().stream()
+				.filter(key -> key.getKeyUse() == KeyUse.ENCRYPTION)
+				.findFirst()
+				.orElse(null);
+		String jwkCoreEnc = jwk.toString();
 		JSONObject payload = new JSONObject()
 			.put(
 				"sub", "e6b06083c2644bdc06f5a1cea22e6538b8fd59fc091837938c5969a8390be944")
@@ -652,7 +659,7 @@ public class TestRelyingPartyHandler {
 			.put("email", "that@ema.il")
 			.put("https://attributes.eid.gov.it/fiscal_number", "abcabc00a00a123a");
 
-		return createJWE(payload, providerJWKS, relyingPartyJWK);
+		return createJWE(payload, providerJWKS, jwkCoreEnc);
 	}
 
 	private String mockedTrustAnchorEntityConfiguration() throws Exception {

@@ -2,6 +2,8 @@ package it.spid.cie.oidc.spring.boot.relying.party.controller;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,8 +31,13 @@ public class HomeController {
 		mav.addObject("trustAnchorHost", oidcConfig.getHosts().getTrustAnchor());
 
 		if (wellKnow.hasOnlyJwks()) {
-			mav.addObject("mineJwks", wellKnow.getValue());
-			mav.addObject("configFile", oidcConfig.getRelyingParty().getJwkFilePath());
+			JSONArray json = new JSONArray(wellKnow.getValue());
+
+			mav.addObject("fedJwks", json.get(0).toString());
+			mav.addObject("coreJwks", json.get(1).toString());
+
+			mav.addObject("configFile", oidcConfig.getRelyingParty().getJwkFedFilePath());
+			mav.addObject("configCoreFile", oidcConfig.getRelyingParty().getJwkCoreFilePath());
 		}
 
 		if (wellKnow.isIntermediate()) {

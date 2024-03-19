@@ -26,7 +26,8 @@ public class TestFederationEntity {
 		model.getDefaultExpireMinutes();
 		model.getDefaultSignatureAlg();
 		model.getEntityType();
-		model.getJwks();
+		model.getJwksFed();
+		model.getJwksCore();
 		model.getMetadata();
 		model.getSubject();
 		model.getTrustMarks();
@@ -45,7 +46,8 @@ public class TestFederationEntity {
 		model.setDefaultExpireMinutes(30);
 		model.setDefaultSignatureAlg("testAlg");
 		model.setEntityType("testEntityType");
-		model.setJwks("testJwks");
+		model.setJwksFed("testJwksFed");
+		model.setJwksCore("testJwksCore");
 		model.setSubject("testSubject");
 		model.setTrustMarks("testTrustMarks");
 		model.settrustMarkIssuers("testIssuer");

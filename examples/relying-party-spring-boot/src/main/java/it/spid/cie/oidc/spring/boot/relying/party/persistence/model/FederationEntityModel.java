@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.nimbusds.jose.jwk.KeyUse;
 import it.spid.cie.oidc.model.FederationEntity;
 import it.spid.cie.oidc.util.GetterUtil;
 import it.spid.cie.oidc.util.Validator;
@@ -30,7 +31,8 @@ public class FederationEntityModel {
 		target.setActive(source.isActive());
 		target.setAuthorityHints(source.getAuthorityHints());
 		target.setConstraints(source.getConstraints());
-		target.setJwks(source.getJwks());
+		target.setJwksFed(source.getJwksFed());
+		target.setJwksCore(source.getJwksCore());
 		target.setTrustMarks(source.getTrustMarks());
 		target.setTrustMarkIssuers(source.gettrustMarkIssuers());
 		target.setMetadata(source.getMetadata());
@@ -71,8 +73,12 @@ public class FederationEntityModel {
 		return authorityHints;
 	}
 
-	public String getJwks() {
-		return jwks;
+	public String getJwksFed() {
+		return jwksFed;
+	}
+
+	public String getJwksCore() {
+		return jwksCore;
 	}
 
 	public String getTrustMarks() {
@@ -126,10 +132,12 @@ public class FederationEntityModel {
 		this.authorityHints = authorityHints;
 	}
 
-	public void setJwks(String jwks) {
-		this.jwks = jwks;
+	public void setJwksFed(String jwksFed) {
+		this.jwksFed = jwksFed;
 	}
-
+	public void setJwksCore(String jwksCore) {
+		this.jwksCore = jwksCore;
+	}
 	public void setTrustMarks(String trustMarks) {
 		this.trustMarks = trustMarks;
 	}
@@ -167,7 +175,8 @@ public class FederationEntityModel {
 		target.setActive(isActive());
 		target.setAuthorityHints(getAuthorityHints());
 		target.setConstraints(getConstraints());
-		target.setJwks(getJwks());
+		target.setJwksFed(getJwksFed());
+		target.setJwksCore(getJwksCore());
 		target.setTrustMarks(getTrustMarks());
 		target.settrustMarkIssuers(getTrustMarkIssuers());
 		target.setMetadata(getMetadata());
@@ -213,8 +222,10 @@ public class FederationEntityModel {
 	private String authorityHints;
 
 	@Column(nullable = false, length = 2000)
-	private String jwks;
+	private String jwksFed;
 
+	@Column(nullable = false, length = 2000)
+	private String jwksCore;
 	@Column(name = "trust_marks", nullable = false, length = 2000)
 	private String trustMarks;
 

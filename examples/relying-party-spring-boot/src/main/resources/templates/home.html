@@ -2,14 +2,27 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
 	<head>
 		<title>OIDC Relying Party SpringBoot Example</title>
+		<style>
+			pre {
+				white-space: pre-wrap;       /* Since CSS 2.1 */
+				white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+				white-space: -pre-wrap;      /* Opera 4-6 */
+				white-space: -o-pre-wrap;    /* Opera 7 */
+				word-wrap: break-word;       /* Internet Explorer 5.5+ */
+			}
+		</style>
 	</head>
 	<body>
 		<h3>OIDC Relying Party SpringBoot Example</h1>
 
 		<div th:if="${onlyJwks}">
-			<p>Before continue, put generated jwk into '<span th:text="${configFile}" />'</p>
+			<p>Before continue, put generated Federation jwk into '<span th:text="${configFile}" />'</p>
 			<p>
-				<pre th:text="${mineJwks}" />
+				<pre th:text="${fedJwks}" />
+			</p>
+			<p>the Core Sig and Enc jwks into '<span th:text="${configCoreFile}" />'</p>
+			<p>
+			<pre th:text="${coreJwks}" />
 			</p>
 			<p>then make the app <a th:href="@{/reload-handler}"> reload </a> it.</p>
 		</div>

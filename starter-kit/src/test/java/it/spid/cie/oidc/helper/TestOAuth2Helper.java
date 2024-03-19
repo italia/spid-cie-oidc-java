@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.nimbusds.jose.jwk.KeyUse;
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -143,7 +144,7 @@ public class TestOAuth2Helper {
 			FederationEntity clientConf = new FederationEntity();
 
 			clientConf.setSubject(RELYING_PARTY);
-			clientConf.setJwks(mockedSPIDProviderPublicJWKS().toString());
+			clientConf.setJwksFed(mockedSPIDProviderPublicJWKS().toString());
 
 			helper.performAccessTokenRequest(
 				null, null, null, null, clientConf, SPID_PROVIDER + "test", null);
@@ -160,12 +161,12 @@ public class TestOAuth2Helper {
 		catched = false;
 		JSONObject accessToken = null;
 		try {
-			JWKSet jwks = JWTHelper.getJWKSetFromJWK(options.getJwk());
+			JWKSet jwks = RPTestUtils.getJwksCoreByUse(JWTHelper.getJWKSetFromJSON(options.getJwkCore()), KeyUse.SIGNATURE);
 
 			FederationEntity clientConf = new FederationEntity();
 
 			clientConf.setSubject(RELYING_PARTY);
-			clientConf.setJwks(jwks.toString(false));
+			clientConf.setJwksCore(jwks.toString(false));
 
 			accessToken = helper.performAccessTokenRequest(
 				null, null, null, null, clientConf, SPID_PROVIDER + "test", null);
@@ -189,12 +190,12 @@ public class TestOAuth2Helper {
 					WireMock.ok("invalid-json")
 				));
 
-			JWKSet jwks = JWTHelper.getJWKSetFromJWK(options.getJwk());
-
+			//JWKSet jwks = JWTHelper.getJWKSetFromJSON(options.getJwkFed());
+			JWKSet jwks = RPTestUtils.getJwksCoreByUse(JWTHelper.getJWKSetFromJSON(options.getJwkCore()), KeyUse.SIGNATURE);
 			FederationEntity clientConf = new FederationEntity();
 
 			clientConf.setSubject(RELYING_PARTY);
-			clientConf.setJwks(jwks.toString(false));
+			clientConf.setJwksCore(jwks.toString(false));
 
 			accessToken = helper.performAccessTokenRequest(
 				null, null, null, null, clientConf, SPID_PROVIDER + "test", null);
@@ -277,7 +278,7 @@ public class TestOAuth2Helper {
 			FederationEntity clientConf = new FederationEntity();
 
 			clientConf.setSubject(RELYING_PARTY);
-			clientConf.setJwks(mockedSPIDProviderPublicJWKS().toString());
+			clientConf.setJwksFed(mockedSPIDProviderPublicJWKS().toString());
 
 			helper.sendRevocationRequest(null, null, "test", clientConf);
 		}
@@ -293,12 +294,12 @@ public class TestOAuth2Helper {
 		catched = false;
 
 		try {
-			JWKSet jwks = JWTHelper.getJWKSetFromJWK(options.getJwk());
+			JWKSet jwks = JWTHelper.getJWKSetFromJWK(options.getJwkFed());
 
 			FederationEntity clientConf = new FederationEntity();
 
 			clientConf.setSubject(RELYING_PARTY);
-			clientConf.setJwks(jwks.toString(false));
+			clientConf.setJwksFed(jwks.toString(false));
 
 			helper.sendRevocationRequest(null, null, "test", clientConf);
 		}
@@ -322,12 +323,12 @@ public class TestOAuth2Helper {
 					WireMock.forbidden()
 				));
 
-			JWKSet jwks = JWTHelper.getJWKSetFromJWK(options.getJwk());
+			JWKSet jwks = JWTHelper.getJWKSetFromJWK(options.getJwkFed());
 
 			FederationEntity clientConf = new FederationEntity();
 
 			clientConf.setSubject(RELYING_PARTY);
-			clientConf.setJwks(jwks.toString(false));
+			clientConf.setJwksFed(jwks.toString(false));
 
 			helper.sendRevocationRequest(null, null, SPID_PROVIDER + "test", clientConf);
 		}
@@ -351,12 +352,12 @@ public class TestOAuth2Helper {
 					WireMock.ok()
 				));
 
-			JWKSet jwks = JWTHelper.getJWKSetFromJWK(options.getJwk());
+			JWKSet jwks = JWTHelper.getJWKSetFromJWK(options.getJwkFed());
 
 			FederationEntity clientConf = new FederationEntity();
 
 			clientConf.setSubject(RELYING_PARTY);
-			clientConf.setJwks(jwks.toString(false));
+			clientConf.setJwksFed(jwks.toString(false));
 
 			helper.sendRevocationRequest(null, null, SPID_PROVIDER + "test", clientConf);
 		}
@@ -429,7 +430,8 @@ public class TestOAuth2Helper {
 			.setTrustAnchors(ArrayUtil.asSet(TRUST_ANCHOR))
 			.setApplicationName("JUnit RP")
 			.setRedirectUris(ArrayUtil.asSet(RELYING_PARTY + "callback"))
-			.setJWK(TestUtils.getContent("rp-jwks.json"))
+			.setJWKFed(TestUtils.getContent("rp-jwks.json"))
+			.setJWKCore(TestUtils.getContent("rp-core-jwks.json"))
 			.setTrustMarks(TestUtils.getContent("rp-trust-marks.json"));
 
 		return options;

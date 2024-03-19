@@ -13,7 +13,8 @@ VOLUME ["/data"]
 ENV OIDC_HOSTS_TRUST_ANCHOR="trust-anchor.org"
 ENV OIDC_HOSTS_CIE_PROVIDER="cie-provider.org"
 ENV OIDC_HOSTS_RELYING_PARTY="relying-party.org"
-ENV OIDC_RELYING_PARTY_JWK_FILE_PATH="/data/oidc-rp-jwk.json"
+ENV OIDC_RELYING_PARTY_JWK_FED_FILE_PATH="/data/oidc-rp-jwk.json"
+ENV OIDC_RELYING_PARTY_CORE_JWK_CORE_FILE_PATH="/data/oidc-rp-core-jwk.json"
 ENV OIDC_RELYING_PARTY_TRUST_MARKS_FILE_PATH="/data/oidc-rp-trust-marks.json"
 ENV SPRING_H2_CONSOLE_SETTINGS_WEB_ALLOW_OTHERS="true"
 

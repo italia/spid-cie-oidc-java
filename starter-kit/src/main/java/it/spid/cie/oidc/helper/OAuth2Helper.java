@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.nimbusds.jose.jwk.KeyUse;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +75,7 @@ public class OAuth2Helper {
 				.put("exp", JWTHelper.getExpiresOn())
 				.put("jti", UUID.randomUUID().toString());
 
-			JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(clientConf.getJwks());
+			JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(clientConf.getJwksCoreByUse(KeyUse.SIGNATURE));
 
 			String clientAssertion = jwtHelper.createJWS(payload, jwkSet);
 
@@ -153,7 +154,7 @@ public class OAuth2Helper {
 				.put("exp", JWTHelper.getExpiresOn())
 				.put("jti", UUID.randomUUID().toString());
 
-			JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(clientConf.getJwks());
+			JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(clientConf.getJwksFed());
 
 			String clientAssertion = jwtHelper.createJWS(payload, jwkSet);
 

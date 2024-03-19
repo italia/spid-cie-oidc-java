@@ -1,5 +1,9 @@
 package it.spid.cie.oidc.model;
 
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.KeyUse;
+import it.spid.cie.oidc.helper.JWTHelper;
 import org.json.JSONObject;
 
 import it.spid.cie.oidc.config.GlobalOptions;
@@ -25,7 +29,8 @@ public class FederationEntity extends BaseModel {
 	private int defaultExpireMinutes;
 	private String defaultSignatureAlg = GlobalOptions.DEFAULT_SIGNING_ALG;
 	private String authorityHints;
-	private String jwks;
+	private String jwksFed;
+	private String jwksCore;
 	private String trustMarks;
 	private String trustMarkIssuers;
 	private String metadata;
@@ -53,10 +58,27 @@ public class FederationEntity extends BaseModel {
 		return defaultSignatureAlg;
 	}
 
-	public String getJwks() {
-		return jwks;
+	public String getJwksFed() {
+		return jwksFed;
 	}
-
+	public String getJwksCore() {
+		return jwksCore;
+	}
+	public String getJwksCoreByUse(KeyUse use) {
+		String jwkCore="";
+		try {
+			JWKSet keys = JWTHelper.getJWKSetFromJSON(jwksCore);
+			JWK jwk = keys.getKeys().stream()
+					.filter(key -> key.getKeyUse() == use)
+					.findFirst()
+					.orElse(null);
+			jwkCore = "["+jwk.toString()+"]";
+		}
+		catch (Exception e) {
+			return null;
+		}
+		return jwkCore;
+	}
 	public String getMetadata() {
 		return metadata;
 	}
@@ -114,10 +136,14 @@ public class FederationEntity extends BaseModel {
 		this.entityType = entityType;
 	}
 
-	public void setJwks(String jwks) {
-		this.jwks = jwks;
+	public void setJwksFed(String jwksFed) {
+		this.jwksFed = jwksFed;
 	}
 
+	public void setJwksCore(String jwksCore) {
+		this.jwksCore = jwksCore;
+	}
+	
 	public FederationEntity setMetadata(String metadata) {
 		this.metadata = metadata;
 

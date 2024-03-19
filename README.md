@@ -105,7 +105,7 @@ Sample projects using the library can be executed as docker or docker-compose. S
 
 ### SpringBoot Relying Party example
 
-A simple [SpringBoot](examples/relying-party-spring-boot) web application using the starter-kit to implement a Relying Party.
+A simple [SpringBoot](examples/relying-party-spring-boot) web application using the starter-kit to implement a Relying Party, as well to perform the complete onboarding and login/logout test within the CIE Federation.
 
 This application is for demo purpose only, please don't use it in production or critical environment.
 
