@@ -739,9 +739,10 @@ public class RelyingPartyHandler {
 
 	private String getSubjectFromWellKnownURL(String url) {
 		int x = url.indexOf(OIDCConstants.OIDC_FEDERATION_WELLKNOWN_URL);
-
+		if(!this.options.getClientId().endsWith("/"))
+			x--;
 		if (x > 0) {
-			return url.substring(0, x-1); //remove final slash
+			return url.substring(0, x);
 		}
 
 		return "";

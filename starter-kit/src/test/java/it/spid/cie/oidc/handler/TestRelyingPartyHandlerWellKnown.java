@@ -22,7 +22,7 @@ public class TestRelyingPartyHandlerWellKnown {
 
 	private static String TRUST_ANCHOR = "http://127.0.0.1:18000/";
 	private static String SPID_PROVIDER = "http://127.0.0.1:18000/oidc/op/";
-	private static String RELYING_PARTY = "http://127.0.0.1:18080/oidc/rp";
+	private static String RELYING_PARTY = "http://127.0.0.1:18080/oidc/rp/";
 
 	@Test
 	public void testClass1() {
@@ -142,7 +142,7 @@ public class TestRelyingPartyHandlerWellKnown {
 				options, new MemoryStorage());
 
 			wellKnown = handler.getWellKnownData(
-				RELYING_PARTY + "/" + OIDCConstants.OIDC_FEDERATION_WELLKNOWN_URL,
+				RELYING_PARTY + OIDCConstants.OIDC_FEDERATION_WELLKNOWN_URL,
 				true);
 		}
 		catch (Exception e) {
@@ -196,10 +196,10 @@ public class TestRelyingPartyHandlerWellKnown {
 				options, new MemoryStorage());
 
 			handler.getWellKnownData(
-				RELYING_PARTY + "/" +  OIDCConstants.OIDC_FEDERATION_WELLKNOWN_URL, true);
+				RELYING_PARTY  +  OIDCConstants.OIDC_FEDERATION_WELLKNOWN_URL, true);
 
 			wellKnown = handler.getWellKnownData(
-				RELYING_PARTY + "/" + OIDCConstants.OIDC_FEDERATION_WELLKNOWN_URL, true);
+				RELYING_PARTY + OIDCConstants.OIDC_FEDERATION_WELLKNOWN_URL, true);
 		}
 		catch (Exception e) {
 			catched = true;

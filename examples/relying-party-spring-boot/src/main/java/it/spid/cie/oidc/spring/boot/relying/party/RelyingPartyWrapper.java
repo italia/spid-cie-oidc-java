@@ -51,7 +51,7 @@ public class RelyingPartyWrapper {
 		String userKey = userInfo.optString("sub");
 
 		if (Validator.isNullOrEmpty(userKey)) {
-			userKey = userInfo.optString("sub		", "");
+			userKey = userInfo.optString("sub", "");
 		}
 
 		return userKey;
