@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>it.spid.cie.oidc</groupId>
 		<artifactId>starter-kit-parent</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
