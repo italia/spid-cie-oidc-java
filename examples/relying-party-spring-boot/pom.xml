@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>it.spid.cie.oidc</groupId>
 		<artifactId>it.spid.cie.oidc.examples</artifactId>
-		<version>1.0.1-SNAPSHOT</version>
+		<version>1.0.1</version>
 	</parent>
 
 	<artifactId>it.spid.cie.oidc.relying.party.spring-boot-sample</artifactId>
