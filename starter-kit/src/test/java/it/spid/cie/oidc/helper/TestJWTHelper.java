@@ -9,15 +9,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.nimbusds.jose.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSObject;
-import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
@@ -65,6 +61,21 @@ public class TestJWTHelper {
 		assertTrue(rsaKey.getKeyType().equals(KeyType.RSA));
 	}
 
+	@Test
+	public void testClass2enc() {
+		RSAKey rsaKey = null;
+		boolean catched = false;
+
+		try {
+			rsaKey = JWTHelper.createRSAEncKey(null, KeyUse.ENCRYPTION);
+		}
+		catch (Exception e) {
+			catched = true;
+		}
+
+		assertFalse(catched);
+		assertTrue(rsaKey.getKeyType().equals(KeyType.RSA));
+	}
 	@Test
 	public void testClass3() {
 		String test = "sample-value";
@@ -137,6 +148,20 @@ public class TestJWTHelper {
 
 		try {
 			JWTHelper.createRSAKey(JWSAlgorithm.ES256, KeyUse.SIGNATURE);
+		}
+		catch(Exception e) {
+			catched = true;
+		}
+
+		assertFalse(catched);
+	}
+
+	@Test
+	public void test_createRSAEncKey() {
+		boolean catched = false;
+
+		try {
+			JWTHelper.createRSAEncKey(JWEAlgorithm.RSA_OAEP_256, KeyUse.ENCRYPTION);
 		}
 		catch(Exception e) {
 			catched = true;
@@ -224,7 +249,7 @@ public class TestJWTHelper {
 
 		try {
 			RSAKey rsaKey1 = JWTHelper.createRSAKey(null, KeyUse.SIGNATURE);
-			RSAKey rsaKey2 = JWTHelper.createRSAKey(null, KeyUse.ENCRYPTION);
+			RSAKey rsaKey2 = JWTHelper.createRSAEncKey(null, KeyUse.ENCRYPTION);
 
 			JWKSet jwkSet = new JWKSet(Arrays.asList(rsaKey1, rsaKey2));
 
@@ -243,9 +268,10 @@ public class TestJWTHelper {
 
 		try {
 			RSAKey rsaKey = JWTHelper.createRSAKey(null, KeyUse.SIGNATURE);
+			RSAKey rsaEncKey = JWTHelper.createRSAEncKey(null, KeyUse.ENCRYPTION);
 			ECKey ecKey = createECKey(KeyUse.ENCRYPTION);
 
-			JWKSet jwkSet = new JWKSet(Arrays.asList(rsaKey, ecKey));
+			JWKSet jwkSet = new JWKSet(Arrays.asList(rsaKey, ecKey, rsaEncKey));
 
 			jsonArray = JWTHelper.getJWKSetAsJSONArray(jwkSet, false);
 		}
@@ -254,7 +280,7 @@ public class TestJWTHelper {
 		}
 
 		assertFalse(catched);
-		assertTrue(jsonArray.length() == 2);
+		assertTrue(jsonArray.length() == 3);
 		assertTrue(jsonArray.getJSONObject(0).has("use"));
 
 		catched = false;
@@ -262,9 +288,10 @@ public class TestJWTHelper {
 
 		try {
 			RSAKey rsaKey = JWTHelper.createRSAKey(null, KeyUse.SIGNATURE);
+			RSAKey rsaEncKey = JWTHelper.createRSAEncKey(null, KeyUse.ENCRYPTION);
 			ECKey ecKey = createECKey(KeyUse.ENCRYPTION);
 
-			JWKSet jwkSet = new JWKSet(Arrays.asList(rsaKey, ecKey));
+			JWKSet jwkSet = new JWKSet(Arrays.asList(rsaKey, ecKey, rsaEncKey));
 
 			jsonArray = JWTHelper.getJWKSetAsJSONArray(jwkSet, true, false);
 		}
@@ -273,7 +300,7 @@ public class TestJWTHelper {
 		}
 
 		assertFalse(catched);
-		assertTrue(jsonArray.length() == 2);
+		assertTrue(jsonArray.length() == 3);
 		assertTrue(jsonArray.getJSONObject(0).has("use"));
 
 		catched = false;
@@ -312,7 +339,7 @@ public class TestJWTHelper {
 
 		try {
 			RSAKey rsaKey1 = JWTHelper.createRSAKey(null, KeyUse.SIGNATURE);
-			RSAKey rsaKey2 = JWTHelper.createRSAKey(null, KeyUse.ENCRYPTION);
+			RSAKey rsaKey2 = JWTHelper.createRSAEncKey(null, KeyUse.ENCRYPTION);
 
 			JWKSet jwkSet = new JWKSet(Arrays.asList(rsaKey1, rsaKey2));
 
@@ -576,9 +603,9 @@ public class TestJWTHelper {
 
 	private static JWKSet createJWKSet() throws Exception {
 		RSAKey rsaKey1 = JWTHelper.createRSAKey(JWSAlgorithm.RS256, KeyUse.SIGNATURE);
-		//RSAKey rsaKey2 = JWTHelper.createRSAKey(null, KeyUse.ENCRYPTION);
+		RSAKey rsaKey2 = JWTHelper.createRSAEncKey(JWEAlgorithm.RSA_OAEP_256, KeyUse.ENCRYPTION);
 
-		return new JWKSet(Arrays.asList(rsaKey1));
+		return new JWKSet(Arrays.asList(rsaKey1, rsaKey2));
 	}
 
 	private static String createJWS(JSONObject payload, JSONObject jwks)

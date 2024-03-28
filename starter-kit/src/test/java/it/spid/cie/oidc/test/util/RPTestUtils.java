@@ -94,9 +94,9 @@ public class RPTestUtils extends TestUtils {
 
 	public static JWKSet createJWKSet() throws Exception {
 		RSAKey rsaKey1 = JWTHelper.createRSAKey(JWSAlgorithm.RS256, KeyUse.SIGNATURE);
-		//RSAKey rsaKey2 = JWTHelper.createRSAKey(null, KeyUse.ENCRYPTION);
+		RSAKey rsaKey2 = JWTHelper.createRSAEncKey(JWEAlgorithm.RSA_OAEP_256, KeyUse.ENCRYPTION);
 
-		return new JWKSet(Arrays.asList(rsaKey1));
+		return new JWKSet(Arrays.asList(rsaKey1, rsaKey2));
 	}
 
 	public static RelyingPartyOptions getOptions() throws Exception {
