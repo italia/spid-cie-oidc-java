@@ -106,3 +106,4 @@ previous chapter instructions replacing `127.0.0.1` with the right hostname
     ```
 - when onboarded, please retrieve the Trust Mark form TA fetch endpoint like this example for preproduction: `https://preprod.oidc.registry.servizicie.interno.gov.it/fetch?sub={your_client_id}` 
 - remember to (put `[` `]` around the Trust Mark when writing the appropriate file
+- `iat` and `exp` claims must be issued according to the UTC timezone, this is an example command for the webapp: `mvn clean spring-boot:run -Dspring-boot.run.jvmArguments="-Duser.timezone=UTC"`
