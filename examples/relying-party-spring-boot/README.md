@@ -87,7 +87,7 @@ previous chapter instructions replacing `127.0.0.1` with the right hostname
 
 **To be onboarded into CIE Federation**:
 - use always appropriate and valid TLS Certificates
-- use IP from Italian networks for server [CIE Federation servers uses geoblocking]
+- use IP from Italian networks for your server [CIE Federation preproduction servers are using geoblocking]
 - as contact use the same institutional email address as stated into the administrative part [do not use PEC]
 - when copy the federation public key please follow this pattern:
   - ```
