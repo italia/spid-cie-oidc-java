@@ -87,7 +87,7 @@ previous chapter instructions replacing `127.0.0.1` with the right hostname
 
 **To be onboarded into CIE Federation**:
 - use always appropriate and valid TLS Certificates
-- use IP from Italian networks for server [CIE Federation servers uses geoblocking]
+- use IP from Italian networks for your server [CIE Federation preproduction servers are using geoblocking]
 - as contact use the same institutional email address as stated into the administrative part [do not use PEC]
 - when copy the federation public key please follow this pattern:
   - ```
@@ -106,3 +106,4 @@ previous chapter instructions replacing `127.0.0.1` with the right hostname
     ```
 - when onboarded, please retrieve the Trust Mark form TA fetch endpoint like this example for preproduction: `https://preprod.oidc.registry.servizicie.interno.gov.it/fetch?sub={your_client_id}` 
 - remember to (put `[` `]` around the Trust Mark when writing the appropriate file
+- `iat` and `exp` claims must be issued according to the UTC timezone, this is an example command for the webapp: `mvn clean spring-boot:run -Dspring-boot.run.jvmArguments="-Duser.timezone=UTC"`

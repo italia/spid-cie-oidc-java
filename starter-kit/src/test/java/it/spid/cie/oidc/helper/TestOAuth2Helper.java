@@ -323,12 +323,13 @@ public class TestOAuth2Helper {
 					WireMock.forbidden()
 				));
 
-			JWKSet jwks = JWTHelper.getJWKSetFromJWK(options.getJwkFed());
+			//JWKSet jwks = JWTHelper.getJWKSetFromJWK(options.getJwkFed());
+			JWKSet jwks = RPTestUtils.getJwksCoreByUse(JWTHelper.getJWKSetFromJSON(options.getJwkCore()), KeyUse.SIGNATURE);
 
 			FederationEntity clientConf = new FederationEntity();
 
 			clientConf.setSubject(RELYING_PARTY);
-			clientConf.setJwksFed(jwks.toString(false));
+			clientConf.setJwksCore(jwks.toString(false));
 
 			helper.sendRevocationRequest(null, null, SPID_PROVIDER + "test", clientConf);
 		}
@@ -352,12 +353,13 @@ public class TestOAuth2Helper {
 					WireMock.ok()
 				));
 
-			JWKSet jwks = JWTHelper.getJWKSetFromJWK(options.getJwkFed());
+			//JWKSet jwks = JWTHelper.getJWKSetFromJWK(options.getJwkFed());
+			JWKSet jwks = RPTestUtils.getJwksCoreByUse(JWTHelper.getJWKSetFromJSON(options.getJwkCore()), KeyUse.SIGNATURE);
 
 			FederationEntity clientConf = new FederationEntity();
 
 			clientConf.setSubject(RELYING_PARTY);
-			clientConf.setJwksFed(jwks.toString(false));
+			clientConf.setJwksCore(jwks.toString(false));
 
 			helper.sendRevocationRequest(null, null, SPID_PROVIDER + "test", clientConf);
 		}

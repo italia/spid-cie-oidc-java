@@ -154,7 +154,7 @@ public class OAuth2Helper {
 				.put("exp", JWTHelper.getExpiresOn())
 				.put("jti", UUID.randomUUID().toString());
 
-			JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(clientConf.getJwksFed());
+			JWKSet jwkSet = JWTHelper.getJWKSetFromJSON(clientConf.getJwksCoreByUse(KeyUse.SIGNATURE));
 
 			String clientAssertion = jwtHelper.createJWS(payload, jwkSet);
 

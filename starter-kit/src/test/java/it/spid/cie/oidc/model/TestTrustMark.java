@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Arrays;
 
+import com.nimbusds.jose.JWEAlgorithm;
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -238,9 +239,9 @@ public class TestTrustMark {
 
 	private static JWKSet createJWKSet() throws Exception {
 		RSAKey rsaKey1 = JWTHelper.createRSAKey(JWSAlgorithm.RS256, KeyUse.SIGNATURE);
-		//RSAKey rsaKey2 = JWTHelper.createRSAKey(null, KeyUse.ENCRYPTION);
+		RSAKey rsaKey2 = JWTHelper.createRSAEncKey(JWEAlgorithm.RSA_OAEP_256, KeyUse.ENCRYPTION);
 
-		return new JWKSet(Arrays.asList(rsaKey1));
+		return new JWKSet(Arrays.asList(rsaKey1, rsaKey2));
 	}
 
 	/**
