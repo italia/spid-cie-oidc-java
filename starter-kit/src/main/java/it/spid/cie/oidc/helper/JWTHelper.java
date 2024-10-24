@@ -21,8 +21,7 @@ import java.net.URL;
 import java.security.PrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -165,7 +164,7 @@ public class JWTHelper {
 	 * @return current UTC date time as epoch seconds
 	 */
 	public static long getIssuedAt() {
-		return LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+		return Instant.now().getEpochSecond();
 	}
 
 	/**
